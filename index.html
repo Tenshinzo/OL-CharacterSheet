@@ -1,0 +1,1645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Open Legend Online Character Sheet</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2a5298">
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <div id="headerSection">
+            <header class="app-header">
+                <h1><i class="fas fa-dice-d20"></i> Open Legend Online Character Sheet</h1>
+            </header>
+        </div>
+
+        <!-- Main Page - Character Overview -->
+        <div id="mainPage" class="main-page">
+            <!-- Main Welcome Section -->
+            <div class="welcome-section">
+                <h1 class="main-headline">Open Legend Online Character Sheet!</h1>
+                <div class="warning-text">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    The data is saved in your browser files, please create backups to not lose your characters
+                </div>
+                <div class="main-actions">
+                    <button id="newCharBtn" class="btn btn-primary btn-large">
+                        <i class="fas fa-plus"></i> Create New Character
+                    </button>
+                    <button id="importBtn" class="btn btn-secondary btn-large">
+                        <i class="fas fa-upload"></i> Import Characters
+                    </button>
+                    <button id="exportBtn" class="btn btn-secondary btn-large">
+                        <i class="fas fa-download"></i> Export Characters
+                    </button>
+                    <button id="optionsListBtn" class="btn btn-secondary btn-large">
+                        <i class="fas fa-list"></i> List of Options
+                    </button>
+                </div>
+            </div>
+            
+            <div class="page-header">
+                <h2 class="m-0 mb-sm">Character Overview</h2>
+                <p class="text-secondary m-0">Select a character to view or edit their sheet</p>
+            </div>
+            
+            <div class="character-grid" id="characterGrid">
+                <!-- Characters will be populated here -->
+            </div>
+            
+            <div class="empty-state" id="emptyState">
+                <i class="fas fa-users"></i>
+                <h3 class="mb-sm">No Characters Yet</h3>
+                <p class="text-secondary mb-lg">Create your first character to get started!</p>
+                <button id="createFirstCharBtn" class="btn btn-primary hover-lift">
+                    <i class="fas fa-plus"></i> Create Character
+                </button>
+            </div>
+        </div>
+
+        <!-- Options List Page -->
+        <div id="optionsListPage" class="options-list-page" style="display: none;">
+            <div class="page-header">
+                <button id="backToMainFromOptionsBtn" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Overview
+                </button>
+                <h2>List of Options</h2>
+                <p class="text-secondary">Browse all available boons, banes, feats, perks, and flaws in the system</p>
+            </div>
+            
+            <div class="options-content">
+                <!-- Boons Section -->
+                <div class="option-category">
+                                         <div class="category-header boon-category" onclick="window.app.toggleCategoryList('boons')">
+                        <h3><i class="fas fa-magic"></i> Boons</h3>
+                        <span class="expand-icon">▼</span>
+                    </div>
+                    <div class="category-content" id="boonsContent" style="display: none;">
+                        <div class="options-grid" id="boonsGrid">
+                            <!-- Boons will be populated here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Banes Section -->
+                <div class="option-category">
+                                         <div class="category-header bane-category" onclick="window.app.toggleCategoryList('banes')">
+                        <h3><i class="fas fa-skull"></i> Banes</h3>
+                        <span class="expand-icon">▼</span>
+                    </div>
+                    <div class="category-content" id="banesContent" style="display: none;">
+                        <div class="options-grid" id="banesGrid">
+                            <!-- Banes will be populated here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Feats Section -->
+                <div class="option-category">
+                                         <div class="category-header feat-category" onclick="window.app.toggleCategoryList('feats')">
+                        <h3><i class="fas fa-medal"></i> Feats</h3>
+                        <span class="expand-icon">▼</span>
+                    </div>
+                    <div class="category-content" id="featsContent" style="display: none;">
+                        <div class="options-grid" id="featsGrid">
+                            <!-- Feats will be populated here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Perks Section -->
+                <div class="option-category">
+                                         <div class="category-header perk-category" onclick="window.app.toggleCategoryList('perks')">
+                        <h3><i class="fas fa-star"></i> Perks</h3>
+                        <span class="expand-icon">▼</span>
+                    </div>
+                    <div class="category-content" id="perksContent" style="display: none;">
+                        <div class="options-grid" id="perksGrid">
+                            <!-- Perks will be populated here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Flaws Section -->
+                <div class="option-category">
+                                         <div class="category-header flaw-category" onclick="window.app.toggleCategoryList('flaws')">
+                        <h3><i class="fas fa-exclamation-triangle"></i> Flaws</h3>
+                        <span class="expand-icon">▼</span>
+                    </div>
+                    <div class="category-content" id="flawsContent" style="display: none;">
+                        <div class="options-grid" id="flawsGrid">
+                            <!-- Flaws will be populated here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Character Sheet Page -->
+        <div id="characterSheetPage" class="character-sheet-page" style="display: none;">
+            <!-- Character Header -->
+            <div class="character-header">
+                <button id="backToMainBtn" class="btn btn-secondary view-mode-btn">
+                    <i class="fas fa-arrow-left"></i> Back to Overview
+                </button>
+                <div class="character-title">
+                    <h3 id="sheetCharName" class="character-title">Character Name</h3>
+                    <div class="character-archetype" id="sheetCharArchetype">Archetype</div>
+                    <div class="character-meta">
+                        <span class="level-display">Level <span id="sheetCharLevel">1</span></span>
+                        <span class="exp-display">XP: <span id="sheetExpPoints">0</span></span>
+                    </div>
+                </div>
+                <div class="character-actions">
+                    <button id="saveCharBtn" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Save
+                    </button>
+                    <button id="editCharBtn" class="btn btn-secondary edit-mode-btn">
+                        <i class="fas fa-edit"></i> Edit
+                    </button>
+                </div>
+            </div>
+            <div class="view-mode-help" style="text-align: center; margin-bottom: 20px; color: var(--text-secondary); font-size: var(--font-size-sm);">
+                <i class="fas fa-info-circle"></i> 
+                <strong>Tip:</strong> Click "Save" to switch to view mode for a cleaner, read-only experience. Click "Edit" to return to editing mode.
+            </div>
+
+            <!-- Navigation Bar -->
+            <div class="character-navigation">
+                <nav class="nav-tabs">
+                    <button class="nav-tab active" data-section="stats">
+                        <i class="fas fa-chart-line"></i> Stats
+                    </button>
+                    <button class="nav-tab" data-section="combat">
+                        <i class="fas fa-fist-raised"></i> Combat
+                    </button>
+                    <button class="nav-tab" data-section="availableBoonsBanes">
+                        <i class="fas fa-magic"></i> Available Boons & Banes
+                    </button>
+                    <button class="nav-tab" data-section="equipment">
+                        <i class="fas fa-shield-alt"></i> Equipment
+                    </button>
+                    <button class="nav-tab" data-section="feats">
+                        <i class="fas fa-medal"></i> Feats
+                    </button>
+                    <button class="nav-tab" data-section="effects">
+                        <i class="fas fa-magic"></i> Effects
+                    </button>
+                    <button class="nav-tab" data-section="character">
+                        <i class="fas fa-user-edit"></i> Character
+                    </button>
+                    <button class="nav-tab" data-section="baseActions">
+                        <i class="fas fa-play"></i> Base Actions
+                    </button>
+                </nav>
+            </div>
+
+                    <!-- Character Content -->
+            <div class="character-content">
+            <!-- Stats Section -->
+            <div id="statsSection" class="content-section active">
+                <!-- Base Stats Section -->
+                <div class="section-header">
+                    <h3><i class="fas fa-chart-line"></i> Base Stats</h3>
+                </div>
+                <div class="form-row editable-only">
+                    <div class="form-group">
+                        <label for="charName">Character Name</label>
+                        <input type="text" id="charName" placeholder="Enter character name" class="editable-only">
+                    </div>
+                    <div class="form-group">
+                        <label for="charArchetype">Archetype</label>
+                        <input type="text" id="charArchetype" placeholder="Enter character archetype" class="editable-only">
+                    </div>
+                    <div class="form-group xp-field">
+                        <label for="experiencePoints">XP</label>
+                        <input type="number" id="experiencePoints" min="0" max="99" value="0" class="editable-only">
+                    </div>
+                </div>
+
+                                    <!-- Attributes Section -->
+                <div class="section-header">
+                    <h3><i class="fas fa-star"></i> Attributes</h3>
+                    <div class="attribute-summary">
+                        <span>Total Attribute Points Spent:<br><span id="totalPointsSpent">0</span> / <span id="availableAttributePoints">40</span></span>
+                    </div>
+                </div>
+                
+                <!-- Physical Attributes -->
+                <div class="attribute-category">
+                    <h4><i class="fas fa-dumbbell"></i> Physical</h4>
+                    <table class="attributes-table">
+                        <tr class="attribute-row">
+                            <td class="attribute-name">Agility</td>
+                            <td class="attribute-controls editable-only">
+                                <button class="attr-btn minus-btn" onclick="window.app.decreaseAttribute('agility')">−</button>
+                                <span class="attribute-value" id="agility">0</span>
+                                <button class="attr-btn plus-btn" onclick="window.app.increaseAttribute('agility')">+</button>
+                            </td>
+                            <td class="attribute-dice view-mode-only">
+                                <span class="attribute-score" id="agilityScore">0</span>
+                                <span class="attribute-dice-inline" id="agilityDice">1d4</span>
+                            </td>
+                            <td class="attribute-info">
+                                <div class="attribute-cost editable-only">Cost: <span id="agilityCost">0</span></div>
+                                <div class="attribute-dice editable-only" id="agilityDiceEdit">1d4</div>
+                                <div class="attribute-max">Max: <span id="agilityMax">5</span></div>
+                            </td>
+                        </tr>
+                        <tr class="attribute-row">
+                            <td class="attribute-name">Fortitude</td>
+                            <td class="attribute-controls editable-only">
+                                <button class="attr-btn minus-btn" onclick="window.app.decreaseAttribute('fortitude')">−</button>
+                                <span class="attribute-value" id="fortitude">0</span>
+                                <button class="attr-btn plus-btn" onclick="window.app.increaseAttribute('fortitude')">+</button>
+                            </td>
+                            <td class="attribute-dice view-mode-only">
+                                <span class="attribute-score" id="fortitudeScore">0</span> <span class="attribute-dice-inline" id="fortitudeDice">1d4</span>
+                            </td>
+                            <td class="attribute-info">
+                                <div class="attribute-cost editable-only">Cost: <span id="fortitudeCost">0</span></div>
+                                <div class="attribute-dice editable-only" id="fortitudeDiceEdit">1d4</div>
+                                <div class="attribute-max">Max: <span id="fortitudeMax">5</span></div>
+                            </td>
+                        </tr>
+                        <tr class="attribute-row">
+                            <td class="attribute-name">Might</td>
+                            <td class="attribute-controls editable-only">
+                                <button class="attr-btn minus-btn" onclick="window.app.decreaseAttribute('might')">−</button>
+                                <span class="attribute-value" id="might">0</span>
+                                <button class="attr-btn plus-btn" onclick="window.app.increaseAttribute('might')">+</button>
+                            </td>
+                            <td class="attribute-dice view-mode-only">
+                                <span class="attribute-score" id="mightScore">0</span> <span class="attribute-dice-inline" id="mightDice">1d4</span>
+                            </td>
+                            <td class="attribute-info">
+                                <div class="attribute-cost editable-only">Cost: <span id="mightCost">0</span></div>
+                                <div class="attribute-dice editable-only" id="mightDiceEdit">1d4</div>
+                                <div class="attribute-max">Max: <span id="mightMax">5</span></div>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+
+                <!-- Mental Attributes -->
+                <div class="attribute-category">
+                    <h4><i class="fas fa-brain"></i> Mental</h4>
+                    <table class="attributes-table">
+                        <tr class="attribute-row">
+                            <td class="attribute-name">Learning</td>
+                            <td class="attribute-controls editable-only">
+                                <button class="attr-btn minus-btn" onclick="window.app.decreaseAttribute('learning')">−</button>
+                                <span class="attribute-value" id="learning">0</span>
+                                <button class="attr-btn plus-btn" onclick="window.app.increaseAttribute('learning')">+</button>
+                            </td>
+                            <td class="attribute-dice view-mode-only">
+                                <span class="attribute-score" id="learningScore">0</span> <span class="attribute-dice-inline" id="learningDice">1d4</span>
+                            </td>
+                            <td class="attribute-info">
+                                <div class="attribute-cost editable-only">Cost: <span id="learningCost">0</span></div>
+                                <div class="attribute-dice editable-only" id="learningDiceEdit">1d4</div>
+                                <div class="attribute-max">Max: <span id="learningMax">5</span></div>
+                            </td>
+                        </tr>
+                        <tr class="attribute-row">
+                            <td class="attribute-name">Logic</td>
+                            <td class="attribute-controls editable-only">
+                                <button class="attr-btn minus-btn" onclick="window.app.decreaseAttribute('logic')">−</button>
+                                <span class="attribute-value" id="logic">0</span>
+                                <button class="attr-btn plus-btn" onclick="window.app.increaseAttribute('logic')">+</button>
+                            </td>
+                            <td class="attribute-dice view-mode-only">
+                                <span class="attribute-score" id="logicScore">0</span> <span class="attribute-dice-inline" id="logicDice">1d4</span>
+                            </td>
+                            <td class="attribute-info">
+                                <div class="attribute-cost editable-only">Cost: <span id="logicCost">0</span></div>
+                                <div class="attribute-dice editable-only" id="logicDiceEdit">1d4</div>
+                                <div class="attribute-max">Max: <span id="logicMax">5</span></div>
+                            </td>
+                        </tr>
+                        <tr class="attribute-row">
+                            <td class="attribute-name">Perception</td>
+                            <td class="attribute-controls editable-only">
+                                <button class="attr-btn minus-btn" onclick="window.app.decreaseAttribute('perception')">−</button>
+                                <span class="attribute-value" id="perception">0</span>
+                                <button class="attr-btn plus-btn" onclick="window.app.increaseAttribute('perception')">+</button>
+                            </td>
+                            <td class="attribute-dice view-mode-only">
+                                <span class="attribute-score" id="perceptionScore">0</span> <span class="attribute-dice-inline" id="perceptionDice">1d4</span>
+                            </td>
+                            <td class="attribute-info">
+                                <div class="attribute-cost editable-only">Cost: <span id="perceptionCost">0</span></div>
+                                <div class="attribute-dice editable-only" id="perceptionDiceEdit">1d4</div>
+                                <div class="attribute-max">Max: <span id="perceptionMax">5</span></div>
+                            </td>
+                        </tr>
+                        <tr class="attribute-row">
+                            <td class="attribute-name">Will</td>
+                            <td class="attribute-controls editable-only">
+                                <button class="attr-btn minus-btn" onclick="window.app.decreaseAttribute('will')">−</button>
+                                <span class="attribute-value" id="will">0</span>
+                                <button class="attr-btn plus-btn" onclick="window.app.increaseAttribute('will')">+</button>
+                            </td>
+                            <td class="attribute-dice view-mode-only">
+                                <span class="attribute-score" id="willScore">0</span> <span class="attribute-dice-inline" id="willDice">1d4</span>
+                            </td>
+                            <td class="attribute-info">
+                                <div class="attribute-cost editable-only">Cost: <span id="willCost">0</span></div>
+                                <div class="attribute-dice editable-only" id="willDiceEdit">1d4</div>
+                                <div class="attribute-max">Max: <span id="willMax">5</span></div>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+
+                <!-- Social Attributes -->
+                <div class="attribute-category">
+                    <h4><i class="fas fa-comments"></i> Social</h4>
+                    <table class="attributes-table">
+                        <tr class="attribute-row">
+                            <td class="attribute-name">Deception</td>
+                            <td class="attribute-controls editable-only">
+                                <button class="attr-btn minus-btn" onclick="window.app.decreaseAttribute('deception')">−</button>
+                                <span class="attribute-value" id="deception">0</span>
+                                <button class="attr-btn plus-btn" onclick="window.app.increaseAttribute('deception')">+</button>
+                            </td>
+                            <td class="attribute-dice view-mode-only">
+                                <span class="attribute-score" id="deceptionScore">0</span> <span class="attribute-dice-inline" id="deceptionDice">1d4</span>
+                            </td>
+                            <td class="attribute-info">
+                                <div class="attribute-cost editable-only">Cost: <span id="deceptionCost">0</span></div>
+                                <div class="attribute-dice editable-only" id="deceptionDiceEdit">1d4</div>
+                                <div class="attribute-max">Max: <span id="deceptionMax">5</span></div>
+                            </td>
+                        </tr>
+                        <tr class="attribute-row">
+                            <td class="attribute-name">
+                                <div>Persuasion</div>
+                                <div><span id="persuasionFeatIcon" class="feat-icon" style="display: none;" title="Brutal Intimidation: Can use Might instead of Persuasion" onclick="window.app.showFeatPopup('Brutal Intimidation', 'Can use Might instead of Persuasion')">👊</span></div>
+                            </td>
+                            <td class="attribute-controls editable-only">
+                                <button class="attr-btn minus-btn" onclick="window.app.decreaseAttribute('persuasion')">−</button>
+                                <span class="attribute-value" id="persuasion">0</span>
+                                <button class="attr-btn plus-btn" onclick="window.app.increaseAttribute('persuasion')">+</button>
+                            </td>
+                            <td class="attribute-dice view-mode-only">
+                                <span class="attribute-score" id="persuasionScore">0</span> <span class="attribute-dice-inline" id="persuasionDice"><span id="persuasionFeatIcon2" class="feat-icon" style="display: none;" title="Brutal Intimidation: Can use Might instead of Persuasion" onclick="window.app.showFeatPopup('Brutal Intimidation', 'Can use Might instead of Persuasion')">👊</span>1d4</span>
+                            </td>
+                            <td class="attribute-info">
+                                <div class="attribute-cost editable-only">Cost: <span id="persuasionCost">0</span></div>
+                                <div class="attribute-dice editable-only" id="persuasionDiceEdit">1d4</div>
+                                <div class="attribute-max">Max: <span id="persuasionMax">5</span></div>
+                            </td>
+                        </tr>
+                        <tr class="attribute-row">
+                            <td class="attribute-name">Presence</td>
+                            <td class="attribute-controls editable-only">
+                                <button class="attr-btn minus-btn" onclick="window.app.decreaseAttribute('presence')">−</button>
+                                <span class="attribute-value" id="presence">0</span>
+                                <button class="attr-btn plus-btn" onclick="window.app.increaseAttribute('presence')">+</button>
+                            </td>
+                            <td class="attribute-dice view-mode-only">
+                                <span class="attribute-score" id="presenceScore">0</span> <span class="attribute-dice-inline" id="presenceDice">1d4</span>
+                            </td>
+                            <td class="attribute-info">
+                                <div class="attribute-cost editable-only">Cost: <span id="presenceCost">0</span></div>
+                                <div class="attribute-dice editable-only" id="presenceDiceEdit">1d4</div>
+                                <div class="attribute-max">Max: <span id="presenceMax">5</span></div>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+
+                <!-- Extraordinary Attributes -->
+                <div class="attribute-category">
+                    <h4><i class="fas fa-magic"></i> Extraordinary</h4>
+                    <table class="attributes-table">
+                        <tr class="attribute-row">
+                            <td class="attribute-name">Alteration</td>
+                            <td class="attribute-controls editable-only">
+                                <button class="attr-btn minus-btn" onclick="window.app.decreaseAttribute('alteration')">−</button>
+                                <span class="attribute-value" id="alteration">0</span>
+                                <button class="attr-btn plus-btn" onclick="window.app.increaseAttribute('alteration')">+</button>
+                            </td>
+                            <td class="attribute-dice view-mode-only">
+                                <span class="attribute-score" id="alterationScore">0</span> <span class="attribute-dice-inline" id="alterationDice">1d4</span>
+                                <span class="attribute-range" id="alterationRange">-</span>
+                            </td>
+                            <td class="attribute-info">
+                                <div class="attribute-cost editable-only">Cost: <span id="alterationCost">0</span></div>
+                                <div class="attribute-dice editable-only" id="alterationDiceEdit">1d4</div>
+                                <div class="attribute-max">Max: <span id="alterationMax">5</span></div>
+                            </td>
+                        </tr>
+                        <tr class="attribute-row">
+                            <td class="attribute-name">Creation</td>
+                            <td class="attribute-controls editable-only">
+                                <button class="attr-btn minus-btn" onclick="window.app.decreaseAttribute('creation')">−</button>
+                                <span class="attribute-value" id="creation">0</span>
+                                <button class="attr-btn plus-btn" onclick="window.app.increaseAttribute('creation')">+</button>
+                            </td>
+                            <td class="attribute-dice view-mode-only">
+                                <span class="attribute-score" id="creationScore">0</span> <span class="attribute-dice-inline" id="creationDice">1d4</span>
+                                <span class="attribute-range" id="creationRange">-</span>
+                            </td>
+                            <td class="attribute-info">
+                                <div class="attribute-cost editable-only">Cost: <span id="creationCost">0</span></div>
+                                <div class="attribute-dice editable-only" id="creationDiceEdit">1d4</div>
+                                <div class="attribute-max">Max: <span id="creationMax">5</span></div>
+                            </td>
+                        </tr>
+                        <tr class="attribute-row">
+                            <td class="attribute-name">Energy</td>
+                            <td class="attribute-controls editable-only">
+                                <button class="attr-btn minus-btn" onclick="window.app.decreaseAttribute('energy')">−</button>
+                                <span class="attribute-value" id="energy">0</span>
+                                <button class="attr-btn plus-btn" onclick="window.app.increaseAttribute('energy')">+</button>
+                            </td>
+                            <td class="attribute-dice view-mode-only">
+                                <span class="attribute-score" id="energyScore">0</span> <span class="attribute-dice-inline" id="energyDice">1d4</span>
+                                <span class="attribute-range" id="energyRange">-</span>
+                            </td>
+                            <td class="attribute-info">
+                                <div class="attribute-cost editable-only">Cost: <span id="energyCost">0</span></div>
+                                <div class="attribute-dice editable-only" id="energyDiceEdit">1d4</div>
+                                <div class="attribute-max">Max: <span id="energyMax">5</span></div>
+                            </td>
+                        </tr>
+                        <tr class="attribute-row">
+                            <td class="attribute-name">Entropy</td>
+                            <td class="attribute-controls editable-only">
+                                <button class="attr-btn minus-btn" onclick="window.app.decreaseAttribute('entropy')">−</button>
+                                <span class="attribute-value" id="entropy">0</span>
+                                <button class="attr-btn plus-btn" onclick="window.app.increaseAttribute('entropy')">+</button>
+                            </td>
+                            <td class="attribute-dice view-mode-only">
+                                <span class="attribute-score" id="entropyScore">0</span> <span class="attribute-dice-inline" id="entropyDice">1d4</span>
+                                <span class="attribute-range" id="entropyRange">-</span>
+                            </td>
+                            <td class="attribute-info">
+                                <div class="attribute-cost editable-only">Cost: <span id="entropyCost">0</span></div>
+                                <div class="attribute-dice editable-only" id="entropyDiceEdit">1d4</div>
+                                <div class="attribute-max">Max: <span id="entropyMax">5</span></div>
+                            </td>
+                        </tr>
+                        <tr class="attribute-row">
+                            <td class="attribute-name">Influence</td>
+                            <td class="attribute-controls editable-only">
+                                <button class="attr-btn minus-btn" onclick="window.app.decreaseAttribute('influence')">−</button>
+                                <span class="attribute-value" id="influence">0</span>
+                                <button class="attr-btn plus-btn" onclick="window.app.increaseAttribute('influence')">+</button>
+                            </td>
+                            <td class="attribute-dice view-mode-only">
+                                <span class="attribute-score" id="influenceScore">0</span> <span class="attribute-dice-inline" id="influenceDice">1d4</span>
+                                <span class="attribute-range" id="influenceRange">-</span>
+                            </td>
+                            <td class="attribute-info">
+                                <div class="attribute-cost editable-only">Cost: <span id="influenceCost">0</span></div>
+                                <div class="attribute-dice editable-only" id="influenceDiceEdit">1d4</div>
+                                <div class="attribute-max">Max: <span id="influenceMax">5</span></div>
+                            </td>
+                        </tr>
+                        <tr class="attribute-row">
+                            <td class="attribute-name">Movement</td>
+                            <td class="attribute-controls editable-only">
+                                <button class="attr-btn minus-btn" onclick="window.app.decreaseAttribute('movement')">−</button>
+                                <span class="attribute-value" id="movement">0</span>
+                                <button class="attr-btn plus-btn" onclick="window.app.increaseAttribute('movement')">+</button>
+                            </td>
+                            <td class="attribute-dice view-mode-only">
+                                <span class="attribute-score" id="movementScore">0</span> <span class="attribute-dice-inline" id="movementDice">1d4</span>
+                                <span class="attribute-range" id="movementRange">-</span>
+                            </td>
+                            <td class="attribute-info">
+                                <div class="attribute-cost editable-only">Cost: <span id="movementCost">0</span></div>
+                                <div class="attribute-dice editable-only" id="movementDiceEdit">1d4</div>
+                                <div class="attribute-max">Max: <span id="movementMax">5</span></div>
+                            </td>
+                        </tr>
+                        <tr class="attribute-row">
+                            <td class="attribute-name">Prescience</td>
+                            <td class="attribute-controls editable-only">
+                                <button class="attr-btn minus-btn" onclick="window.app.decreaseAttribute('prescience')">−</button>
+                                <span class="attribute-value" id="prescience">0</span>
+                                <button class="attr-btn plus-btn" onclick="window.app.increaseAttribute('prescience')">+</button>
+                            </td>
+                            <td class="attribute-dice view-mode-only">
+                                <span class="attribute-score" id="prescienceScore">0</span> <span class="attribute-dice-inline" id="prescienceDice">1d4</span>
+                                <span class="attribute-range" id="prescienceRange">-</span>
+                            </td>
+                            <td class="attribute-info">
+                                <div class="attribute-cost editable-only">Cost: <span id="prescienceCost">0</span></div>
+                                <div class="attribute-dice editable-only" id="prescienceDiceEdit">1d4</div>
+                                <div class="attribute-max">Max: <span id="prescienceMax">5</span></div>
+                            </td>
+                        </tr>
+                        <tr class="attribute-row">
+                            <td class="attribute-name">Protection</td>
+                            <td class="attribute-controls editable-only">
+                                <button class="attr-btn minus-btn" onclick="window.app.decreaseAttribute('protection')">−</button>
+                                <span class="attribute-value" id="protection">0</span>
+                                <button class="attr-btn plus-btn" onclick="window.app.increaseAttribute('protection')">+</button>
+                            </td>
+                            <td class="attribute-dice view-mode-only">
+                                <span class="attribute-score" id="protectionScore">0</span> <span class="attribute-dice-inline" id="protectionDice">1d4</span>
+                                <span class="attribute-range" id="protectionRange">-</span>
+                            </td>
+                            <td class="attribute-info">
+                                <div class="attribute-cost editable-only">Cost: <span id="protectionCost">0</span></div>
+                                <div class="attribute-dice editable-only" id="protectionDiceEdit">1d4</div>
+                                <div class="attribute-max">Max: <span id="protectionMax">5</span></div>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                
+                <!-- Well-Rounded Feat Description -->
+                <div id="wellRoundedDescription" class="feat-description-section" style="display: none;">
+                    <div class="feat-description-content">
+                        <h4><i class="fas fa-star"></i> Well-Rounded</h4>
+                        <p class="feat-description-text">+1 advantage on non-combat rolls with attributes ≤2</p>
+                    </div>
+                </div>
+                        </div>
+
+                <!-- Combat Section -->
+                <div id="combatSection" class="content-section">
+                    <div class="section-header">
+                        <h3><i class="fas fa-sword"></i> Combat Stats</h3>
+                    </div>
+                    
+                    <div class="combat-content">
+                    
+                    <!-- HP Section -->
+                    <h4>Health Points</h4>
+                    
+                    <!-- Health Bar -->
+                    <div class="health-bar-container" id="healthBarContainer">
+                        <div class="health-bar">
+                            <div class="health-bar-segment current-hp" id="currentHPSegment"></div>
+                            <div class="health-bar-segment missing-hp" id="missingHPSegment"></div>
+                            <div class="health-bar-segment reduced-max" id="reducedMaxSegment"></div>
+                        </div>
+                        <div class="health-bar-text" id="healthBarText">10 / 10 HP</div>
+                    </div>
+                    
+
+                    
+                    <div class="hp-controls">
+                        <div class="damage-healing-row">
+                            <div class="damage-controls">
+                                <label>Damage/Healing:</label>
+                                <div class="damage-input-group">
+                                    <input type="number" id="damageInput" placeholder="0" min="0" max="999" class="touch-friendly-input editable-only">
+                                </div>
+                                <div class="damage-buttons">
+                                    <button id="damageBtn" class="btn btn-danger view-mode-btn">Damage</button>
+                                    <button id="healBtn" class="btn btn-success view-mode-btn">Heal</button>
+                                </div>
+                            </div>
+                            <div class="lethal-controls">
+                                <label>Lethal Damage/Healing:</label>
+                                <div class="damage-input-group">
+                                    <input type="number" id="lethalDamageInput" placeholder="0" min="0" max="999" class="touch-friendly-input editable-only">
+                                </div>
+                                <div class="damage-buttons">
+                                    <button id="lethalDamageBtn" class="btn btn-danger view-mode-btn">Lethal Damage</button>
+                                    <button id="lethalHealBtn" class="btn btn-success view-mode-btn">Lethal Heal</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="reset-controls">
+                            <button id="resetHPBtn" class="btn btn-warning view-mode-btn">Reset HP</button>
+                            <button id="resetLethalBtn" class="btn btn-warning view-mode-btn">Reset Lethal</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Defense Stats -->
+                    <h4>Defense Stats<span id="energyResistanceIcon" class="feat-icon" style="display: none;" title="Energy Resistance: Choose an energy type. Your defense scores are increased against that energy type." onclick="window.app.showFeatPopup('Energy Resistance', 'Choose an energy type. Your defense scores are increased against that energy type.')">🛡️</span></h4>
+                    <div class="defense-grid">
+                        <div class="defense-card">
+                            <h4>Guard</h4>
+                            <div class="defense-value" id="guardValue">10</div>
+                            <div class="defense-breakdown">
+                                <span>Base: 10</span>
+                                <span>+ Agility: <span id="guardAgility">0</span></span>
+                                <span>+ Might: <span id="guardMight">0</span></span>
+                                <span>+ Armor: <span id="guardArmor">0</span></span>
+                                <span>+ Feats: <span id="guardFeats">0</span></span>
+                                <span>+ Boons&Banes: <span id="guardBoonsBanes">0</span></span>
+                            </div>
+                            <div class="attack-test">
+                                <label>Attack vs Guard:</label>
+                                <input type="number" id="guardAttackTest" placeholder="Enter attack roll" min="1">
+                                <button id="testGuardBtn" class="btn btn-small view-mode-btn">Calculate</button>
+                            </div>
+                        </div>
+                        <div class="defense-card">
+                            <h4>Toughness</h4>
+                            <div class="defense-value" id="toughnessValue">10</div>
+                            <div class="defense-breakdown">
+                                <span>Base: 10</span>
+                                <span>+ Fortitude: <span id="toughnessFortitude">0</span></span>
+                                <span>+ Will: <span id="toughnessWill">0</span></span>
+                                <span>+ Feats: <span id="toughnessFeats">0</span></span>
+                                <span>+ Boons&Banes: <span id="toughnessBoonsBanes">0</span></span>
+                            </div>
+                            <div class="attack-test">
+                                <label>Attack vs Toughness:</label>
+                                <input type="number" id="toughnessAttackTest" placeholder="Enter attack roll" min="1">
+                                <button id="testToughnessBtn" class="btn btn-small view-mode-btn">Calculate</button>
+                            </div>
+                        </div>
+                        <div class="defense-card">
+                            <h4>Resolve</h4>
+                            <div class="defense-value" id="resolveValue">0</div>
+                            <div class="defense-breakdown">
+                                <span>Base: 10</span>
+                                <span>+ Presence: <span id="resolvePresence">0</span></span>
+                                <span>+ Will: <span id="resolveWill">0</span></span>
+                                <span>+ Feats: <span id="resolveFeats">0</span></span>
+                                <span>+ Boons&Banes: <span id="resolveBoonsBanes">0</span></span>
+                            </div>
+                            <div class="attack-test">
+                                <label>Attack vs Resolve:</label>
+                                <input type="number" id="resolveAttackTest" placeholder="Enter attack roll" min="1">
+                                <button id="testResolveBtn" class="btn btn-small view-mode-btn">Calculate</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Alternate Form Switch Button -->
+                    <div id="alternateFormSwitchSection" class="alternate-form-switch" style="display: none;">
+                        <div class="switch-container">
+                            <h5><i class="fas fa-exchange-alt"></i> Alternate Forms</h5>
+                            <div class="switch-buttons" id="alternateFormSwitchButtons">
+                                <!-- Alternate form switch buttons will be populated here -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Companion Switch Button -->
+                    <div id="companionSwitchSection" class="companion-switch" style="display: none;">
+                        <div class="switch-container">
+                            <h5><i class="fas fa-paw"></i> Companions</h5>
+                            <div class="switch-buttons" id="companionSwitchButtons">
+                                <!-- Companion switch buttons will be populated here -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    </div> <!-- Close combat-content -->
+
+                </div>
+
+                <!-- Available Boons & Banes Section -->
+                <div id="availableBoonsBanesSection" class="content-section">
+                    <div class="section-header">
+                        <h3><i class="fas fa-magic"></i> Available Boons & Banes</h3>
+                    </div>
+                    <div class="boons-banes-container">
+                        <!-- Boons Section -->
+                        <div class="boons-section">
+                            <h5><i class="fas fa-star"></i> Boons</h5>
+                            <div class="boons-list" id="availableBoonsList">
+                                <!-- Boons will be populated here -->
+                            </div>
+                        </div>
+                        
+                        <!-- Banes Section -->
+                        <div class="banes-section">
+                            <h5><i class="fas fa-skull"></i> Banes</h5>
+                            <div class="banes-list" id="availableBanesList">
+                                <!-- Banes will be populated here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Initiative & Movement Section -->
+                <div id="initiativeMovementSection" class="content-section">
+                    <div class="section-header">
+                        <h3><i class="fas fa-running"></i> Initiative & Movement</h3>
+                    </div>
+                    <div class="initiative-movement-section">
+                        <div class="initiative-group">
+                            <h5>Initiative</h5>
+                            <div class="initiative-display">
+                                <span class="initiative-label">Initiative Score:</span>
+                                <span id="initiativeScore" class="initiative-value">0</span>
+                                <span class="initiative-dice" id="initiativeDice">1d4</span>
+                            </div>
+                            <div class="initiative-advantage">
+                                <label class="initiative-checkbox" id="initiativeWeaponAdvantage">
+                                    
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="movement-group">
+                            <h5>Movement</h5>
+                            <div class="movement-stats">
+                                <div class="movement-stat">
+                                    <label>Movement Speed:</label>
+                                    <span id="movementSpeed" class="movement-value">30</span>
+                                    <span class="movement-unit">feet</span>
+                                </div>
+                                <div class="movement-stat">
+                                    <label>Climbing Speed:</label>
+                                    <span id="climbingSpeed" class="movement-value">15</span>
+                                    <span class="movement-unit">feet</span>
+                                </div>
+                                <div class="movement-stat">
+                                    <label>Swimming Speed:</label>
+                                    <span id="swimmingSpeed" class="movement-value">15</span>
+                                    <span class="movement-unit">feet</span>
+                                </div>
+                                <div class="movement-stat hidden" id="flyingSpeedContainer">
+                                    <label>Flying Speed:</label>
+                                    <span id="flyingSpeed" class="movement-value">30</span>
+                                    <span class="movement-unit">feet</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="legend-points-group">
+                            <h5>Legend Points</h5>
+                            <div class="legend-points-display">
+                                <button id="decreaseLegendBtn" class="btn btn-small view-mode-btn">-</button>
+                                <span id="legendPoints" class="legend-points-value">0</span>
+                                <button id="increaseLegendBtn" class="btn btn-small view-mode-btn">+</button>
+                                <span class="legend-points-max">/ 10</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Effects Section -->
+                <div id="effectsSection" class="content-section">
+                    <div class="section-header">
+                        <h3><i class="fas fa-magic"></i> Effects</h3>
+                    </div>
+                    
+                    <!-- Advantage Summary and Filter -->
+                    <div class="advantage-summary">
+                        <div class="advantage-disadvantage-calculation">
+                            <span id="advantageDisadvantageResult">Advantage: 0</span>
+                        </div>
+                        <div class="advantage-filter">
+                            <label for="advantageFilter">Filter by Attribute:</label>
+                            <select id="advantageFilter">
+                                <option value="all">All Attributes</option>
+                                <option value="agility">Agility</option>
+                                <option value="fortitude">Fortitude</option>
+                                <option value="might">Might</option>
+                                <option value="learning">Learning</option>
+                                <option value="logic">Logic</option>
+                                <option value="perception">Perception</option>
+                                <option value="will">Will</option>
+                                <option value="deception">Deception</option>
+                                <option value="persuasion">Persuasion</option>
+                                <option value="presence">Presence</option>
+                                <option value="alteration">Alteration</option>
+                                <option value="creation">Creation</option>
+                                <option value="energy">Energy</option>
+                                <option value="entropy">Entropy</option>
+                                <option value="influence">Influence</option>
+                                <option value="movement">Movement</option>
+                                <option value="prescience">Prescience</option>
+                                <option value="protection">Protection</option>
+                            </select>
+                        </div>
+                        <div class="validation-controls">
+                            <button id="validateBoonsBtn" class="btn btn-small btn-secondary" title="Check for orphaned boons/banes">
+                                <i class="fas fa-shield-alt"></i> Validate Data
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Advantages and Disadvantages side by side -->
+                    <div class="advantages-disadvantages-row">
+                        <div class="advantage-group">
+                            <h4>Advantages</h4>
+                            <div class="advantage-count-display">
+                                <span class="advantage-count">Active: <span id="advantageCount">0</span></span>
+                            </div>
+                            <div class="checkbox-list" id="advantagesList">
+                                <!-- Advantages will be populated here -->
+                            </div>
+                            <div class="add-item">
+                                <input type="text" id="newAdvantage" placeholder="Add new advantage">
+                                <select id="advantageAttribute">
+                                    <option value="all">All Attributes</option>
+                                    <option value="agility">Agility</option>
+                                    <option value="fortitude">Fortitude</option>
+                                    <option value="might">Might</option>
+                                    <option value="learning">Learning</option>
+                                    <option value="logic">Logic</option>
+                                    <option value="perception">Perception</option>
+                                    <option value="will">Will</option>
+                                    <option value="deception">Deception</option>
+                                    <option value="persuasion">Persuasion</option>
+                                    <option value="presence">Presence</option>
+                                    <option value="alteration">Alteration</option>
+                                    <option value="creation">Creation</option>
+                                    <option value="energy">Energy</option>
+                                    <option value="entropy">Entropy</option>
+                                    <option value="influence">Influence</option>
+                                    <option value="movement">Movement</option>
+                                    <option value="prescience">Prescience</option>
+                                    <option value="protection">Protection</option>
+                                </select>
+                                <select id="advantageCountSelect">
+                                    <option value="1">1</option>
+                                    <option value="2">2</option>
+                                    <option value="3">3</option>
+                                    <option value="4">4</option>
+                                    <option value="5">5</option>
+                                </select>
+                                <button id="addAdvantageBtn" class="btn btn-small view-mode-btn">Add</button>
+                            </div>
+                        </div>
+                        
+                        <div class="advantage-group">
+                            <h4>Disadvantages</h4>
+                            <div class="advantage-count-display">
+                                <span class="advantage-count">Active: <span id="disadvantageCount">0</span></span>
+                            </div>
+                            <div class="checkbox-list" id="disadvantagesList">
+                                <!-- Disadvantages will be populated here -->
+                            </div>
+                            <div class="add-item">
+                                <input type="text" id="newDisadvantage" placeholder="Add new disadvantage">
+                                <select id="disadvantageAttribute">
+                                    <option value="all">All Attributes</option>
+                                    <option value="agility">Agility</option>
+                                    <option value="fortitude">Fortitude</option>
+                                    <option value="might">Might</option>
+                                    <option value="learning">Learning</option>
+                                    <option value="logic">Logic</option>
+                                    <option value="perception">Perception</option>
+                                    <option value="will">Will</option>
+                                    <option value="deception">Deception</option>
+                                    <option value="persuasion">Persuasion</option>
+                                    <option value="presence">Presence</option>
+                                    <option value="alteration">Alteration</option>
+                                    <option value="creation">Creation</option>
+                                    <option value="energy">Energy</option>
+                                    <option value="entropy">Entropy</option>
+                                    <option value="influence">Influence</option>
+                                    <option value="movement">Movement</option>
+                                    <option value="prescience">Prescience</option>
+                                    <option value="protection">Protection</option>
+                                </select>
+                                <select id="disadvantageCountSelect">
+                                    <option value="1">1</option>
+                                    <option value="2">2</option>
+                                    <option value="3">3</option>
+                                    <option value="4">4</option>
+                                    <option value="5">5</option>
+                                </select>
+                                <button id="addDisadvantageBtn" class="btn btn-small view-mode-btn">Add</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Active Boons and Active Banes side by side -->
+                    <div class="boons-banes-row">
+                        <div class="advantage-group">
+                            <h4>Active Boons</h4>
+                            <div class="boon-tracker" id="boonTracker">
+                                <!-- Boons will be populated here -->
+                            </div>
+                            <div class="add-item">
+                                <select id="boonSelect">
+                                    <option value="">Choose a boon...</option>
+                                </select>
+                                <select id="boonPowerLevel">
+                                    <option value="">Choose Power Level...</option>
+                                </select>
+                                <select id="boonAttribute" style="display: none;">
+                                    <option value="">Choose Attribute...</option>
+                                    <option value="agility">Agility</option>
+                                    <option value="fortitude">Fortitude</option>
+                                    <option value="might">Might</option>
+                                    <option value="learning">Learning</option>
+                                    <option value="logic">Logic</option>
+                                    <option value="perception">Perception</option>
+                                    <option value="will">Will</option>
+                                    <option value="deception">Deception</option>
+                                    <option value="persuasion">Persuasion</option>
+                                    <option value="presence">Presence</option>
+                                    <option value="alteration">Alteration</option>
+                                    <option value="creation">Creation</option>
+                                    <option value="energy">Energy</option>
+                                    <option value="entropy">Entropy</option>
+                                    <option value="influence">Influence</option>
+                                    <option value="movement">Movement</option>
+                                    <option value="prescience">Prescience</option>
+                                    <option value="protection">Protection</option>
+                                </select>
+                                <input type="text" id="boonResistanceType" placeholder="Resistance type (e.g., fire, acid, cold)" style="display: none;">
+                                <div class="sustain-checkbox" id="sustainCheckbox" style="display: none;">
+                                    <label>
+                                        <input type="checkbox" id="boonSustaining"> Sustaining
+                                    </label>
+                                </div>
+                                <button id="addBoonBtn" class="btn btn-small view-mode-btn">Add</button>
+                            </div>
+                        </div>
+                        
+                        <div class="advantage-group">
+                            <h4>Active Banes</h4>
+                            <div class="bane-tracker" id="baneTracker">
+                                <!-- Banes will be populated here -->
+                            </div>
+                            <div class="add-item">
+                                <select id="baneSelect">
+                                    <option value="">Choose a bane...</option>
+                                </select>
+                                <select id="banePowerLevel">
+                                    <option value="">Choose Power Level...</option>
+                                </select>
+                                <button id="addBaneBtn" class="btn btn-small view-mode-btn">Add</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Equipment Section -->
+                <div id="equipmentSection" class="content-section">
+                    <div class="section-header">
+                        <h3><i class="fas fa-shield-alt"></i> Equipment</h3>
+                    </div>
+                    
+                    <!-- Wealth Level Section -->
+                    <div class="wealth-level-section">
+                        <h4>Wealth Level</h4>
+                        <div class="wealth-level-controls">
+                            <label for="viewWealthScore">Wealth Score:</label>
+                            <input type="number" id="viewWealthScore" min="0" max="9" value="2" class="wealth-input">
+                            <span id="viewEffectiveWealthDisplay" class="effective-wealth-display" style="display: none;"></span>
+                            <label class="wealth-checkbox">
+                                <input type="checkbox" id="viewWealthUsed"> Used 2-weekly wealth
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <!-- Equipped Items Section -->
+                    <h4>Equipped Items</h4>
+                    <h5>Weapons</h5>
+                    <div id="equippedWeapon" class="equipped-item">None</div>
+                    <h5>Armor</h5>
+                    <div id="equippedArmor" class="equipped-item">None</div>
+                    <h5>Accessories</h5>
+                    <div id="equippedAccessories" class="equipped-items-list">
+                        <!-- Equipped accessories will be here -->
+                    </div>
+                    
+                    <!-- Inventory Section -->
+                    <h4>Inventory</h4>
+                    <div class="equipment-list" id="equipmentList">
+                        <!-- Equipment will be populated here -->
+                    </div>
+                    
+                    <!-- Add Equipment Section -->
+                    <div class="add-equipment-section">
+                        <h4 class="add-equipment-header">
+                            <i class="fas fa-plus-circle"></i> Add New Equipment
+                        </h4>
+                        <div class="add-equipment">
+                            <input type="text" id="equipmentName" placeholder="Equipment name">
+                            <select id="equipmentType">
+                                <option value="item">Item</option>
+                                <option value="weapon">Weapon</option>
+                                <option value="armor">Armor</option>
+                            </select>
+                            
+                            <!-- Item-specific fields for attribute score setting and power level -->
+                            <div class="item-specific-fields" id="itemFields" style="display: none;">
+                                <div class="item-attribute-section">
+                                    <label for="itemAttributeScore">Attribute Score Setting:</label>
+                                    <select id="itemAttributeScore">
+                                        <option value="none">None</option>
+                                        <option value="agility">Agility</option>
+                                        <option value="fortitude">Fortitude</option>
+                                        <option value="might">Might</option>
+                                        <option value="learning">Learning</option>
+                                        <option value="logic">Logic</option>
+                                        <option value="perception">Perception</option>
+                                        <option value="will">Will</option>
+                                        <option value="deception">Deception</option>
+                                        <option value="persuasion">Persuasion</option>
+                                        <option value="presence">Presence</option>
+                                        <option value="alteration">Alteration</option>
+                                        <option value="creation">Creation</option>
+                                        <option value="energy">Energy</option>
+                                        <option value="entropy">Entropy</option>
+                                        <option value="influence">Influence</option>
+                                        <option value="movement">Movement</option>
+                                        <option value="prescience">Prescience</option>
+                                        <option value="protection">Protection</option>
+                                    </select>
+                                </div>
+                                <div class="item-power-level-section">
+                                    <label for="itemPowerLevel">Power Level (PL):</label>
+                                    <select id="itemPowerLevel">
+                                        <option value="">Choose Power Level...</option>
+                                        <option value="1">1</option>
+                                        <option value="2">2</option>
+                                        <option value="3">3</option>
+                                        <option value="4">4</option>
+                                        <option value="5">5</option>
+                                        <option value="6">6</option>
+                                        <option value="7">7</option>
+                                        <option value="8">8</option>
+                                        <option value="9">9</option>
+                                        <option value="10">10</option>
+                                    </select>
+                                </div>
+                                <div class="item-wealth-section">
+                                    <label for="itemWealthLevel">Wealth Level (WL):</label>
+                                    <input type="number" id="itemWealthLevel" placeholder="0-10" min="0" max="10" value="0" class="wealth-level-input">
+                                </div>
+                                
+                                <!-- Universal Properties -->
+                                <div class="universal-properties-section">
+                                    <label>Universal Properties:</label>
+                                    <div class="universal-properties-grid">
+                                        <label class="universal-property">
+                                            <input type="checkbox" id="itemArea"> Area
+                                        </label>
+                                        <label class="universal-property">
+                                            <input type="checkbox" id="itemAutonomous"> Autonomous
+                                        </label>
+                                        <label class="universal-property">
+                                            <input type="checkbox" id="itemConsumable"> Consumable
+                                        </label>
+                                        <label class="universal-property">
+                                            <input type="checkbox" id="itemCursed"> Cursed
+                                        </label>
+                                        <label class="universal-property">
+                                            <input type="checkbox" id="itemExpendable"> Expendable
+                                        </label>
+                                        <label class="universal-property">
+                                            <input type="checkbox" id="itemPowerful"> Powerful
+                                        </label>
+                                        <label class="universal-property">
+                                            <input type="checkbox" id="itemReliable"> Reliable
+                                        </label>
+                                        <label class="universal-property">
+                                            <input type="checkbox" id="itemPersistent"> Persistent
+                                        </label>
+                                        <label class="universal-property">
+                                            <input type="checkbox" id="itemSentient"> Sentient
+                                        </label>
+                                    </div>
+                                    
+                                    <!-- Property-specific inputs -->
+                                    <div class="universal-property-inputs">
+                                        <div class="property-input" id="itemAreaSizeInput" style="display: none;">
+                                            <label for="itemAreaSize">Area Size:</label>
+                                            <input type="text" id="itemAreaSize" placeholder="e.g., 10' radius, 15' cone">
+                                        </div>
+                                        <div class="property-input" id="itemPowerfulInput" style="display: none;">
+                                            <label for="itemPowerfulValue">Powerful Value:</label>
+                                            <input type="number" id="itemPowerfulValue" placeholder="1-3" min="1" max="3" value="1">
+                                        </div>
+                                        <div class="property-input" id="itemCursedInput" style="display: none;">
+                                            <label for="itemCursedBane">Cursed Bane:</label>
+                                            <select id="itemCursedBane">
+                                                <option value="">Choose a bane...</option>
+                                            </select>
+                                            <label for="itemCursedPowerLevel">Bane Power Level:</label>
+                                            <select id="itemCursedPowerLevel">
+                                                <option value="">Choose Power Level...</option>
+                                            </select>
+                                        </div>
+                                        <div class="property-input" id="itemReliableInput" style="display: none;">
+                                            <label for="itemReliableBoon">Reliable Boon:</label>
+                                            <select id="itemReliableBoon">
+                                                <option value="">Choose a boon...</option>
+                                            </select>
+                                            <label for="itemReliablePowerLevel">Boon Power Level:</label>
+                                            <select id="itemReliablePowerLevel">
+                                                <option value="">Choose Power Level...</option>
+                                            </select>
+                                        </div>
+                                        <div class="property-input" id="itemPersistentInput" style="display: none;">
+                                            <label for="itemPersistentBoon">Persistent Boon:</label>
+                                            <select id="itemPersistentBoon">
+                                                <option value="">Choose a boon...</option>
+                                            </select>
+                                            <label for="itemPersistentPowerLevel">Boon Power Level:</label>
+                                            <select id="itemPersistentPowerLevel">
+                                                <option value="">Choose Power Level...</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="weapon-specific-fields" id="weaponFields" style="display: none;">
+                                <!-- Weapon Category -->
+                                <div class="weapon-category-section">
+                                    <label for="weaponCategory">Weapon Category:</label>
+                                    <select id="weaponCategory">
+                                        <option value="">No Melee</option>
+                                        <option value="one-handed-melee">One-Handed Melee</option>
+                                        <option value="two-handed-melee">Two-Handed Melee</option>
+                                        <option value="versatile-melee">Versatile Melee</option>
+                                    </select>
+                                </div>
+                                
+                                <!-- Range Increments -->
+                                <div class="weapon-range-section">
+                                    <label>Range Increment:</label>
+                                    <select id="weaponRangeIncrement">
+                                        <option value="">No Range (Melee Only)</option>
+                                        <option value="close">Close Ranged (25')</option>
+                                        <option value="short">Short Ranged (50')</option>
+                                        <option value="medium">Medium Ranged (75')</option>
+                                        <option value="long">Long Ranged (125')</option>
+                                        <option value="extreme">Extreme Ranged (300')</option>
+                                    </select>
+                                </div>
+                                
+                                                                        <!-- Wealth Level -->
+                                        <div class="weapon-wealth-section">
+                                            <label for="weaponWealthLevel">Wealth Level (WL):</label>
+                                            <input type="number" id="weaponWealthLevel" placeholder="0-10" min="0" max="10" value="0" class="wealth-level-input">
+                                        </div>
+                                
+                                <!-- Universal Properties -->
+                                <div class="universal-properties-section">
+                                    <label>Universal Properties:</label>
+                                    <div class="universal-properties-grid">
+                                        <label class="universal-property">
+                                            <input type="checkbox" id="weaponArea"> Area
+                                        </label>
+                                        <label class="universal-property">
+                                            <input type="checkbox" id="weaponAutonomous"> Autonomous
+                                        </label>
+                                        <label class="universal-property">
+                                            <input type="checkbox" id="weaponConsumable"> Consumable
+                                        </label>
+                                        <label class="universal-property">
+                                            <input type="checkbox" id="weaponCursed"> Cursed
+                                        </label>
+                                        <label class="universal-property">
+                                            <input type="checkbox" id="weaponExpendable"> Expendable
+                                        </label>
+                                        <label class="universal-property">
+                                            <input type="checkbox" id="weaponPowerful"> Powerful
+                                        </label>
+                                        <label class="universal-property">
+                                            <input type="checkbox" id="weaponReliable"> Reliable
+                                        </label>
+                                        <label class="universal-property">
+                                            <input type="checkbox" id="weaponSentient"> Sentient
+                                        </label>
+                                        <label class="universal-property">
+                                            <input type="checkbox" id="weaponPersistent"> Persistent
+                                        </label>
+                                        <!-- Weapon-specific properties -->
+                                        <label class="weapon-property">
+                                            <input type="checkbox" id="weaponDefensive"> Defensive
+                                        </label>
+                                        <label class="weapon-property">
+                                            <input type="checkbox" id="weaponDeadly"> Deadly
+                                        </label>
+                                        <label class="weapon-property">
+                                            <input type="checkbox" id="weaponDamageType"> Damage Type
+                                        </label>
+                                        <label class="weapon-property">
+                                            <input type="checkbox" id="weaponBaneful"> Baneful
+                                        </label>
+                                        <label class="weapon-property">
+                                            <input type="checkbox" id="weaponDelayedReady"> Delayed Ready
+                                        </label>
+                                        <label class="weapon-property">
+                                            <input type="checkbox" id="weaponForceful"> Forceful
+                                        </label>
+                                        <label class="weapon-property">
+                                            <input type="checkbox" id="weaponHeavy"> Heavy
+                                        </label>
+                                        <label class="weapon-property">
+                                            <input type="checkbox" id="weaponPrecise"> Precise
+                                        </label>
+                                        <label class="weapon-property">
+                                            <input type="checkbox" id="weaponReach"> Reach
+                                        </label>
+                                        <label class="weapon-property">
+                                            <input type="checkbox" id="weaponSlow"> Slow
+                                        </label>
+                                        <label class="weapon-property">
+                                            <input type="checkbox" id="weaponStationary"> Stationary
+                                        </label>
+                                        <label class="weapon-property">
+                                            <input type="checkbox" id="weaponSwift"> Swift
+                                        </label>
+                                    </div>
+                                    
+                                    <!-- Property-specific inputs -->
+                                    <div class="universal-property-inputs">
+                                        <div class="property-input" id="weaponAreaSizeInput" style="display: none;">
+                                            <label for="weaponAreaSize">Area Size:</label>
+                                            <input type="text" id="weaponAreaSize" placeholder="e.g., 10' radius, 15' cone">
+                                        </div>
+                                        <div class="property-input" id="weaponPowerfulInput" style="display: none;">
+                                            <label for="weaponPowerfulValue">Powerful Value:</label>
+                                            <input type="number" id="weaponPowerfulValue" placeholder="1-3" min="1" max="3" value="1">
+                                        </div>
+                                        <div class="property-input" id="weaponCursedInput" style="display: none;">
+                                            <label for="weaponCursedBane">Cursed Bane:</label>
+                                            <select id="weaponCursedBane">
+                                                <option value="">Choose a bane...</option>
+                                            </select>
+                                            <label for="weaponCursedPowerLevel">Bane Power Level:</label>
+                                            <select id="weaponCursedPowerLevel">
+                                                <option value="">Choose Power Level...</option>
+                                            </select>
+                                        </div>
+                                        <div class="property-input" id="defensiveValueInput" style="display: none;">
+                                            <label for="weaponDefensiveValue">Defensive Value:</label>
+                                            <input type="number" id="weaponDefensiveValue" placeholder="1-3" min="1" max="3" value="1">
+                                        </div>
+                                        <div class="property-input" id="deadlyValueInput" style="display: none;">
+                                            <label for="weaponDeadlyValue">Deadly Value:</label>
+                                            <input type="number" id="weaponDeadlyValue" placeholder="1-3" min="1" max="3" value="1">
+                                        </div>
+                                        <div class="property-input" id="weaponDamageTypeInput" style="display: none;">
+                                            <label for="weaponDamageTypeSelect">Damage Type:</label>
+                                            <select id="weaponDamageTypeSelect">
+                                                <option value="">Choose damage type...</option>
+                                                <option value="precise">Precise</option>
+                                                <option value="forceful">Forceful</option>
+                                                <option value="fire">Fire</option>
+                                                <option value="cold">Cold</option>
+                                                <option value="lightning">Lightning</option>
+                                                <option value="acid">Acid</option>
+                                                <option value="influence">Influence</option>
+                                                <option value="entropy">Entropy</option>
+                                            </select>
+                                        </div>
+                                        <div class="property-input" id="weaponBanefulInput" style="display: none;">
+                                            <label for="weaponBanefulSelect">Baneful Bane:</label>
+                                            <select id="weaponBanefulSelect">
+                                                <option value="">Choose a bane...</option>
+                                            </select>
+                                        </div>
+                                        <div class="property-input" id="weaponReliableInput" style="display: none;">
+                                            <label for="weaponReliableBoon">Reliable Boon:</label>
+                                            <select id="weaponReliableBoon">
+                                                <option value="">Choose a boon...</option>
+                                            </select>
+                                            <label for="weaponReliablePowerLevel">Boon Power Level:</label>
+                                            <select id="weaponReliablePowerLevel">
+                                                <option value="">Choose Power Level...</option>
+                                            </select>
+                                        </div>
+                                        <div class="property-input" id="weaponPersistentInput" style="display: none;">
+                                            <label for="weaponPersistentBoon">Persistent Boon:</label>
+                                            <select id="weaponPersistentBoon">
+                                                <option value="">Choose a boon...</option>
+                                            </select>
+                                            <label for="weaponPersistentPowerLevel">Boon Power Level:</label>
+                                            <select id="weaponPersistentPowerLevel">
+                                                <option value="">Choose Power Level...</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Banes Selection -->
+                                <div class="weapon-banes-section">
+                                    <label>Weapon Banes (up to 3):</label>
+                                                                            <div class="bane-selection">
+                                            <select id="weaponBane1">
+                                                <option value="">No Bane</option>
+                                            </select>
+                                            <select id="weaponBane2">
+                                                <option value="">No Bane</option>
+                                            </select>
+                                            <select id="weaponBane3">
+                                                <option value="">No Bane</option>
+                                            </select>
+                                        </div>
+                                </div>
+                            </div>
+                            
+                            <div class="armor-specific-fields" id="armorFields" style="display: none;">
+                                <input type="number" id="armorDefense" placeholder="Defense" min="0" max="3">
+                                <input type="number" id="requiredFortitude" placeholder="Required Fortitude" min="0">
+                                <div class="armor-wealth-section">
+                                    <label for="armorWealthLevel">Wealth Level (WL):</label>
+                                    <input type="number" id="armorWealthLevel" placeholder="0-10" min="0" max="10" value="0" class="wealth-level-input">
+                                </div>
+                                <label class="speed-reduction-checkbox">
+                                    <input type="checkbox" id="armorSpeedReduction">Speed Reduction
+                                </label>
+                                
+                                <!-- Universal Properties -->
+                                <div class="universal-properties-section">
+                                    <label>Universal Properties:</label>
+                                    <div class="universal-properties-grid">
+                                        <label class="universal-property">
+                                            <input type="checkbox" id="armorArea"> Area
+                                        </label>
+                                        <label class="universal-property">
+                                            <input type="checkbox" id="armorAutonomous"> Autonomous
+                                        </label>
+                                        <label class="universal-property">
+                                            <input type="checkbox" id="armorConsumable"> Consumable
+                                        </label>
+                                        <label class="universal-property">
+                                            <input type="checkbox" id="armorCursed"> Cursed
+                                        </label>
+                                        <label class="universal-property">
+                                            <input type="checkbox" id="armorExpendable"> Expendable
+                                        </label>
+                                        <label class="universal-property">
+                                            <input type="checkbox" id="armorPowerful"> Powerful
+                                        </label>
+                                        <label class="universal-property">
+                                            <input type="checkbox" id="armorReliable"> Reliable
+                                        </label>
+                                        <label class="universal-property">
+                                            <input type="checkbox" id="armorSentient"> Sentient
+                                        </label>
+                                        <label class="universal-property">
+                                            <input type="checkbox" id="armorPersistent"> Persistent
+                                        </label>
+                                    </div>
+                                    
+                                    <!-- Property-specific inputs -->
+                                    <div class="universal-property-inputs">
+                                        <div class="property-input" id="armorAreaSizeInput" style="display: none;">
+                                            <label for="armorAreaSize">Area Size:</label>
+                                            <input type="text" id="armorAreaSize" placeholder="e.g., 10' radius, 15' cone">
+                                        </div>
+                                        <div class="property-input" id="armorPowerfulInput" style="display: none;">
+                                            <label for="armorPowerfulValue">Powerful Value:</label>
+                                            <input type="number" id="armorPowerfulValue" placeholder="1-3" min="1" max="3" value="1">
+                                        </div>
+                                        <div class="property-input" id="armorCursedInput" style="display: none;">
+                                            <label for="armorCursedBane">Cursed Bane:</label>
+                                            <select id="armorCursedBane">
+                                                <option value="">Choose Power Level...</option>
+                                            </select>
+                                            <label for="armorCursedPowerLevel">Bane Power Level:</label>
+                                            <select id="armorCursedPowerLevel">
+                                                <option value="">Choose Power Level...</option>
+                                            </select>
+                                        </div>
+                                        <div class="property-input" id="armorReliableInput" style="display: none;">
+                                            <label for="armorReliableBoon">Reliable Boon:</label>
+                                            <select id="armorReliableBoon">
+                                                <option value="">Choose a boon...</option>
+                                            </select>
+                                            <label for="armorReliablePowerLevel">Boon Power Level:</label>
+                                            <select id="armorReliablePowerLevel">
+                                                <option value="">Choose Power Level...</option>
+                                            </select>
+                                        </div>
+                                        <div class="property-input" id="armorPersistentInput" style="display: none;">
+                                            <label for="armorPersistentBoon">Persistent Boon:</label>
+                                            <select id="armorPersistentBoon">
+                                                <option value="">Choose a boon...</option>
+                                            </select>
+                                            <label for="armorPersistentPowerLevel">Boon Power Level:</label>
+                                            <select id="armorPersistentPowerLevel">
+                                                <option value="">Choose Power Level...</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <textarea id="equipmentEffects" placeholder="Equipment description, special effects, bonuses, etc."></textarea>
+                            <button id="addEquipmentBtn" class="btn btn-small">Add Equipment</button>
+                        </div>
+                    </div>
+                            </div>
+
+                <!-- Feats Section -->
+                <div id="featsSection" class="content-section">
+                    <div class="section-header">
+                        <h3><i class="fas fa-medal"></i> Feats</h3>
+                    </div>
+                    
+                    <div class="feat-points-display editable-only">
+                        <div class="feat-points-info">
+                            <span class="feat-points-label">Available Feat Points (6 + XP):</span>
+                            <span id="availableFeatPoints" class="feat-points-value">6</span>
+                        </div>
+                        <div class="feat-points-info">
+                            <span class="feat-points-label">Used Feat Points:</span>
+                            <span id="usedFeatPoints" class="feat-points-value">0</span>
+                        </div>
+                        <div class="feat-points-info">
+                            <span class="feat-points-label">Remaining Feat Points:</span>
+                            <span id="remainingFeatPoints" class="feat-points-value">6</span>
+                        </div>
+                    </div>
+                    
+                    <div class="add-feat editable-only">
+                        <div class="feat-selection editable-only">
+                            <label for="featSelect">Select Feat:</label>
+                            <select id="featSelect" class="editable-only">
+                                <option value="">Choose a feat...</option>
+                            </select>
+                        </div>
+                        <div class="feat-preview editable-only" id="featPreview" style="display: none;">
+                            <!-- Feat preview will be populated here -->
+                        </div>
+                        <div class="feat-tier-selection editable-only">
+                            <label for="featTierSelect">Select Tier:</label>
+                            <select id="featTierSelect" class="editable-only">
+                                <option value="">Choose tier...</option>
+                            </select>
+                        </div>
+                        <div class="feat-custom-input editable-only" id="featCustomInput" style="display: none;">
+                            <label for="featCustomInputField">Optional Details:</label>
+                            <textarea id="featCustomInputField" placeholder="Enter optional details for this feat..." class="editable-only"></textarea>
+                        </div>
+                        <div class="feat-cost-display editable-only">
+                            <span class="feat-cost-label">Cost:</span>
+                            <span id="featCostDisplay" class="feat-cost-value">0</span>
+                        </div>
+                        <button id="addFeatBtn" class="btn btn-small editable-only">Add Feat</button>
+                    </div>
+                    
+                    <div class="feats-list" id="featsList">
+                        <!-- Feats will be populated here -->
+                    </div>
+                </div>
+
+
+
+                <!-- Character Section -->
+                <div id="characterSection" class="content-section">
+                    <div class="section-header">
+                        <h3><i class="fas fa-user-edit"></i> Character Description</h3>
+                    </div>
+                    <div class="section-content">
+                        <div class="description-section">
+                            <div class="character-layout">
+                                <div class="character-image-section">
+                            <div class="form-group">
+                                <div class="image-upload-container">
+                                    <input type="file" id="charImage" accept="image/*" style="display: none;">
+                                    <div class="image-preview" id="imagePreview">
+                                        <i class="fas fa-user-circle"></i>
+                                        <span>Click to upload image</span>
+                                    </div>
+                                    <button type="button" id="uploadImageBtn" class="btn btn-small editable-only">Upload Image</button>
+                                </div>
+                            </div>
+                                </div>
+                                <div class="character-text-section">
+                            <div class="form-group">
+                                <label for="charDescription">Character Description</label>
+                                <textarea id="charDescription" placeholder="Describe your character's appearance, personality, background, etc." rows="6"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="charBackground">Background Story</label>
+                                <textarea id="charBackground" placeholder="Your character's history and background story" rows="6"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="charNotes">Additional Notes</label>
+                                <textarea id="charNotes" placeholder="Any additional notes about your character..." rows="4" class="editable-only"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="perks-flaws-section">
+                                <div class="perks-section">
+                                    <h4>Perks</h4>
+                                    <div class="perks-list" id="perksList">
+                                        <!-- Perks will be populated here -->
+                                    </div>
+                                    <div class="add-item editable-only">
+                                        <select id="perkSelect" class="editable-only">
+                                            <option value="">Choose a perk...</option>
+                                        </select>
+                                        <button id="addPerkBtn" class="btn btn-small editable-only">Add</button>
+                                    </div>
+                                    <div class="perk-preview editable-only" id="perkPreview" style="display: none;">
+                                        <!-- Perk preview will be populated here -->
+                                    </div>
+                                </div>
+                                <div class="flaws-section">
+                                    <h4>Flaws</h4>
+                                    <div class="flaws-list" id="flawsList">
+                                        <!-- Flaws will be populated here -->
+                                    </div>
+                                    <div class="add-item editable-only">
+                                        <select id="flawSelect" class="editable-only">
+                                            <option value="">Choose a flaw...</option>
+                                        </select>
+                                        <button id="addFlawBtn" class="btn btn-small editable-only">Add</button>
+                                    </div>
+                                    <div class="flaw-preview editable-only" id="flawPreview" style="display: none;">
+                                        <!-- Flaw preview will be populated here -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Base Actions Section -->
+                <div id="baseActionsSection" class="content-section">
+                    <div class="section-header">
+                        <h3><i class="fas fa-play"></i> Base Actions</h3>
+                        <p class="text-secondary">Common actions available to all characters, organized by action duration</p>
+                    </div>
+                    <div class="section-content">
+                        <div class="base-actions-section">
+                            <div class="actions-list" id="actionsList">
+                                <!-- Actions will be populated here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            </div> <!-- Close character-content -->
+        </div>
+        
+    </div>
+
+        <!-- Import Modal -->
+        <div id="importModal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h2>Import Character</h2>
+                
+                <!-- File Upload Section -->
+                <div class="import-section">
+                    <h3><i class="fas fa-file-upload"></i> Upload JSON File</h3>
+                    <div class="file-upload-area" id="fileUploadArea">
+                        <input type="file" id="jsonFileInput" accept=".json" style="display: none;">
+                        <div class="upload-placeholder" id="uploadPlaceholder">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <p>Click to select a JSON file or drag and drop here</p>
+                            <p class="upload-hint">Supports .json files only</p>
+                        </div>
+                        <div class="file-info" id="fileInfo" style="display: none;">
+                            <i class="fas fa-file-code"></i>
+                            <span id="fileName">filename.json</span>
+                            <button type="button" id="removeFileBtn" class="btn btn-small btn-danger">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <button id="uploadFileBtn" class="btn btn-primary" style="display: none;">
+                        <i class="fas fa-upload"></i> Import from File
+                    </button>
+                </div>
+                
+                <!-- Divider -->
+                <div class="import-divider">
+                    <span>or</span>
+                </div>
+                
+                <!-- Manual Input Section -->
+                <div class="import-section">
+                    <h3><i class="fas fa-keyboard"></i> Paste JSON Data</h3>
+                    <textarea id="importData" placeholder="Paste character data here..."></textarea>
+                    <button id="confirmImportBtn" class="btn btn-primary">Import from Text</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Footer Section -->
+    <footer class="footer-section">
+        <div class="footer-content">
+            <div class="footer-links">
+                <a href="https://www.reddit.com/user/Tenschinzo/" target="_blank" class="footer-link">
+                    <i class="fab fa-reddit"></i> Contact on Reddit
+                </a>
+            </div>
+            <div class="footer-text">
+                <p style="color: white;">Open Legend Online Character Sheet. Built with ❤️ for the Open Legend community.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="gameDatabase.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Favicon Preview</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .favicon-preview {
+            text-align: center;
+            margin: 40px 0;
+        }
+        .favicon-display {
+            display: inline-block;
+            margin: 20px;
+            text-align: center;
+        }
+        .favicon-display img {
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            background: white;
+            padding: 10px;
+        }
+        .instructions {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #3b82f6;
+        }
+        .code {
+            background: #f0f0f0;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Open Legend Character Sheet - Favicon Preview</h1>
+    
+    <div class="favicon-preview">
+        <h2>SVG Favicon Preview</h2>
+        <div class="favicon-display">
+            <img src="favicon.svg" alt="OL Favicon" width="64" height="64">
+            <p>64x64 (SVG)</p>
+        </div>
+        <div class="favicon-display">
+            <img src="favicon.svg" alt="OL Favicon" width="32" height="32">
+            <p>32x32 (SVG)</p>
+        </div>
+        <div class="favicon-display">
+            <img src="favicon.svg" alt="OL Favicon" width="16" height="16">
+            <p>16x16 (SVG)</p>
+        </div>
+    </div>
+    
+    <div class="instructions">
+        <h3>To Generate PNG Favicons:</h3>
+        <p>The SVG favicon is already created and will work in modern browsers. For better compatibility, you can generate PNG versions using one of these methods:</p>
+        
+        <h4>Method 1: Online SVG to PNG Converter</h4>
+        <ol>
+            <li>Go to <a href="https://convertio.co/svg-png/" target="_blank">Convertio</a> or <a href="https://cloudconvert.com/svg-to-png" target="_blank">CloudConvert</a></li>
+            <li>Upload the <code>favicon.svg</code> file</li>
+            <li>Convert to PNG with these sizes: 16x16, 32x32, 180x180</li>
+            <li>Save the files as:
+                <div class="code">favicon-16x16.png
+favicon-32x32.png
+apple-touch-icon.png</div>
+            </li>
+        </ol>
+        
+        <h4>Method 2: Using Image Editing Software</h4>
+        <ol>
+            <li>Open <code>favicon.svg</code> in GIMP, Photoshop, or similar software</li>
+            <li>Export as PNG at the required sizes</li>
+            <li>Save with the filenames listed above</li>
+        </ol>
+        
+        <h4>Method 3: Command Line (if you have ImageMagick)</h4>
+        <div class="code">convert favicon.svg -resize 16x16 favicon-16x16.png
+convert favicon.svg -resize 32x32 favicon-32x32.png
+convert favicon.svg -resize 180x180 apple-touch-icon.png</div>
+    </div>
+    
+    <div class="instructions">
+        <h3>Current Status:</h3>
+        <ul>
+            <li>✅ SVG favicon created (<code>favicon.svg</code>)</li>
+            <li>✅ HTML favicon references added</li>
+            <li>⏳ PNG favicons need to be generated (optional but recommended)</li>
+        </ul>
+        
+        <p><strong>Note:</strong> The SVG favicon will work immediately in modern browsers. The PNG versions are for better compatibility with older browsers and mobile devices.</p>
+    </div>
+</body>
+</html>
