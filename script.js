@@ -4318,6 +4318,10 @@ class CharacterSheetApp {
     resetHP() {
         if (!this.currentCharacter) return;
         
+        // Confirm before resetting
+        const confirmed = confirm('Are you sure you want to reset HP to maximum? This will clear all damage taken.');
+        if (!confirmed) return;
+        
         this.currentCharacter.currentHP = this.currentCharacter.maxHP;
         this.currentCharacter.totalDamageTaken = 0;
         this.updateHPDisplay();
@@ -4334,11 +4338,83 @@ class CharacterSheetApp {
     resetLethalDamage() {
         if (!this.currentCharacter) return;
         
+        // Confirm before resetting
+        const confirmed = confirm('Are you sure you want to reset lethal damage to 0? This will restore maximum HP.');
+        if (!confirmed) return;
+        
         this.currentCharacter.lethalDamage = 0;
         this.updateMaxHP();
         this.autoSave();
         
         this.showNotification('Lethal damage reset!', 'success');
+    }
+
+    // Find an identical unequipped item for stacking
+    findIdenticalUnequippedItem(newItem) {
+        if (!this.currentCharacter || !this.currentCharacter.equipment) return null;
+        
+        // Don't stack equipped items
+        if (newItem.equipped) return null;
+        
+        return this.currentCharacter.equipment.find(item => {
+            // Must be unequipped
+            if (item.equipped) return false;
+            
+            // Must have same name and type
+            if (item.name !== newItem.name || item.type !== newItem.type) return false;
+            
+            // Must have same effects
+            if (item.effects !== newItem.effects) return false;
+            
+            // For weapons, check all weapon properties
+            if (item.type === 'weapon') {
+                if (item.weaponCategory !== newItem.weaponCategory) return false;
+                if (item.rangeIncrement !== newItem.rangeIncrement) return false;
+                if (item.wealthLevel !== newItem.wealthLevel) return false;
+                
+                // Check properties arrays
+                const props1 = JSON.stringify(item.properties || []);
+                const props2 = JSON.stringify(newItem.properties || []);
+                if (props1 !== props2) return false;
+                
+                // Check banes arrays
+                const banes1 = JSON.stringify(item.banes || []);
+                const banes2 = JSON.stringify(newItem.banes || []);
+                if (banes1 !== banes2) return false;
+                
+                // Check universal properties
+                const uProps1 = JSON.stringify(item.universalProperties || []);
+                const uProps2 = JSON.stringify(newItem.universalProperties || []);
+                if (uProps1 !== uProps2) return false;
+            }
+            
+            // For armor, check armor properties
+            if (item.type === 'armor') {
+                if (item.armorDefense !== newItem.armorDefense) return false;
+                if (item.requiredFortitude !== newItem.requiredFortitude) return false;
+                if (item.wealthLevel !== newItem.wealthLevel) return false;
+                if (item.speedReduction !== newItem.speedReduction) return false;
+                
+                // Check universal properties
+                const uProps1 = JSON.stringify(item.universalProperties || []);
+                const uProps2 = JSON.stringify(newItem.universalProperties || []);
+                if (uProps1 !== uProps2) return false;
+            }
+            
+            // For items, check item properties
+            if (item.type === 'item') {
+                if (item.itemAttributeScore !== newItem.itemAttributeScore) return false;
+                if (item.itemPowerLevel !== newItem.itemPowerLevel) return false;
+                if (item.wealthLevel !== newItem.wealthLevel) return false;
+                
+                // Check universal properties
+                const uProps1 = JSON.stringify(item.universalProperties || []);
+                const uProps2 = JSON.stringify(newItem.universalProperties || []);
+                if (uProps1 !== uProps2) return false;
+            }
+            
+            return true;
+        });
     }
 
     // Add equipment
@@ -4348,6 +4424,7 @@ class CharacterSheetApp {
         const name = document.getElementById('equipmentName').value.trim();
         const type = document.getElementById('equipmentType').value;
         const effects = document.getElementById('equipmentEffects').value.trim();
+        const quantity = parseInt(document.getElementById('equipmentQuantity').value) || 1;
         
         if (!name) {
             this.showNotification('Please enter equipment name.', 'error');
@@ -4359,7 +4436,8 @@ class CharacterSheetApp {
             name: name,
             type: type,
             effects: effects,
-            equipped: false
+            equipped: false,
+            quantity: quantity
         };
         
         // Add weapon-specific fields
@@ -4452,7 +4530,15 @@ class CharacterSheetApp {
             this.clearItemFields();
         }
         
-        this.currentCharacter.equipment.push(equipment);
+        // Check if an identical unequipped item already exists and stack them
+        const existingItem = this.findIdenticalUnequippedItem(equipment);
+        if (existingItem) {
+            existingItem.quantity = (existingItem.quantity || 1) + quantity;
+            this.showNotification(`Stacked ${quantity} ${name}(s). Total: ${existingItem.quantity}`, 'success');
+        } else {
+            this.currentCharacter.equipment.push(equipment);
+            this.showNotification(`Added equipment: ${name} x${quantity}`, 'success');
+        }
         
         this.populateEquipment();
         this.updateWeaponAdvantageDisplay(); // Update weapon advantage display
@@ -4465,8 +4551,7 @@ class CharacterSheetApp {
         // Clear inputs
         document.getElementById('equipmentName').value = '';
         document.getElementById('equipmentEffects').value = '';
-        
-        this.showNotification(`Added equipment: ${name}`, 'success');
+        document.getElementById('equipmentQuantity').value = '1';
     }
 
     // Populate equipment list
@@ -4510,9 +4595,12 @@ class CharacterSheetApp {
             const itemElement = document.createElement('div');
             itemElement.className = `equipment-item ${item.equipped ? 'equipped' : ''}`;
             
+            const quantity = item.quantity || 1;
+            const quantityDisplay = quantity > 1 ? ` x${quantity}` : '';
+            
             itemElement.innerHTML = `
                 <div class="equipment-info">
-                    <div class="equipment-name">${item.name}</div>
+                    <div class="equipment-name">${item.name}${quantityDisplay}</div>
                     <div class="equipment-type">${item.type}</div>
                     <div class="equipment-details" style="display: ${document.body.classList.contains('view-mode') ? 'block' : 'none'};">
                         <!-- Compact view mode display -->
@@ -4548,6 +4636,10 @@ class CharacterSheetApp {
                                 <div class="equipment-name-edit">
                                     <label>Name:</label>
                                     <input type="text" class="equipment-name-input" data-equipment-id="${item.id}" data-field="name" value="${item.name || ''}" placeholder="Equipment name">
+                                </div>
+                                <div class="equipment-quantity-edit">
+                                    <label>Quantity:</label>
+                                    <input type="number" class="equipment-quantity-input" data-equipment-id="${item.id}" data-field="quantity" value="${item.quantity || 1}" min="1" style="width: 80px;" ${item.equipped ? 'disabled title="Unequip to change quantity"' : ''}>
                                 </div>
                                 <div class="equipment-type-edit">
                                     <label>Type:</label>
@@ -4923,22 +5015,57 @@ class CharacterSheetApp {
                 
                 if (!hasTwoWeaponBrute) {
                     // Check if trying to equip a two-handed weapon while having another weapon equipped
-                    const isTwoHanded = equipment.properties && equipment.properties.includes('two-handed');
+                    const isTwoHanded = equipment.weaponCategory === 'two-handed-melee';
                     if (isTwoHanded && equippedWeapons.length > 0) {
-                        this.showNotification('Cannot equip a two-handed weapon while having another weapon equipped. You need the "Two Weapon Brute" feat to wield two two-handed weapons.', 'error');
+                        this.showNotification('Cannot equip a two-handed weapon while having another weapon equipped. You need the "Two Weapon Brute" feat to wield two weapons together.', 'error');
                         return;
                     }
                     
                     // Check if trying to equip any weapon while having a two-handed weapon equipped
-                    const hasTwoHandedEquipped = equippedWeapons.some(weapon => weapon.properties && weapon.properties.includes('two-handed'));
+                    const hasTwoHandedEquipped = equippedWeapons.some(weapon => weapon.weaponCategory === 'two-handed-melee');
                     if (hasTwoHandedEquipped) {
-                        this.showNotification('Cannot equip another weapon while wielding a two-handed weapon. You need the "Two Weapon Brute" feat to wield two two-handed weapons.', 'error');
+                        this.showNotification('Cannot equip another weapon while wielding a two-handed weapon. You need the "Two Weapon Brute" feat to wield two weapons together.', 'error');
                         return;
                     }
                 }
             }
             
-            equipment.equipped = !equipment.equipped;
+            // Handle stacking/splitting for quantities > 1
+            const quantity = equipment.quantity || 1;
+            
+            if (!equipment.equipped && quantity > 1) {
+                // Equipping: Split one item from the stack
+                equipment.quantity = quantity - 1;
+                
+                // Create a new equipment item for the equipped one
+                const equippedItem = JSON.parse(JSON.stringify(equipment));
+                equippedItem.id = this.generateUniqueEquipmentId();
+                equippedItem.quantity = 1;
+                equippedItem.equipped = true;
+                
+                this.currentCharacter.equipment.push(equippedItem);
+            } else if (equipment.equipped) {
+                // Unequipping: Try to stack with identical unequipped items
+                equipment.equipped = false;
+                
+                const identicalItem = this.findIdenticalUnequippedItem(equipment);
+                if (identicalItem && identicalItem.id !== equipment.id) {
+                    // Stack with existing item
+                    identicalItem.quantity = (identicalItem.quantity || 1) + 1;
+                    
+                    // Remove the unequipped item
+                    const index = this.currentCharacter.equipment.findIndex(e => e.id === equipment.id);
+                    if (index !== -1) {
+                        this.currentCharacter.equipment.splice(index, 1);
+                    }
+                } else {
+                    // No identical item found, just mark as unequipped
+                    equipment.quantity = 1;
+                }
+            } else {
+                // Single item with quantity 1, just toggle
+                equipment.equipped = true;
+            }
             
             // Handle cursed item logic
             // Equipment cursed check
@@ -5000,6 +5127,7 @@ class CharacterSheetApp {
             this.updateMovementStats();
             this.updateAttributeDisplay(); // Update attribute display to reflect equipment changes
             this.updateWeaponAdvantageDisplay(); // Update weapon advantage display
+            this.populateAdvantages(); // Update advantages for weapon-based advantages (deadly, two-handed, dual-wield)
             this.autoSave();
         }
     }
@@ -5054,6 +5182,7 @@ class CharacterSheetApp {
         this.updateMovementStats();
         this.updateAttributeDisplay(); // Update attribute display when equipment is removed
         this.updateWeaponAdvantageDisplay(); // Update weapon advantage display
+        this.populateAdvantages(); // Update advantages for weapon-based advantages (deadly, two-handed, dual-wield)
         
         // Validate boons and banes after equipment removal
         this.validateBoonsAndBanes();
@@ -5079,11 +5208,13 @@ class CharacterSheetApp {
         
         // Update basic information
         const nameInput = equipmentElement.querySelector('.equipment-name-input');
+        const quantityInput = equipmentElement.querySelector('.equipment-quantity-input');
         const typeInput = equipmentElement.querySelector('.equipment-type-select');
         const wealthInput = equipmentElement.querySelector('.equipment-wealth-input');
         const effectsField = equipmentElement.querySelector('.equipment-effects-edit');
 
         if (nameInput) equipment.name = nameInput.value;
+        if (quantityInput) equipment.quantity = Math.max(1, parseInt(quantityInput.value) || 1);
         if (typeInput) equipment.type = typeInput.value;
         if (wealthInput) equipment.wealthLevel = parseInt(wealthInput.value) || 0;
         if (effectsField) equipment.effects = effectsField.value.trim();
@@ -5187,6 +5318,7 @@ class CharacterSheetApp {
         this.updateMovementStats();
         this.updateAttributeDisplay(); // Update attribute display when equipment is modified
         this.updateWeaponAdvantageDisplay(); // Update weapon advantage display
+        this.populateAdvantages(); // Update advantages for weapon-based advantages (deadly, two-handed, dual-wield)
         this.autoSave();
         
         this.showNotification('Equipment updated successfully!', 'success');
@@ -6242,7 +6374,7 @@ class CharacterSheetApp {
     }
 
     // Populate feats dropdown from database
-    populateFeatsDropdown() {
+    populateFeatsDropdown(sortBy = 'name') {
         if (!window.GAME_DATABASE || !window.GAME_DATABASE.feats) return;
         
         const featSelect = document.getElementById('featSelect');
@@ -6252,14 +6384,26 @@ class CharacterSheetApp {
         featSelect.innerHTML = '<option value="">Choose a feat...</option>';
         tierSelect.innerHTML = '<option value="">Choose tier...</option>';
         
-        // Sort feats alphabetically and filter by requirements
-        const sortedFeats = this.sortItemsAlphabetically(window.GAME_DATABASE.feats);
-        const availableFeats = sortedFeats.filter(feat => this.isFeatAvailable(feat));
+        // Filter available feats first
+        const availableFeats = window.GAME_DATABASE.feats.filter(feat => this.isFeatAvailable(feat));
         
-        availableFeats.forEach(feat => {
+        // Sort feats based on the sortBy parameter
+        let sortedFeats;
+        if (sortBy === 'cost') {
+            sortedFeats = availableFeats.sort((a, b) => {
+                if (a.cost !== b.cost) {
+                    return a.cost - b.cost; // Sort by cost ascending
+                }
+                return a.name.localeCompare(b.name); // Then by name
+            });
+        } else {
+            sortedFeats = this.sortItemsAlphabetically(availableFeats);
+        }
+        
+        sortedFeats.forEach(feat => {
             const option = document.createElement('option');
             option.value = feat.name;
-            option.textContent = feat.name;
+            option.textContent = `[${feat.cost}] ${feat.name}`;
             featSelect.appendChild(option);
         });
         
@@ -6555,11 +6699,16 @@ class CharacterSheetApp {
             addButton.disabled = true;
             previewDiv.style.display = 'none';
             customInputDiv.style.display = 'none';
+            customInputDiv.innerHTML = ''; // Clear custom input content
             return;
         }
         
         const feat = window.GAME_DATABASE.feats.find(f => f.name === selectedFeatName);
         if (!feat) return;
+        
+        // Clear previous custom input content before showing new feat
+        customInputDiv.innerHTML = '';
+        customInputDiv.style.display = 'none';
         
         // Show preview
         this.showFeatPreview(feat);
@@ -6617,19 +6766,34 @@ class CharacterSheetApp {
             // Show custom input field for other feats
             customInputDiv.style.display = 'block';
             
+            // Restore default textarea HTML if it was replaced by a dropdown
+            let textarea = document.getElementById('featCustomInputField');
+            if (!textarea) {
+                customInputDiv.innerHTML = `
+                    <label for="featCustomInputField">Optional Details:</label>
+                    <textarea id="featCustomInputField" placeholder="Enter optional details for this feat..." class="editable-only"></textarea>
+                `;
+                textarea = document.getElementById('featCustomInputField');
+            }
+            
             // Update label and placeholder based on whether custom input is required
             const label = customInputDiv.querySelector('label');
-            const textarea = document.getElementById('featCustomInputField');
             
             if (feat.customInput) {
                 // This feat requires custom input
                 if (label) label.textContent = feat.customInputLabel || 'Required Details:';
-                if (textarea) textarea.placeholder = feat.customInputPlaceholder || 'Enter required details for this feat...';
+                if (textarea) {
+                    textarea.placeholder = feat.customInputPlaceholder || 'Enter required details for this feat...';
+                    textarea.value = ''; // Clear any previous value
+                }
                 if (label) label.style.color = '#dc3545'; // Red to indicate required
             } else {
                 // This feat has optional custom input
                 if (label) label.textContent = 'Optional Details:';
-                if (textarea) textarea.placeholder = 'Enter optional details for this feat (e.g., notes, conditions, etc.)...';
+                if (textarea) {
+                    textarea.placeholder = 'Enter optional details for this feat (e.g., notes, conditions, etc.)...';
+                    textarea.value = ''; // Clear any previous value
+                }
                 if (label) label.style.color = '#6c757d'; // Gray to indicate optional
             }
         }
@@ -7621,9 +7785,9 @@ class CharacterSheetApp {
         // Check for Attack Specialization feats
         const attackSpecializationFeats = this.currentCharacter.feats.filter(feat => feat.name === 'Attack Specialization');
         
-        // Remove existing feat-based advantages
+        // Remove existing feat-based and weapon-based advantages
         this.currentCharacter.advantages = this.currentCharacter.advantages.filter(adv => {
-            // Keep advantages that are not feat-based
+            // Keep advantages that are not feat-based or weapon-based
             if (adv.name !== 'Lethal Strike' && adv.name !== 'Resist Bane') {
                 // Check if it's an Attack Specialization advantage
                 if (adv.name.startsWith('Attack Specialization:')) {
@@ -7636,6 +7800,14 @@ class CharacterSheetApp {
                 // Check if it's a Boon Focus advantage
                 if (adv.name.startsWith('Boon Focus:')) {
                     return false; // Remove existing Boon Focus advantages
+                }
+                // Check if it's a Deadly weapon advantage
+                if (adv.name.includes('Deadly')) {
+                    return false; // Remove existing Deadly weapon advantages
+                }
+                // Check if it's a Two-Handed or Dual-Wield advantage
+                if (adv.name === 'Two-Handed Weapon' || adv.name === '2 One-Handed Weapons') {
+                    return false; // Remove existing two-handed/dual-wield advantages
                 }
                 return true; // Keep other advantages
             }
@@ -7651,15 +7823,12 @@ class CharacterSheetApp {
             });
         }
         
-        // Add Resist Bane advantages for all attributes if character has Resilient feat
+        // Add Resist Bane advantage for all attributes if character has Resilient feat
         if (hasResilient) {
-            const allAttributes = ['Agility', 'Fortitude', 'Might', 'Perception', 'Alteration', 'Creation', 'Energy', 'Entropy', 'Influence', 'Learning', 'Logic', 'Presence', 'Will'];
-            allAttributes.forEach(attribute => {
-                this.currentCharacter.advantages.push({
-                    name: 'Resist Bane',
-                    attribute: attribute,
-                    count: 1
-                });
+            this.currentCharacter.advantages.push({
+                name: 'Resist Bane',
+                attribute: 'Any',
+                count: 1
             });
         }
         
@@ -7714,6 +7883,81 @@ class CharacterSheetApp {
                 });
             }
         });
+        
+        // Add Deadly weapon advantages for equipped weapons
+        if (this.currentCharacter.equipment) {
+            const equippedWeapons = this.currentCharacter.equipment.filter(e => e.equipped && e.type === 'weapon');
+            
+            equippedWeapons.forEach(weapon => {
+                // Check if weapon has deadly property
+                if (weapon.properties && weapon.properties.includes('deadly') && weapon.deadlyValue) {
+                    const deadlyValue = weapon.deadlyValue;
+                    
+                    // Check if weapon has forceful property (adds Might advantage)
+                    if (weapon.properties.includes('forceful')) {
+                        this.currentCharacter.advantages.push({
+                            name: `${weapon.name} Deadly`,
+                            attribute: 'Might',
+                            count: deadlyValue
+                        });
+                    }
+                    
+                    // Check if weapon has precise property (adds Agility advantage)
+                    if (weapon.properties.includes('precise')) {
+                        this.currentCharacter.advantages.push({
+                            name: `${weapon.name} Deadly`,
+                            attribute: 'Agility',
+                            count: deadlyValue
+                        });
+                    }
+                }
+            });
+            
+            // Add advantages for two-handed melee weapons or dual-wielding (excluding defensive weapons)
+            // Filter out weapons with defensive property
+            const meleeWeapons = equippedWeapons.filter(weapon => {
+                // Exclude weapons with defensive property
+                if (weapon.properties && weapon.properties.includes('defensive')) {
+                    return false;
+                }
+                // Only melee weapons - check weaponCategory for melee types
+                if (weapon.weaponCategory) {
+                    return weapon.weaponCategory === 'one-handed-melee' || 
+                           weapon.weaponCategory === 'two-handed-melee' || 
+                           weapon.weaponCategory === 'versatile-melee';
+                }
+                // Fallback: if no weaponCategory, check if no range
+                return !weapon.rangeIncrement || weapon.rangeIncrement === '';
+            });
+            
+            if (meleeWeapons.length > 0) {
+                // Check for two-handed weapon
+                const twoHandedWeapon = meleeWeapons.find(weapon => 
+                    weapon.weaponCategory === 'two-handed-melee'
+                );
+                
+                // Check for dual-wielding (2 one-handed melee weapons)
+                const oneHandedWeapons = meleeWeapons.filter(weapon => 
+                    weapon.weaponCategory === 'one-handed-melee' || weapon.weaponCategory === 'versatile-melee'
+                );
+                
+                if (twoHandedWeapon) {
+                    // Two-handed weapon: Add advantage 1 for all attributes
+                    this.currentCharacter.advantages.push({
+                        name: 'Two-Handed Weapon',
+                        attribute: 'All Attributes',
+                        count: 1
+                    });
+                } else if (oneHandedWeapons.length >= 2) {
+                    // Dual-wielding: Add advantage 1 for all attributes
+                    this.currentCharacter.advantages.push({
+                        name: '2 One-Handed Weapons',
+                        attribute: 'All Attributes',
+                        count: 1
+                    });
+                }
+            }
+        }
     }
 
     // Populate advantages list
@@ -7734,12 +7978,15 @@ class CharacterSheetApp {
             item.className = 'checkbox-item';
             const count = advantage.count || 1;
             
-            // Check if this is a feat-based advantage (should not be removable)
+            // Check if this is a feat-based or weapon-based advantage (should not be removable)
             const isFeatBased = advantage.name === 'Lethal Strike' || 
                                advantage.name === 'Resist Bane' || 
                                advantage.name.startsWith('Attack Specialization:') ||
                                advantage.name.startsWith('Bane Attack:') ||
-                               advantage.name.startsWith('Boon Focus:');
+                               advantage.name.startsWith('Boon Focus:') ||
+                               advantage.name.includes('Deadly') ||
+                               advantage.name === 'Two-Handed Weapon' ||
+                               advantage.name === '2 One-Handed Weapons';
             
             item.innerHTML = `
                 <input type="checkbox" id="adv_${advantage.name}" checked>
@@ -7766,16 +8013,21 @@ class CharacterSheetApp {
 
     // Filter advantages and disadvantages by attribute
     filterAdvantages() {
-        const filter = document.getElementById('advantageFilter').value;
+        const filter = document.getElementById('advantageFilter').value.toLowerCase();
         const advantages = document.querySelectorAll('#advantagesList .checkbox-item');
         const disadvantages = document.querySelectorAll('#disadvantagesList .checkbox-item');
         
         // Filter advantages
         advantages.forEach(advantage => {
             const attributeSpan = advantage.querySelector('.advantage-attribute');
-            const attributeText = attributeSpan.textContent;
-            // Always show "All Attributes" regardless of filter
-            if (filter === 'all' || attributeText === filter || attributeText === 'all') {
+            if (!attributeSpan) return; // Skip if no attribute span found
+            
+            const attributeText = attributeSpan.textContent.toLowerCase().trim();
+            // Always show "All Attributes" and "Any" regardless of filter
+            const isUniversal = attributeText === 'all' || attributeText === 'any' || attributeText === 'all attributes';
+            const matchesFilter = filter === 'all' || attributeText === filter || isUniversal;
+            
+            if (matchesFilter) {
                 advantage.style.display = 'flex';
             } else {
                 advantage.style.display = 'none';
@@ -7785,9 +8037,14 @@ class CharacterSheetApp {
         // Filter disadvantages
         disadvantages.forEach(disadvantage => {
             const attributeSpan = disadvantage.querySelector('.advantage-attribute');
-            const attributeText = attributeSpan.textContent;
-            // Always show "All Attributes" regardless of filter
-            if (filter === 'all' || attributeText === filter || attributeText === 'all') {
+            if (!attributeSpan) return; // Skip if no attribute span found
+            
+            const attributeText = attributeSpan.textContent.toLowerCase().trim();
+            // Always show "All Attributes" and "Any" regardless of filter
+            const isUniversal = attributeText === 'all' || attributeText === 'any' || attributeText === 'all attributes';
+            const matchesFilter = filter === 'all' || attributeText === filter || isUniversal;
+            
+            if (matchesFilter) {
                 disadvantage.style.display = 'flex';
             } else {
                 disadvantage.style.display = 'none';
@@ -7801,16 +8058,19 @@ class CharacterSheetApp {
 
     // Update advantage/disadvantage calculation
     updateAdvantageDisadvantageCalculation() {
-        const filter = document.getElementById('advantageFilter').value;
+        const filter = document.getElementById('advantageFilter').value.toLowerCase();
         
         // Count active advantages (visible and checked) with their counts
         const activeAdvantages = Array.from(document.querySelectorAll('#advantagesList .checkbox-item'))
             .filter(item => {
                 const attributeSpan = item.querySelector('.advantage-attribute');
-                const attributeText = attributeSpan.textContent;
-                // Always include "All Attributes" regardless of filter
-                const isVisible = filter === 'all' || attributeText === filter || attributeText === 'all';
-                return isVisible && item.style.display !== 'none' && item.querySelector('input[type="checkbox"]').checked;
+                if (!attributeSpan) return false;
+                
+                const attributeText = attributeSpan.textContent.toLowerCase().trim();
+                const isUniversal = attributeText === 'all' || attributeText === 'any' || attributeText === 'all attributes';
+                const matchesFilter = filter === 'all' || attributeText === filter || isUniversal;
+                
+                return matchesFilter && item.style.display !== 'none' && item.querySelector('input[type="checkbox"]').checked;
             })
             .reduce((total, item) => {
                 // Find the advantage in the character data to get the actual count
@@ -7824,10 +8084,13 @@ class CharacterSheetApp {
         const activeDisadvantages = Array.from(document.querySelectorAll('#disadvantagesList .checkbox-item'))
             .filter(item => {
                 const attributeSpan = item.querySelector('.advantage-attribute');
-                const attributeText = attributeSpan.textContent;
-                // Always include "All Attributes" regardless of filter
-                const isVisible = filter === 'all' || attributeText === filter || attributeText === 'all';
-                return isVisible && item.style.display !== 'none' && item.querySelector('input[type="checkbox"]').checked;
+                if (!attributeSpan) return false;
+                
+                const attributeText = attributeSpan.textContent.toLowerCase().trim();
+                const isUniversal = attributeText === 'all' || attributeText === 'any' || attributeText === 'all attributes';
+                const matchesFilter = filter === 'all' || attributeText === filter || isUniversal;
+                
+                return matchesFilter && item.style.display !== 'none' && item.querySelector('input[type="checkbox"]').checked;
             })
             .reduce((total, item) => {
                 // Find the disadvantage in the character data to get the actual count
@@ -7853,15 +8116,18 @@ class CharacterSheetApp {
 
     // Update advantage count
     updateAdvantageCount() {
-        const filter = document.getElementById('advantageFilter').value;
+        const filter = document.getElementById('advantageFilter').value.toLowerCase();
         const visibleAdvantages = Array.from(document.querySelectorAll('#advantagesList .checkbox-item'))
             .filter(item => {
                 const attributeSpan = item.querySelector('.advantage-attribute');
-                const attributeText = attributeSpan.textContent;
-                // Always include "All Attributes" regardless of filter
-                const isVisible = filter === 'all' || attributeText === filter || attributeText === 'all';
+                if (!attributeSpan) return false;
+                
+                const attributeText = attributeSpan.textContent.toLowerCase().trim();
+                const isUniversal = attributeText === 'all' || attributeText === 'any' || attributeText === 'all attributes';
+                const matchesFilter = filter === 'all' || attributeText === filter || isUniversal;
+                
                 // Only count if visible AND checked
-                return isVisible && item.style.display !== 'none' && item.querySelector('input[type="checkbox"]').checked;
+                return matchesFilter && item.style.display !== 'none' && item.querySelector('input[type="checkbox"]').checked;
             })
             .reduce((total, item) => {
                 // Find the advantage in the character data to get the actual count
@@ -7912,15 +8178,18 @@ class CharacterSheetApp {
 
     // Update disadvantage count
     updateDisadvantageCount() {
-        const filter = document.getElementById('advantageFilter').value;
+        const filter = document.getElementById('advantageFilter').value.toLowerCase();
         const visibleDisadvantages = Array.from(document.querySelectorAll('#disadvantagesList .checkbox-item'))
             .filter(item => {
                 const attributeSpan = item.querySelector('.advantage-attribute');
-                const attributeText = attributeSpan.textContent;
-                // Always include "All Attributes" regardless of filter
-                const isVisible = filter === 'all' || attributeText === filter || attributeText === 'all';
+                if (!attributeSpan) return false;
+                
+                const attributeText = attributeSpan.textContent.toLowerCase().trim();
+                const isUniversal = attributeText === 'all' || attributeText === 'any' || attributeText === 'all attributes';
+                const matchesFilter = filter === 'all' || attributeText === filter || isUniversal;
+                
                 // Only count if visible AND checked
-                return isVisible && item.style.display !== 'none' && item.querySelector('input[type="checkbox"]').checked;
+                return matchesFilter && item.style.display !== 'none' && item.querySelector('input[type="checkbox"]').checked;
             })
             .reduce((total, item) => {
                 // Find the disadvantage in the character data to get the actual count
@@ -12330,14 +12599,22 @@ class CharacterSheetApp {
         const customInputDiv = document.getElementById('featCustomInput');
         customInputDiv.style.display = 'block';
         
-        // Define all common attributes
+        // Define all attributes (Physical, Mental, Social, Extraordinary)
         const allAttributes = [
+            // Physical
             { name: 'Agility', value: 'agility' },
+            { name: 'Fortitude', value: 'fortitude' },
             { name: 'Might', value: 'might' },
-            { name: 'Learning', value: 'learning' },
             { name: 'Perception', value: 'perception' },
+            // Mental
+            { name: 'Learning', value: 'learning' },
+            { name: 'Logic', value: 'logic' },
+            { name: 'Will', value: 'will' },
+            // Social
+            { name: 'Deception', value: 'deception' },
+            { name: 'Persuasion', value: 'persuasion' },
             { name: 'Presence', value: 'presence' },
-            { name: 'Resolve', value: 'resolve' },
+            // Extraordinary
             { name: 'Alteration', value: 'alteration' },
             { name: 'Creation', value: 'creation' },
             { name: 'Energy', value: 'energy' },
