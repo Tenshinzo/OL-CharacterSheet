@@ -149,6 +149,23 @@ class CharacterSheetApp {
             // Experience and attributes
             document.getElementById('experiencePoints').addEventListener('change', () => this.updateExperienceAndLevel());
         
+            // Custom Health Buff
+            this.safeAddEventListener('customHealthBuff', 'change', () => this.updateCustomHealthBuff());
+        
+            // Manual Settings Toggle
+            this.safeAddEventListener('manualSettingsToggle', 'change', () => this.toggleManualSettings());
+        
+            // Manual defense value inputs
+            this.safeAddEventListener('guardValueManual', 'change', () => this.saveManualDefense('guard'));
+            this.safeAddEventListener('toughnessValueManual', 'change', () => this.saveManualDefense('toughness'));
+            this.safeAddEventListener('resolveValueManual', 'change', () => this.saveManualDefense('resolve'));
+        
+            // Manual movement speed inputs
+            this.safeAddEventListener('movementSpeedManual', 'change', () => this.saveManualMovement('movement'));
+            this.safeAddEventListener('climbingSpeedManual', 'change', () => this.saveManualMovement('climbing'));
+            this.safeAddEventListener('swimmingSpeedManual', 'change', () => this.saveManualMovement('swimming'));
+            this.safeAddEventListener('flyingSpeedManual', 'change', () => this.saveManualMovement('flying'));
+        
             // Attribute changes - validation and updates handled by plus/minus buttons
             // No duplicate event listeners here
         
@@ -416,6 +433,35 @@ class CharacterSheetApp {
     // Combat stats methods
     updateMovementStats() {
         if (!this.currentCharacter) return;
+        
+        // Check if in manual mode
+        if (this.currentCharacter.manualSettings && this.currentCharacter.manualOverrides) {
+            // Use manual overrides
+            const movementSpeed = this.currentCharacter.manualOverrides.movementSpeed || 30;
+            const climbingSpeed = this.currentCharacter.manualOverrides.climbingSpeed || 15;
+            const swimmingSpeed = this.currentCharacter.manualOverrides.swimmingSpeed || 15;
+            const flyingSpeed = this.currentCharacter.manualOverrides.flyingSpeed || 0;
+            
+            // Update manual inputs if they're visible
+            const movementInput = document.getElementById('movementSpeedManual');
+            const climbingInput = document.getElementById('climbingSpeedManual');
+            const swimmingInput = document.getElementById('swimmingSpeedManual');
+            const flyingInput = document.getElementById('flyingSpeedManual');
+            
+            if (movementInput && movementInput.style.display !== 'none') {
+                movementInput.value = movementSpeed;
+            }
+            if (climbingInput && climbingInput.style.display !== 'none') {
+                climbingInput.value = climbingSpeed;
+            }
+            if (swimmingInput && swimmingInput.style.display !== 'none') {
+                swimmingInput.value = swimmingSpeed;
+            }
+            if (flyingInput && flyingInput.style.display !== 'none') {
+                flyingInput.value = flyingSpeed;
+            }
+            return;
+        }
         
         const baseMovementSpeed = this.currentCharacter.movementSpeed || 30;
         
@@ -2197,8 +2243,31 @@ class CharacterSheetApp {
         if (this.currentCharacter.legendPoints === undefined) {
             this.currentCharacter.legendPoints = 0;
         }
+        if (this.currentCharacter.customHealthBuff === undefined) {
+            this.currentCharacter.customHealthBuff = 0;
+        }
+        if (this.currentCharacter.manualSettings === undefined) {
+            this.currentCharacter.manualSettings = false;
+        }
         // swiftWeaponAdvantage removed - no longer needed
 
+        
+        // Restore custom health buff value
+        const customHealthBuffEl = document.getElementById('customHealthBuff');
+        if (customHealthBuffEl) {
+            customHealthBuffEl.value = this.currentCharacter.customHealthBuff || 0;
+        }
+        
+        // Restore manual settings state
+        const manualSettingsToggleEl = document.getElementById('manualSettingsToggle');
+        if (manualSettingsToggleEl) {
+            manualSettingsToggleEl.checked = this.currentCharacter.manualSettings || false;
+            if (this.currentCharacter.manualSettings) {
+                this.showManualInputs();
+            } else {
+                this.hideManualInputs();
+            }
+        }
         
         // Update displays
         this.updateExperienceAndLevel();
@@ -2859,15 +2928,16 @@ class CharacterSheetApp {
             10: '4d8'
         };
         
-        const baseDice = diceMap[score] || '1d4';
-        const martialFocusDice = diceMap[score + 1] || '1d4';
+        // For scores above 10, stay at 4d8 (the maximum)
+        const baseDice = score > 10 ? '4d8' : (diceMap[score] || '1d4');
+        const martialFocusDice = (score + 1) > 10 ? '4d8' : (diceMap[score + 1] || '1d4');
         
         // For Martial Focus, show both base and enhanced dice
         if (hasMartialFocus && !hasExtraordinaryFocus) {
             return `${baseDice} / ${martialFocusDice}`;
         }
         
-        return diceMap[effectiveScore] || '1d4';
+        return effectiveScore > 10 ? '4d8' : (diceMap[effectiveScore] || '1d4');
     }
 
     // Update feat icons on attributes
@@ -3006,6 +3076,26 @@ class CharacterSheetApp {
         const oldValue = this.currentCharacter.attributes[attributeName] || 0;
         
         // Validating attribute change
+        
+        // Skip validation if in manual mode
+        if (this.currentCharacter.manualSettings) {
+            // Update the attribute in the character object
+            this.currentCharacter.attributes[attributeName] = newValue;
+            
+            // Update all displays and systems
+            this.updateAttributeDisplays();
+            this.populateAvailableBoonsAndBanes();
+            this.updateDefenseStats();
+            this.updateMaxHP();
+            this.updateInitiative();
+            this.updateMovementStats();
+            this.updateAttributeSubstitutionDisplays();
+            this.populateFeatsDropdown();
+            
+            // Auto-save
+            this.autoSave();
+            return;
+        }
         
         // If decreasing, always allow (prevents users from getting stuck)
         if (newValue <= oldValue) {
@@ -3282,6 +3372,10 @@ class CharacterSheetApp {
             baseHP += toughAsNailsFeat.tier * 5; // +5 HP per tier
         }
         
+        // Add custom health buff
+        const customHealthBuff = this.currentCharacter.customHealthBuff || 0;
+        baseHP += customHealthBuff;
+        
         return baseHP;
     }
 
@@ -3382,6 +3476,30 @@ class CharacterSheetApp {
     // Update defense stats
     updateDefenseStats() {
         if (!this.currentCharacter) return;
+        
+        // Check if in manual mode
+        if (this.currentCharacter.manualSettings && this.currentCharacter.manualOverrides) {
+            // Use manual overrides
+            const guard = this.currentCharacter.manualOverrides.guard || 10;
+            const toughness = this.currentCharacter.manualOverrides.toughness || 10;
+            const resolve = this.currentCharacter.manualOverrides.resolve || 10;
+            
+            // Just update the manual inputs if they're visible
+            const guardInput = document.getElementById('guardValueManual');
+            const toughnessInput = document.getElementById('toughnessValueManual');
+            const resolveInput = document.getElementById('resolveValueManual');
+            
+            if (guardInput && guardInput.style.display !== 'none') {
+                guardInput.value = guard;
+            }
+            if (toughnessInput && toughnessInput.style.display !== 'none') {
+                toughnessInput.value = toughness;
+            }
+            if (resolveInput && resolveInput.style.display !== 'none') {
+                resolveInput.value = resolve;
+            }
+            return;
+        }
         
         // Get effective attributes (considering Attribute Substitution)
         const agility = this.getEffectiveAttributeScore('agility');
@@ -5513,10 +5631,13 @@ class CharacterSheetApp {
         
         const cost = databaseFeat.cost * selectedTier;
         
-        // Check if character meets requirements for this tier
-        if (!this.meetsFeatRequirements(databaseFeat, selectedTier)) {
-            this.showNotification('Character does not meet the requirements for this feat tier.', 'error');
-            return;
+        // Skip validation if in manual mode
+        if (!this.currentCharacter.manualSettings) {
+            // Check if character meets requirements for this tier
+            if (!this.meetsFeatRequirements(databaseFeat, selectedTier)) {
+                this.showNotification('Character does not meet the requirements for this feat tier.', 'error');
+                return;
+            }
         }
         
         // Ensure usedFeatPoints is initialized
@@ -5528,30 +5649,33 @@ class CharacterSheetApp {
         const availableFeatPoints = this.getCharacterAvailableFeatPoints(this.currentCharacter);
         const remainingFeatPoints = availableFeatPoints - this.currentCharacter.usedFeatPoints;
         
-        // Additional validation for Tier 3 companions to prevent borrowing more than parent has available
-        if (this.currentCharacter.isCompanion && this.currentCharacter.companionTier === 3) {
-            const companionOwnPoints = this.currentCharacter.maxFeatPoints;
-            const wouldUsePoints = this.currentCharacter.usedFeatPoints + cost;
-            
-            if (wouldUsePoints > companionOwnPoints) {
-                // Companion would be borrowing from parent, check if parent has enough
-                const parent = this.characters.find(char => char.id === this.currentCharacter.parentCharacterId);
-                if (parent) {
-                    const parentBasePoints = 6 + parent.experiencePoints;
-                    const parentAvailablePoints = parentBasePoints - parent.usedFeatPoints;
-                    const pointsToBorrow = wouldUsePoints - companionOwnPoints;
-                    
-                    if (pointsToBorrow > parentAvailablePoints) {
-                        this.showNotification(`Not enough parent feat points available to borrow. Parent has ${parentAvailablePoints} available, but you need to borrow ${pointsToBorrow}.`, 'error');
-                        return;
+        // Skip feat point validation if in manual mode
+        if (!this.currentCharacter.manualSettings) {
+            // Additional validation for Tier 3 companions to prevent borrowing more than parent has available
+            if (this.currentCharacter.isCompanion && this.currentCharacter.companionTier === 3) {
+                const companionOwnPoints = this.currentCharacter.maxFeatPoints;
+                const wouldUsePoints = this.currentCharacter.usedFeatPoints + cost;
+                
+                if (wouldUsePoints > companionOwnPoints) {
+                    // Companion would be borrowing from parent, check if parent has enough
+                    const parent = this.characters.find(char => char.id === this.currentCharacter.parentCharacterId);
+                    if (parent) {
+                        const parentBasePoints = 6 + parent.experiencePoints;
+                        const parentAvailablePoints = parentBasePoints - parent.usedFeatPoints;
+                        const pointsToBorrow = wouldUsePoints - companionOwnPoints;
+                        
+                        if (pointsToBorrow > parentAvailablePoints) {
+                            this.showNotification(`Not enough parent feat points available to borrow. Parent has ${parentAvailablePoints} available, but you need to borrow ${pointsToBorrow}.`, 'error');
+                            return;
+                        }
                     }
                 }
             }
-        }
-        
-        if (cost > remainingFeatPoints) {
-            this.showNotification(`Not enough feat points available. You have ${remainingFeatPoints} remaining.`, 'error');
-            return;
+            
+            if (cost > remainingFeatPoints) {
+                this.showNotification(`Not enough feat points available. You have ${remainingFeatPoints} remaining.`, 'error');
+                return;
+            }
         }
         
 
@@ -7066,6 +7190,14 @@ class CharacterSheetApp {
         const feat = window.GAME_DATABASE.feats.find(f => f.name === selectedFeatName);
         if (!feat) return;
         
+        // Skip validation if in manual mode
+        if (this.currentCharacter && this.currentCharacter.manualSettings) {
+            const cost = feat.cost * selectedTier;
+            costDisplay.textContent = cost;
+            addButton.disabled = false;
+            return;
+        }
+        
         // Check if the selected tier meets requirements
         if (!this.meetsFeatRequirements(feat, selectedTier)) {
             costDisplay.textContent = '0';
@@ -8336,12 +8468,16 @@ class CharacterSheetApp {
             const item = document.createElement('div');
             item.className = 'boon-item';
             
-            const databaseBoon = window.GAME_DATABASE.boons.find(b => b.name === boon.name);
+            // Check both database and custom boons
+            let foundBoon = window.GAME_DATABASE.boons.find(b => b.name === boon.name);
+            if (!foundBoon && this.customBoons) {
+                foundBoon = this.customBoons.find(b => b.name === boon.name);
+            }
             
             item.innerHTML = `
                 <div class="boon-overview">
                     <div class="boon-info">
-                        <span class="boon-name">${boon.name}</span>
+                        <span class="boon-name">${boon.name}${foundBoon && foundBoon.isCustom ? ' <span class="custom-badge">(Custom)</span>' : ''}</span>
                         ${boon.sustaining ? '<span class="sustaining-indicator">⚡ Sustaining</span>' : ''}
                         <span class="boon-power-level">PL ${boon.powerLevel}</span>
                         <span class="boon-duration">${boon.duration}</span>
@@ -8358,18 +8494,18 @@ class CharacterSheetApp {
                         }
                     </div>
                 </div>
-                ${databaseBoon ? `
+                ${foundBoon ? `
                     <div class="boon-details" style="display: none;">
-                        <div class="boon-description"><strong>Description:</strong> ${databaseBoon.generalDescription}</div>
-                        <div class="boon-effect"><strong>Effect:</strong> ${databaseBoon.effectDescription}</div>
-                        <div class="boon-power-level-effect"><strong>PL ${boon.powerLevel} Effect:</strong> ${databaseBoon.powerLevelDescriptions && databaseBoon.powerLevelDescriptions[boon.powerLevel] ? databaseBoon.powerLevelDescriptions[boon.powerLevel].description : (databaseBoon.powerLevels.length === 1 ? databaseBoon.effectDescription : 'No specific effect for this power level.')}</div>
-                        ${databaseBoon.specialText ? `<div class="boon-special"><strong>Special:</strong> ${databaseBoon.specialText}</div>` : ''}
+                        <div class="boon-description"><strong>Description:</strong> ${foundBoon.generalDescription}</div>
+                        <div class="boon-effect"><strong>Effect:</strong> ${foundBoon.effectDescription}</div>
+                        <div class="boon-power-level-effect"><strong>PL ${boon.powerLevel} Effect:</strong> ${foundBoon.powerLevelDescriptions && foundBoon.powerLevelDescriptions[boon.powerLevel] ? foundBoon.powerLevelDescriptions[boon.powerLevel].description : (foundBoon.powerLevels.length === 1 ? foundBoon.effectDescription : 'No specific effect for this power level.')}</div>
+                        ${foundBoon.specialText ? `<div class="boon-special"><strong>Special:</strong> ${foundBoon.specialText}</div>` : ''}
                     </div>
                 ` : ''}
             `;
             
             // Add click event to expand/collapse boon details
-            if (databaseBoon) {
+            if (foundBoon) {
                 item.addEventListener('click', (e) => {
                     if (!e.target.classList.contains('remove-item') && !e.target.classList.contains('sustain-checkbox') && e.target.type !== 'checkbox') {
                         const detailsDiv = item.querySelector('.boon-details');
@@ -8416,7 +8552,11 @@ class CharacterSheetApp {
             const item = document.createElement('div');
             item.className = 'bane-item';
             
-            const databaseBane = window.GAME_DATABASE.banes.find(b => b.name === bane.name);
+            // Check both database and custom banes
+            let foundBane = window.GAME_DATABASE.banes.find(b => b.name === bane.name);
+            if (!foundBane && this.customBanes) {
+                foundBane = this.customBanes.find(b => b.name === bane.name);
+            }
             
             // Special handling for Fatigued bane with level dropdown
             const fatigueLevelDropdown = bane.name === 'Fatigued' ? `
@@ -8436,7 +8576,7 @@ class CharacterSheetApp {
             item.innerHTML = `
                 <div class="bane-overview">
                     <div class="bane-info">
-                        <span class="bane-name">${bane.name}</span>
+                        <span class="bane-name">${bane.name}${foundBane && foundBane.isCustom ? ' <span class="custom-badge">(Custom)</span>' : ''}</span>
                         <span class="bane-power-level">PL ${bane.powerLevel}</span>
                         <span class="bane-duration">${bane.duration}</span>
                         ${bane.name === 'Fatigued' && bane.fatigueLevel ? `<span class="bane-fatigue-level">Level ${bane.fatigueLevel}</span>` : ''}
@@ -8464,18 +8604,18 @@ class CharacterSheetApp {
                     <label><input type="checkbox" ${bane.resists[2] ? 'checked' : ''} 
                            onchange="window.app.updateBaneResist('${bane.name}', 2, this.checked)"> Resist 3</label>
                 </div>
-                ${databaseBane ? `
+                ${foundBane ? `
                     <div class="bane-details" style="display: none;">
-                        <div class="bane-description"><strong>Description:</strong> ${databaseBane.generalDescription}</div>
-                        <div class="bane-effect"><strong>Effect:</strong> ${databaseBane.effectDescription}</div>
-                        <div class="bane-power-level-effect"><strong>PL ${bane.powerLevel} Effect:</strong> ${databaseBane.powerLevelDescriptions && databaseBane.powerLevelDescriptions[bane.powerLevel] ? databaseBane.powerLevelDescriptions[bane.powerLevel].description : (databaseBane.powerLevels.length === 1 ? databaseBane.effectDescription : 'No specific effect for this power level.')}</div>
-                        ${databaseBane.specialText ? `<div class="bane-special"><strong>Special:</strong> ${databaseBane.specialText}</div>` : ''}
+                        <div class="bane-description"><strong>Description:</strong> ${foundBane.generalDescription}</div>
+                        <div class="bane-effect"><strong>Effect:</strong> ${foundBane.effectDescription}</div>
+                        <div class="bane-power-level-effect"><strong>PL ${bane.powerLevel} Effect:</strong> ${foundBane.powerLevelDescriptions && foundBane.powerLevelDescriptions[bane.powerLevel] ? foundBane.powerLevelDescriptions[bane.powerLevel].description : (foundBane.powerLevels.length === 1 ? foundBane.effectDescription : 'No specific effect for this power level.')}</div>
+                        ${foundBane.specialText ? `<div class="bane-special"><strong>Special:</strong> ${foundBane.specialText}</div>` : ''}
                     </div>
                 ` : ''}
             `;
             
             // Add click event to expand/collapse bane details
-            if (databaseBane) {
+            if (foundBane) {
                 item.addEventListener('click', (e) => {
                     if (!e.target.classList.contains('remove-item') && e.target.type !== 'checkbox' && e.target.tagName !== 'SELECT' && !e.target.closest('label') && !e.target.closest('.fatigue-level-control')) {
                         const detailsDiv = item.querySelector('.bane-details');
@@ -11355,6 +11495,206 @@ class CharacterSheetApp {
 
     // === END CUSTOM BOONS & BANES METHODS ===
 
+    // === MANUAL SETTINGS & CUSTOM HEALTH BUFF ===
+
+    // Update custom health buff
+    updateCustomHealthBuff() {
+        if (!this.currentCharacter) return;
+        
+        const customHealthBuff = parseInt(document.getElementById('customHealthBuff').value) || 0;
+        this.currentCharacter.customHealthBuff = customHealthBuff;
+        
+        this.updateMaxHP();
+        this.autoSave();
+        this.showNotification(`Custom health buff set to ${customHealthBuff}`, 'success');
+    }
+
+    // Toggle manual settings mode
+    toggleManualSettings() {
+        if (!this.currentCharacter) return;
+        
+        const isManual = document.getElementById('manualSettingsToggle').checked;
+        this.currentCharacter.manualSettings = isManual;
+        
+        if (isManual) {
+            // Enable manual mode - set initial values from calculated
+            this.enableManualMode();
+            this.showNotification('Manual Settings enabled - Limits and calculations overridden', 'info');
+        } else {
+            // Disable manual mode - return to automatic calculations
+            this.disableManualMode();
+            this.showNotification('Manual Settings disabled - Automatic calculations restored', 'info');
+        }
+        
+        this.autoSave();
+    }
+
+    // Enable manual mode
+    enableManualMode() {
+        if (!this.currentCharacter) return;
+        
+        // Initialize manual overrides if they don't exist
+        if (!this.currentCharacter.manualOverrides) {
+            this.currentCharacter.manualOverrides = {};
+        }
+        
+        // Set initial defense values from current displayed values
+        const guardValueEl = document.getElementById('guardValue');
+        const toughnessValueEl = document.getElementById('toughnessValue');
+        const resolveValueEl = document.getElementById('resolveValue');
+        
+        const currentGuard = guardValueEl ? parseInt(guardValueEl.textContent) || 10 : 10;
+        const currentToughness = toughnessValueEl ? parseInt(toughnessValueEl.textContent) || 10 : 10;
+        const currentResolve = resolveValueEl ? parseInt(resolveValueEl.textContent) || 10 : 10;
+        
+        if (!this.currentCharacter.manualOverrides.guard) {
+            this.currentCharacter.manualOverrides.guard = currentGuard;
+        }
+        if (!this.currentCharacter.manualOverrides.toughness) {
+            this.currentCharacter.manualOverrides.toughness = currentToughness;
+        }
+        if (!this.currentCharacter.manualOverrides.resolve) {
+            this.currentCharacter.manualOverrides.resolve = currentResolve;
+        }
+        
+        // Set initial movement values from current calculated values
+        const currentMovement = parseInt(document.getElementById('movementSpeed').textContent) || 30;
+        const currentClimbing = parseInt(document.getElementById('climbingSpeed').textContent) || 15;
+        const currentSwimming = parseInt(document.getElementById('swimmingSpeed').textContent) || 15;
+        const currentFlying = parseInt(document.getElementById('flyingSpeed').textContent) || 0;
+        
+        if (!this.currentCharacter.manualOverrides.movementSpeed) {
+            this.currentCharacter.manualOverrides.movementSpeed = currentMovement;
+        }
+        if (!this.currentCharacter.manualOverrides.climbingSpeed) {
+            this.currentCharacter.manualOverrides.climbingSpeed = currentClimbing;
+        }
+        if (!this.currentCharacter.manualOverrides.swimmingSpeed) {
+            this.currentCharacter.manualOverrides.swimmingSpeed = currentSwimming;
+        }
+        if (!this.currentCharacter.manualOverrides.flyingSpeed) {
+            this.currentCharacter.manualOverrides.flyingSpeed = currentFlying;
+        }
+        
+        // Show manual inputs and hide calculated values
+        this.showManualInputs();
+    }
+
+    // Disable manual mode
+    disableManualMode() {
+        if (!this.currentCharacter) return;
+        
+        // Hide manual inputs and show calculated values
+        this.hideManualInputs();
+        
+        // Recalculate everything
+        this.updateDefenseStats();
+        this.updateMovementStats();
+    }
+
+    // Show manual inputs
+    showManualInputs() {
+        // Defense values
+        const guardInput = document.getElementById('guardValueManual');
+        const toughnessInput = document.getElementById('toughnessValueManual');
+        const resolveInput = document.getElementById('resolveValueManual');
+        
+        if (guardInput) {
+            guardInput.value = this.currentCharacter.manualOverrides.guard || 10;
+            guardInput.style.display = 'block';
+            document.getElementById('guardValue').style.display = 'none';
+        }
+        if (toughnessInput) {
+            toughnessInput.value = this.currentCharacter.manualOverrides.toughness || 10;
+            toughnessInput.style.display = 'block';
+            document.getElementById('toughnessValue').style.display = 'none';
+        }
+        if (resolveInput) {
+            resolveInput.value = this.currentCharacter.manualOverrides.resolve || 10;
+            resolveInput.style.display = 'block';
+            document.getElementById('resolveValue').style.display = 'none';
+        }
+        
+        // Movement speeds
+        const movementInput = document.getElementById('movementSpeedManual');
+        const climbingInput = document.getElementById('climbingSpeedManual');
+        const swimmingInput = document.getElementById('swimmingSpeedManual');
+        const flyingInput = document.getElementById('flyingSpeedManual');
+        
+        if (movementInput) {
+            movementInput.value = this.currentCharacter.manualOverrides.movementSpeed || 30;
+            movementInput.style.display = 'inline-block';
+            document.getElementById('movementSpeed').style.display = 'none';
+        }
+        if (climbingInput) {
+            climbingInput.value = this.currentCharacter.manualOverrides.climbingSpeed || 15;
+            climbingInput.style.display = 'inline-block';
+            document.getElementById('climbingSpeed').style.display = 'none';
+        }
+        if (swimmingInput) {
+            swimmingInput.value = this.currentCharacter.manualOverrides.swimmingSpeed || 15;
+            swimmingInput.style.display = 'inline-block';
+            document.getElementById('swimmingSpeed').style.display = 'none';
+        }
+        if (flyingInput) {
+            flyingInput.value = this.currentCharacter.manualOverrides.flyingSpeed || 0;
+            flyingInput.style.display = 'inline-block';
+            document.getElementById('flyingSpeed').style.display = 'none';
+        }
+    }
+
+    // Hide manual inputs
+    hideManualInputs() {
+        // Defense values
+        document.getElementById('guardValueManual').style.display = 'none';
+        document.getElementById('toughnessValueManual').style.display = 'none';
+        document.getElementById('resolveValueManual').style.display = 'none';
+        document.getElementById('guardValue').style.display = 'block';
+        document.getElementById('toughnessValue').style.display = 'block';
+        document.getElementById('resolveValue').style.display = 'block';
+        
+        // Movement speeds
+        document.getElementById('movementSpeedManual').style.display = 'none';
+        document.getElementById('climbingSpeedManual').style.display = 'none';
+        document.getElementById('swimmingSpeedManual').style.display = 'none';
+        document.getElementById('flyingSpeedManual').style.display = 'none';
+        document.getElementById('movementSpeed').style.display = 'inline';
+        document.getElementById('climbingSpeed').style.display = 'inline';
+        document.getElementById('swimmingSpeed').style.display = 'inline';
+        document.getElementById('flyingSpeed').style.display = 'inline';
+    }
+
+    // Save manual defense value
+    saveManualDefense(defenseType) {
+        if (!this.currentCharacter) return;
+        
+        const value = parseInt(document.getElementById(`${defenseType}ValueManual`).value) || 10;
+        
+        if (!this.currentCharacter.manualOverrides) {
+            this.currentCharacter.manualOverrides = {};
+        }
+        
+        this.currentCharacter.manualOverrides[defenseType] = value;
+        this.autoSave();
+    }
+
+    // Save manual movement speed
+    saveManualMovement(movementType) {
+        if (!this.currentCharacter) return;
+        
+        const inputId = movementType === 'movement' ? 'movementSpeedManual' : `${movementType}SpeedManual`;
+        const value = parseInt(document.getElementById(inputId).value) || 0;
+        
+        if (!this.currentCharacter.manualOverrides) {
+            this.currentCharacter.manualOverrides = {};
+        }
+        
+        this.currentCharacter.manualOverrides[`${movementType}Speed`] = value;
+        this.autoSave();
+    }
+
+    // === END MANUAL SETTINGS & CUSTOM HEALTH BUFF ===
+
     // Update character name display
     updateCharacterNameDisplay() {
         if (!this.currentCharacter) return;
@@ -13100,7 +13440,8 @@ class CharacterSheetApp {
         const currentValue = this.currentCharacter.attributes[attributeName] || 0;
         const maxValue = this.getMaxAttributeValue();
         
-        if (currentValue < maxValue) { // Use dynamic maximum based on level
+        // In manual mode, skip max value check
+        if (this.currentCharacter.manualSettings || currentValue < maxValue) {
             const newValue = currentValue + 1;
             
             // Update the display immediately for better UX
@@ -13115,7 +13456,7 @@ class CharacterSheetApp {
                 scoreElement.textContent = newValue;
             }
             
-            // Validate the increase
+            // Validate the increase (or skip validation in manual mode)
             this.validateAttributeChange({
                 id: attributeName,
                 value: newValue
@@ -13143,7 +13484,7 @@ class CharacterSheetApp {
                 scoreElement.textContent = newValue;
             }
             
-            // Validate the decrease
+            // Validate the decrease (or skip validation in manual mode)
             this.validateAttributeChange({
                 id: attributeName,
                 value: newValue

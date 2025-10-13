@@ -241,6 +241,9 @@
                     <button class="nav-tab" data-section="effects">
                         <i class="fas fa-magic"></i> Effects
                     </button>
+                    <button class="nav-tab" data-section="initiativeMovement">
+                        <i class="fas fa-running"></i> Initiative & Movement
+                    </button>
                     <button class="nav-tab" data-section="character">
                         <i class="fas fa-user-edit"></i> Character
                     </button>
@@ -271,6 +274,14 @@
                         <label for="experiencePoints">XP</label>
                         <input type="number" id="experiencePoints" min="0" max="99" value="0" class="editable-only">
                     </div>
+                </div>
+
+                <div class="manual-settings-section editable-only">
+                    <label class="manual-settings-checkbox">
+                        <input type="checkbox" id="manualSettingsToggle">
+                        <span><strong>Manual Settings</strong> - Override automatic calculations and limits</span>
+                    </label>
+                    <p class="manual-settings-help">When enabled: no attribute/feat point limits, manual defense values, manual movement speeds</p>
                 </div>
 
                                     <!-- Attributes Section -->
@@ -667,6 +678,10 @@
                         <div class="reset-controls">
                             <button id="resetHPBtn" class="btn btn-warning view-mode-btn">Reset HP</button>
                             <button id="resetLethalBtn" class="btn btn-warning view-mode-btn">Reset Lethal</button>
+                            <div class="custom-health-buff">
+                                <label for="customHealthBuff">Custom Health Buff:</label>
+                                <input type="number" id="customHealthBuff" min="0" max="999" value="0" class="custom-health-input">
+                            </div>
                         </div>
                     </div>
                     
@@ -676,6 +691,7 @@
                         <div class="defense-card">
                             <h4>Guard</h4>
                             <div class="defense-value" id="guardValue">10</div>
+                            <input type="number" id="guardValueManual" class="manual-override-input manual-always-visible" style="display: none;" min="0" max="99">
                             <div class="defense-breakdown">
                                 <span>Base: 10</span>
                                 <span>+ Agility: <span id="guardAgility">0</span></span>
@@ -693,6 +709,7 @@
                         <div class="defense-card">
                             <h4>Toughness</h4>
                             <div class="defense-value" id="toughnessValue">10</div>
+                            <input type="number" id="toughnessValueManual" class="manual-override-input manual-always-visible" style="display: none;" min="0" max="99">
                             <div class="defense-breakdown">
                                 <span>Base: 10</span>
                                 <span>+ Fortitude: <span id="toughnessFortitude">0</span></span>
@@ -709,6 +726,7 @@
                         <div class="defense-card">
                             <h4>Resolve</h4>
                             <div class="defense-value" id="resolveValue">0</div>
+                            <input type="number" id="resolveValueManual" class="manual-override-input manual-always-visible" style="display: none;" min="0" max="99">
                             <div class="defense-breakdown">
                                 <span>Base: 10</span>
                                 <span>+ Presence: <span id="resolvePresence">0</span></span>
@@ -798,21 +816,25 @@
                                 <div class="movement-stat">
                                     <label>Movement Speed:</label>
                                     <span id="movementSpeed" class="movement-value">30</span>
+                                    <input type="number" id="movementSpeedManual" class="manual-override-input manual-always-visible" style="display: none;" min="0" max="999" step="5">
                                     <span class="movement-unit">feet</span>
                                 </div>
                                 <div class="movement-stat">
                                     <label>Climbing Speed:</label>
                                     <span id="climbingSpeed" class="movement-value">15</span>
+                                    <input type="number" id="climbingSpeedManual" class="manual-override-input manual-always-visible" style="display: none;" min="0" max="999" step="5">
                                     <span class="movement-unit">feet</span>
                                 </div>
                                 <div class="movement-stat">
                                     <label>Swimming Speed:</label>
                                     <span id="swimmingSpeed" class="movement-value">15</span>
+                                    <input type="number" id="swimmingSpeedManual" class="manual-override-input manual-always-visible" style="display: none;" min="0" max="999" step="5">
                                     <span class="movement-unit">feet</span>
                                 </div>
                                 <div class="movement-stat hidden" id="flyingSpeedContainer">
                                     <label>Flying Speed:</label>
                                     <span id="flyingSpeed" class="movement-value">30</span>
+                                    <input type="number" id="flyingSpeedManual" class="manual-override-input manual-always-visible" style="display: none;" min="0" max="999" step="5">
                                     <span class="movement-unit">feet</span>
                                 </div>
                             </div>

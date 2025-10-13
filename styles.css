@@ -6307,6 +6307,88 @@ input[type="range"]::-moz-range-thumb:hover {
     margin: 0;
 }
 
+.custom-badge {
+    font-size: var(--font-size-xs);
+    color: var(--primary);
+    font-weight: 600;
+    background: var(--primary-color-light);
+    padding: 2px 6px;
+    border-radius: var(--radius-sm);
+    margin-left: var(--spacing-xs);
+}
+
+.custom-health-buff {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    margin-left: auto;
+}
+
+.custom-health-buff label {
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    color: var(--text-primary);
+    white-space: nowrap;
+}
+
+.custom-health-input {
+    width: 80px;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-sm);
+    text-align: center;
+}
+
+.manual-settings-section {
+    background: linear-gradient(135deg, var(--warning) 0%, #fbbf24 100%);
+    padding: var(--spacing-md) var(--spacing-lg);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--spacing-lg);
+    border: 2px solid var(--warning);
+}
+
+.manual-settings-checkbox {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    cursor: pointer;
+    color: white;
+    font-size: var(--font-size-base);
+}
+
+.manual-settings-checkbox input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+}
+
+.manual-settings-help {
+    margin: var(--spacing-xs) 0 0 32px;
+    font-size: var(--font-size-xs);
+    color: rgba(255, 255, 255, 0.9);
+    font-style: italic;
+}
+
+.manual-override-input {
+    width: 80px;
+    padding: var(--spacing-xs);
+    text-align: center;
+    font-weight: bold;
+    border: 2px solid var(--warning);
+    background: var(--warning);
+    color: white;
+}
+
+/* Ensure manual override inputs are always visible when displayed */
+.manual-always-visible {
+    display: inline-block !important;
+}
+
+.manual-always-visible[style*="display: none"] {
+    display: none !important;
+}
+
 .modal-actions {
     display: flex;
     gap: var(--spacing-md);
@@ -7806,11 +7888,18 @@ input[type="range"]::-moz-range-thumb:hover {
 }
 
 .view-mode .form-group textarea:not(#charNotes),
-.view-mode .form-group input:not(#charNotes) {
+.view-mode .form-group input:not(#charNotes):not(.manual-override-input):not(#customHealthBuff) {
     pointer-events: none;
     background-color: var(--gray-100);
     color: var(--text-secondary);
     border: 1px solid var(--gray-300);
+}
+
+/* Manual override inputs and custom health buff remain editable in view mode */
+.view-mode .manual-override-input,
+.view-mode #customHealthBuff {
+    pointer-events: auto;
+    cursor: pointer;
 }
 
 /* Override: Show equipment fields in view mode */
