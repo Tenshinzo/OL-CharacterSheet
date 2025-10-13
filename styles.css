@@ -788,6 +788,23 @@ body {
     color: var(--flaw-color);
 }
 
+.custom-category {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(59, 130, 246, 0.05) 100%);
+    border-bottom: 2px solid var(--primary);
+}
+
+.custom-category:hover {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(59, 130, 246, 0.1) 100%);
+}
+
+.custom-category h3 {
+    color: var(--primary-dark);
+}
+
+.custom-category i {
+    color: var(--primary);
+}
+
 .expand-icon {
     font-size: var(--font-size-base);
     color: var(--text-secondary);
@@ -6019,6 +6036,43 @@ input[type="range"]::-moz-range-thumb:hover {
     position: relative;
 }
 
+.modal-content.modal-large {
+    max-width: 900px;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+@media (min-width: 1200px) {
+    .modal-content.modal-large {
+        max-width: 1000px;
+    }
+}
+
+@media (max-width: 768px) {
+    .modal-content.modal-large {
+        max-width: 95%;
+        margin: 2% auto;
+        padding: 20px;
+    }
+    
+    .custom-form .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .custom-entry-card {
+        grid-template-columns: 1fr;
+    }
+    
+    .custom-entry-actions {
+        flex-direction: row;
+        justify-content: flex-start;
+    }
+    
+    #customBaneDefenseTargets {
+        grid-template-columns: 1fr;
+    }
+}
+
 .close {
     position: absolute;
     right: 20px;
@@ -6032,6 +6086,299 @@ input[type="range"]::-moz-range-thumb:hover {
 
 .close:hover {
     color: #2d3748;
+}
+
+/* Custom Boons & Banes Styles */
+.custom-actions-header {
+    display: flex;
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-lg);
+    padding: var(--spacing-lg);
+    background: linear-gradient(135deg, var(--gray-50) 0%, white 100%);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-light);
+    flex-wrap: wrap;
+}
+
+@media (max-width: 768px) {
+    .custom-actions-header {
+        flex-direction: column;
+    }
+    
+    .custom-actions-header button {
+        width: 100%;
+    }
+}
+
+.custom-subsection {
+    margin-bottom: var(--spacing-2xl);
+    padding: var(--spacing-lg);
+    background: white;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-light);
+}
+
+.custom-subsection h4 {
+    margin-bottom: var(--spacing-md);
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.custom-form {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+}
+
+.custom-form .form-group {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+}
+
+.custom-form .form-group input:not([type="checkbox"]),
+.custom-form .form-group textarea,
+.custom-form .form-group select {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.custom-form .form-group input[type="checkbox"] {
+    width: auto;
+}
+
+.custom-form .form-row {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-lg);
+}
+
+.custom-form .form-row .form-group {
+    width: 100%;
+    margin: 0;
+    min-width: 0;
+}
+
+.attributes-checkboxes {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: var(--spacing-sm) var(--spacing-md);
+    padding: var(--spacing-md) var(--spacing-lg);
+    background: var(--gray-50);
+    border-radius: var(--radius-sm);
+}
+
+@media (min-width: 900px) {
+    .attributes-checkboxes {
+        grid-template-columns: repeat(6, 1fr);
+    }
+}
+
+.attributes-checkboxes label {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    font-size: var(--font-size-sm);
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.attributes-checkboxes input[type="checkbox"] {
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.power-level-input {
+    width: 100%;
+    margin-bottom: var(--spacing-lg);
+}
+
+.power-level-input label {
+    display: block;
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: var(--font-size-base);
+    margin-bottom: var(--spacing-sm);
+}
+
+.power-level-input textarea {
+    width: 100%;
+    box-sizing: border-box;
+    min-height: 90px;
+    resize: vertical;
+    padding: var(--spacing-md);
+    border: 1px solid var(--border-medium);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-sm);
+    font-family: inherit;
+    line-height: 1.5;
+}
+
+#customBoonPowerLevelDescs,
+#customBanePowerLevelDescs {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+#customBoonPowerLevelDescs:empty,
+#customBanePowerLevelDescs:empty {
+    padding: var(--spacing-lg);
+    text-align: center;
+    color: var(--text-secondary);
+}
+
+#customBoonPowerLevelDescs:empty::before {
+    content: 'Power level description fields will appear here after you enter power levels above';
+}
+
+#customBanePowerLevelDescs:empty::before {
+    content: 'Power level description fields will appear here after you enter power levels above';
+}
+
+#customBaneDefenseTargets {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: var(--spacing-sm);
+    padding: var(--spacing-md);
+    background: var(--gray-50);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-light);
+}
+
+#customBaneDefenseTargets:empty {
+    padding: var(--spacing-lg);
+    text-align: center;
+    color: var(--text-secondary);
+}
+
+#customBaneDefenseTargets:empty::before {
+    content: 'Defense target fields will appear here after you select attributes above';
+}
+
+.defense-target-input {
+    display: grid;
+    grid-template-columns: 120px 1fr;
+    gap: var(--spacing-sm);
+    align-items: center;
+    padding: var(--spacing-sm) var(--spacing-md);
+    background: white;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-light);
+}
+
+.defense-target-input label {
+    font-weight: 600;
+    color: var(--text-secondary);
+    font-size: var(--font-size-sm);
+}
+
+.defense-target-input select {
+    padding: var(--spacing-xs) var(--spacing-sm);
+    font-size: var(--font-size-sm);
+}
+
+.field-help {
+    font-size: var(--font-size-xs);
+    color: var(--text-secondary);
+    margin-top: var(--spacing-xs);
+    font-style: italic;
+}
+
+.export-text-section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+.export-text-section textarea {
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-sm);
+    padding: var(--spacing-md);
+    background: var(--gray-50);
+    resize: vertical;
+}
+
+.export-text-section p {
+    margin: 0;
+}
+
+.modal-actions {
+    display: flex;
+    gap: var(--spacing-md);
+    justify-content: flex-end;
+    padding-top: var(--spacing-lg);
+    border-top: 1px solid var(--border-light);
+}
+
+.custom-entry-card {
+    background: white;
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-lg);
+    margin-bottom: var(--spacing-md);
+    position: relative;
+    transition: var(--transition-base);
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: var(--spacing-lg);
+}
+
+.custom-entry-card:hover {
+    box-shadow: var(--shadow-md);
+    border-color: var(--primary);
+    transform: translateY(-2px);
+}
+
+.custom-entry-main {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+}
+
+.custom-entry-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: var(--spacing-xs);
+}
+
+.custom-entry-title {
+    font-weight: 600;
+    color: var(--primary);
+    font-size: var(--font-size-lg);
+}
+
+.custom-entry-actions {
+    display: flex;
+    gap: var(--spacing-xs);
+    flex-shrink: 0;
+    align-items: flex-start;
+}
+
+.custom-entry-meta {
+    font-size: var(--font-size-xs);
+    color: var(--text-secondary);
+    margin-bottom: var(--spacing-xs);
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-md);
+}
+
+.custom-entry-meta > span {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+}
+
+.custom-entry-description {
+    font-size: var(--font-size-sm);
+    color: var(--text-primary);
+    line-height: 1.5;
 }
 
 /* Import Modal Styles */
@@ -6393,6 +6740,19 @@ input[type="range"]::-moz-range-thumb:hover {
     /* Mobile touch optimizations */
     .btn {
         min-height: 44px;
+        /* Fix double-tap issue on mobile */
+        -webkit-tap-highlight-color: transparent;
+        touch-action: manipulation;
+        user-select: none;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+    }
+    
+    /* Ensure buttons respond immediately to touch */
+    .btn:active {
+        transform: scale(0.98) !important;
+        transition: transform 0.1s ease !important;
     }
     
     input[type="text"],
@@ -6527,6 +6887,104 @@ input[type="range"]::-moz-range-thumb:hover {
     .view-mode .movement-stat {
         padding: 2px 3px;
         gap: 2px;
+    }
+    
+    /* Fix boons and banes section margins and width on mobile - maximize space usage */
+    .view-mode .boons-banes-container {
+        padding: 0 !important;
+        gap: 1px !important;
+        margin: 0 !important;
+    }
+    
+    .view-mode .boons-section, 
+    .view-mode .banes-section {
+        margin-bottom: 0 !important;
+        padding: 0 !important;
+        width: 100% !important;
+        box-sizing: border-box;
+    }
+    
+    .view-mode .boons-section h5, 
+    .view-mode .banes-section h5 {
+        margin: 0 0 1px 0 !important;
+        padding: 1px !important;
+        font-size: var(--font-size-xs) !important;
+    }
+    
+    .view-mode .boons-list, 
+    .view-mode .banes-list {
+        padding: 0 !important;
+        gap: 0 !important;
+        margin: 0 !important;
+    }
+    
+    .view-mode .boon-item,
+    .view-mode .bane-item {
+        padding: 2px 4px !important;
+        margin: 1px 0 !important;
+        width: 100% !important;
+        box-sizing: border-box;
+        min-height: auto !important;
+        font-size: var(--font-size-xs) !important;
+        line-height: 1.2 !important;
+    }
+    
+    .view-mode .boon-item .boon-name,
+    .view-mode .bane-item .bane-name {
+        font-size: var(--font-size-xs) !important;
+        margin-bottom: 1px !important;
+    }
+    
+    .view-mode .boon-item .boon-description,
+    .view-mode .bane-item .bane-description {
+        font-size: var(--font-size-xs) !important;
+        line-height: 1.2 !important;
+    }
+    
+    /* Fix expanded state width and spacing on very small screens */
+    .view-mode .boon-item.expanded,
+    .view-mode .bane-item.expanded {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 1px 2px !important;
+        margin: 0 !important;
+        box-sizing: border-box !important;
+        overflow: visible !important;
+    }
+    
+    .view-mode .boon-item.expanded .boon-details,
+    .view-mode .bane-item.expanded .bane-details {
+        padding: 1px 2px !important;
+        margin: 0 !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+    
+    .view-mode .boon-item.expanded .detail-section,
+    .view-mode .bane-item.expanded .detail-section {
+        margin-bottom: 1px !important;
+        padding: 1px 0 !important;
+    }
+    
+    .view-mode .boon-item.expanded .detail-section h6,
+    .view-mode .bane-item.expanded .detail-section h6 {
+        margin: 0 0 1px 0 !important;
+        font-size: var(--font-size-xs) !important;
+    }
+    
+    /* Fix double-tap issue on very small screens */
+    .btn {
+        -webkit-tap-highlight-color: transparent !important;
+        touch-action: manipulation !important;
+        user-select: none !important;
+        -webkit-user-select: none !important;
+        -moz-user-select: none !important;
+        -ms-user-select: none !important;
+    }
+    
+    .btn:active {
+        transform: scale(0.98) !important;
+        transition: transform 0.1s ease !important;
     }
     
     .character-card {
@@ -6822,7 +7280,32 @@ input[type="range"]::-moz-range-thumb:hover {
 .mb-20 { margin-bottom: var(--spacing-lg); }
 .hidden { display: none; }
 
+/* Feat sort buttons */
+.feat-sort-buttons {
+    display: flex;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-sm);
+    justify-content: flex-start;
+}
+
 /* Mobile touch optimizations - Consolidated with main responsive section above */
+
+/* Global mobile button double-tap fix */
+@media (max-width: 768px) {
+    .btn, .attr-btn, button {
+        -webkit-tap-highlight-color: transparent;
+        touch-action: manipulation;
+        user-select: none;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+    }
+    
+    .btn:active, .attr-btn:active, button:active {
+        transform: scale(0.98);
+        transition: transform 0.1s ease;
+    }
+}
 
 /* Health Bar Styles */
 .health-bar-container {
@@ -8684,6 +9167,89 @@ input[type="range"]::-moz-range-thumb:hover {
     .view-mode .boons-banes-row .advantage-group {
         min-width: auto;
     }
+    
+    /* Fix boons and banes section margins and width on mobile - maximize space usage */
+    .view-mode .boons-banes-container {
+        padding: 1px !important;
+        gap: 2px !important;
+        margin: 0 !important;
+    }
+    
+    .view-mode .boons-section, 
+    .view-mode .banes-section {
+        margin-bottom: 1px !important;
+        padding: 1px !important;
+        width: 100% !important;
+        box-sizing: border-box;
+    }
+    
+    .view-mode .boons-section h5, 
+    .view-mode .banes-section h5 {
+        margin: 1px 0 2px 0 !important;
+        padding: 1px !important;
+        font-size: var(--font-size-sm) !important;
+    }
+    
+    .view-mode .boons-list, 
+    .view-mode .banes-list {
+        padding: 0 !important;
+        gap: 1px !important;
+        margin: 0 !important;
+    }
+    
+    .view-mode .boon-item,
+    .view-mode .bane-item {
+        padding: 3px 6px !important;
+        margin: 1px 0 !important;
+        width: 100% !important;
+        box-sizing: border-box;
+        min-height: auto !important;
+        font-size: var(--font-size-sm) !important;
+        line-height: 1.3 !important;
+    }
+    
+    .view-mode .boon-item .boon-name,
+    .view-mode .bane-item .bane-name {
+        font-size: var(--font-size-sm) !important;
+        margin-bottom: 2px !important;
+    }
+    
+    .view-mode .boon-item .boon-description,
+    .view-mode .bane-item .bane-description {
+        font-size: var(--font-size-sm) !important;
+        line-height: 1.3 !important;
+    }
+    
+    /* Fix expanded state width and spacing on mobile */
+    .view-mode .boon-item.expanded,
+    .view-mode .bane-item.expanded {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 2px 3px !important;
+        margin: 0 !important;
+        box-sizing: border-box !important;
+        overflow: visible !important;
+    }
+    
+    .view-mode .boon-item.expanded .boon-details,
+    .view-mode .bane-item.expanded .bane-details {
+        padding: 2px 3px !important;
+        margin: 0 !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+    
+    .view-mode .boon-item.expanded .detail-section,
+    .view-mode .bane-item.expanded .detail-section {
+        margin-bottom: 2px !important;
+        padding: 1px 0 !important;
+    }
+    
+    .view-mode .boon-item.expanded .detail-section h6,
+    .view-mode .bane-item.expanded .detail-section h6 {
+        margin: 0 0 2px 0 !important;
+        font-size: var(--font-size-sm) !important;
+    }
 }
 
 /* Character section in view mode */
@@ -8807,6 +9373,37 @@ input[type="range"]::-moz-range-thumb:hover {
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
+}
+
+/* Override for mobile to ensure consistent width */
+@media (max-width: 768px) {
+    .view-mode .boon-item,
+    .view-mode .bane-item,
+    .view-mode .perk-item,
+    .view-mode .flaw-item {
+        padding: 3px 6px !important;
+        margin: 1px 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        min-height: auto !important;
+        font-size: var(--font-size-sm) !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .view-mode .boon-item,
+    .view-mode .bane-item,
+    .view-mode .perk-item,
+    .view-mode .flaw-item {
+        padding: 2px 4px !important;
+        margin: 1px 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        min-height: auto !important;
+        font-size: var(--font-size-xs) !important;
+    }
 }
 
 .view-mode .boon-item:hover,

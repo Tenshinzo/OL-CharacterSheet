@@ -14,6 +14,11 @@ class CharacterSheetApp {
             }
             this.currentCharacter = null;
             this.selectedFile = null;
+            
+            // Load custom boons and banes
+            this.customBoons = this.loadCustomBoons();
+            this.customBanes = this.loadCustomBanes();
+            
             this.initializeEventListeners();
             this.showMainPage();
 
@@ -297,6 +302,68 @@ class CharacterSheetApp {
             // Debug: Check what sections are available
             const sections = document.querySelectorAll('[id$="Section"]');
             // Top-level sections found
+        
+            // Custom Boons & Banes controls
+            this.safeAddEventListener('addCustomBoonBtn', 'click', () => this.showCustomBoonModal());
+            this.safeAddEventListener('addCustomBaneBtn', 'click', () => this.showCustomBaneModal());
+            this.safeAddEventListener('exportCustomBtn', 'click', () => this.exportCustomEntries());
+            this.safeAddEventListener('exportCustomTextBtn', 'click', () => this.exportCustomEntriesAsText());
+            this.safeAddEventListener('importCustomBtn', 'click', () => this.showImportCustomModal());
+            this.safeAddEventListener('copyExportTextBtn', 'click', () => this.copyExportTextToClipboard());
+            this.safeAddEventListener('closeExportTextBtn', 'click', () => this.closeModal(document.getElementById('exportCustomTextModal')));
+            
+            // Custom boon modal controls
+            this.safeAddEventListener('saveCustomBoonBtn', 'click', () => this.handleCustomBoonSubmit());
+            this.safeAddEventListener('cancelCustomBoonBtn', 'click', () => this.closeModal(document.getElementById('customBoonModal')));
+            
+            // Custom bane modal controls
+            this.safeAddEventListener('saveCustomBaneBtn', 'click', () => this.handleCustomBaneSubmit());
+            this.safeAddEventListener('cancelCustomBaneBtn', 'click', () => this.closeModal(document.getElementById('customBaneModal')));
+            
+            // Import custom entries modal controls
+            this.safeAddEventListener('uploadCustomFileBtn', 'click', () => this.uploadCustomFile());
+            this.safeAddEventListener('confirmImportCustomBtn', 'click', () => this.confirmImportCustom());
+            this.safeAddEventListener('customJsonFileInput', 'change', (e) => this.handleCustomFileSelection(e));
+            this.safeAddEventListener('removeCustomFileBtn', 'click', () => this.removeCustomFile());
+            
+            // Custom file upload area click
+            const customUploadArea = document.getElementById('customFileUploadArea');
+            if (customUploadArea) {
+                customUploadArea.addEventListener('click', () => {
+                    document.getElementById('customJsonFileInput').click();
+                });
+            }
+            
+            // Dynamic field generation for custom boon/bane power levels
+            this.safeAddEventListener('customBoonPowerLevels', 'blur', () => {
+                const powerLevelsStr = document.getElementById('customBoonPowerLevels').value.trim();
+                if (powerLevelsStr) {
+                    const powerLevels = powerLevelsStr.split(',').map(pl => parseInt(pl.trim())).filter(pl => !isNaN(pl));
+                    this.generatePowerLevelFields('boon', powerLevels, {});
+                }
+            });
+            
+            this.safeAddEventListener('customBanePowerLevels', 'blur', () => {
+                const powerLevelsStr = document.getElementById('customBanePowerLevels').value.trim();
+                if (powerLevelsStr) {
+                    const powerLevels = powerLevelsStr.split(',').map(pl => parseInt(pl.trim())).filter(pl => !isNaN(pl));
+                    this.generatePowerLevelFields('bane', powerLevels, {});
+                }
+            });
+            
+            // Dynamic defense targets generation when bane attributes change
+            const baneAttrCheckboxes = document.querySelectorAll('input[name="customBaneAttr"]');
+            baneAttrCheckboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', () => {
+                    const selectedAttrs = [];
+                    document.querySelectorAll('input[name="customBaneAttr"]:checked').forEach(cb => {
+                        selectedAttrs.push(cb.value);
+                    });
+                    if (selectedAttrs.length > 0) {
+                        this.generateDefenseTargetFields(selectedAttrs, {});
+                    }
+                });
+            });
         
             // Close modals when clicking outside
             window.addEventListener('click', (e) => {
@@ -755,6 +822,9 @@ class CharacterSheetApp {
         setTimeout(() => {
             // Delayed populateAllOptionsList call
             this.populateAllOptionsList();
+            // Populate custom boons and banes grids
+            this.populateCustomBoonsGrid();
+            this.populateCustomBanesGrid();
         }, 100);
     }
 
@@ -6569,6 +6639,7 @@ class CharacterSheetApp {
         
         // Sort boons alphabetically
         const sortedBoons = this.sortItemsAlphabetically(window.GAME_DATABASE.boons);
+        const sortedCustomBoons = this.customBoons ? this.sortItemsAlphabetically(this.customBoons) : [];
         
         // Populate all boon dropdowns
         boonSelects.forEach((boonSelect, index) => {
@@ -6576,13 +6647,29 @@ class CharacterSheetApp {
                 // Clear existing options
                 boonSelect.innerHTML = '<option value="">Choose a boon...</option>';
                 
-                // Add boons to dropdown
+                // Add official boons to dropdown
                 sortedBoons.forEach(boon => {
                     const option = document.createElement('option');
                     option.value = boon.name;
                     option.textContent = boon.name;
                     boonSelect.appendChild(option);
                 });
+                
+                // Add custom boons if any exist
+                if (sortedCustomBoons.length > 0) {
+                    const separator = document.createElement('option');
+                    separator.disabled = true;
+                    separator.textContent = '--- Custom Boons ---';
+                    boonSelect.appendChild(separator);
+                    
+                    sortedCustomBoons.forEach(boon => {
+                        const option = document.createElement('option');
+                        option.value = boon.name;
+                        option.textContent = `${boon.name} (Custom)`;
+                        option.dataset.custom = 'true';
+                        boonSelect.appendChild(option);
+                    });
+                }
                 
             }
         });
@@ -6609,6 +6696,7 @@ class CharacterSheetApp {
         
         // Sort banes alphabetically
         const sortedBanes = this.sortItemsAlphabetically(window.GAME_DATABASE.banes);
+        const sortedCustomBanes = this.customBanes ? this.sortItemsAlphabetically(this.customBanes) : [];
         
         // Populate all bane dropdowns
         baneSelects.forEach((baneSelect, index) => {
@@ -6616,13 +6704,29 @@ class CharacterSheetApp {
                 // Clear existing options
                 baneSelect.innerHTML = '<option value="">Choose a bane...</option>';
                 
-                // Add banes to dropdown
+                // Add official banes to dropdown
                 sortedBanes.forEach(bane => {
                     const option = document.createElement('option');
                     option.value = bane.name;
                     option.textContent = bane.name;
                     baneSelect.appendChild(option);
                 });
+                
+                // Add custom banes if any exist
+                if (sortedCustomBanes.length > 0) {
+                    const separator = document.createElement('option');
+                    separator.disabled = true;
+                    separator.textContent = '--- Custom Banes ---';
+                    baneSelect.appendChild(separator);
+                    
+                    sortedCustomBanes.forEach(bane => {
+                        const option = document.createElement('option');
+                        option.value = bane.name;
+                        option.textContent = `${bane.name} (Custom)`;
+                        option.dataset.custom = 'true';
+                        baneSelect.appendChild(option);
+                    });
+                }
                 
             }
         });
@@ -6880,7 +6984,11 @@ class CharacterSheetApp {
             return;
         }
         
-        const boon = window.GAME_DATABASE.boons.find(b => b.name === selectedBoonName);
+        // Check both official and custom boons
+        let boon = window.GAME_DATABASE.boons.find(b => b.name === selectedBoonName);
+        if (!boon && this.customBoons) {
+            boon = this.customBoons.find(b => b.name === selectedBoonName);
+        }
         if (!boon) return;
         
         // Populate power levels
@@ -6922,7 +7030,11 @@ class CharacterSheetApp {
             return;
         }
         
-        const bane = window.GAME_DATABASE.banes.find(b => b.name === selectedBaneName);
+        // Check both official and custom banes
+        let bane = window.GAME_DATABASE.banes.find(b => b.name === selectedBaneName);
+        if (!bane && this.customBanes) {
+            bane = this.customBanes.find(b => b.name === selectedBaneName);
+        }
         if (!bane) return;
         
         // Populate power levels
@@ -7230,17 +7342,21 @@ class CharacterSheetApp {
             return;
         }
         
-        const databaseBoon = window.GAME_DATABASE.boons.find(b => b.name === boonName);
-        if (!databaseBoon) {
-            this.showNotification('Selected boon not found in database.', 'error');
+        // Find boon in database or custom boons
+        let foundBoon = window.GAME_DATABASE.boons.find(b => b.name === boonName);
+        if (!foundBoon && this.customBoons) {
+            foundBoon = this.customBoons.find(b => b.name === boonName);
+        }
+        if (!foundBoon) {
+            this.showNotification('Selected boon not found in database or custom boons.', 'error');
             return;
         }
         
         // Remove any existing boon with the same name
         this.currentCharacter.boons = this.currentCharacter.boons.filter(b => b.name !== boonName);
         
-        // Get duration from database (independent of power level)
-        const duration = databaseBoon.duration || 'Sustain';
+        // Get duration from found boon (independent of power level)
+        const duration = foundBoon.duration || 'Sustain';
         
         const boon = {
             name: boonName,
@@ -7506,14 +7622,18 @@ class CharacterSheetApp {
             return;
         }
         
-        const databaseBane = window.GAME_DATABASE.banes.find(b => b.name === baneName);
-        if (!databaseBane) {
-            this.showNotification('Selected bane not found in database.', 'error');
+        // Find bane in database or custom banes
+        let foundBane = window.GAME_DATABASE.banes.find(b => b.name === baneName);
+        if (!foundBane && this.customBanes) {
+            foundBane = this.customBanes.find(b => b.name === baneName);
+        }
+        if (!foundBane) {
+            this.showNotification('Selected bane not found in database or custom banes.', 'error');
             return;
         }
         
-        // Get duration from database (independent of power level)
-        const duration = databaseBane.duration || 'Sustain';
+        // Get duration from found bane (independent of power level)
+        const duration = foundBane.duration || 'Sustain';
         
         const bane = {
             name: baneName,
@@ -10498,6 +10618,743 @@ class CharacterSheetApp {
         }
     }
 
+    // === CUSTOM BOONS & BANES METHODS ===
+
+    // Load custom boons from localStorage
+    loadCustomBoons() {
+        try {
+            const saved = localStorage.getItem('openLegendCustomBoons');
+            return saved ? JSON.parse(saved) : [];
+        } catch (error) {
+            console.error('Error loading custom boons:', error);
+            return [];
+        }
+    }
+
+    // Save custom boons to localStorage
+    saveCustomBoons() {
+        try {
+            localStorage.setItem('openLegendCustomBoons', JSON.stringify(this.customBoons));
+        } catch (error) {
+            console.error('Error saving custom boons:', error);
+            this.showNotification('Error saving custom boons.', 'error');
+        }
+    }
+
+    // Load custom banes from localStorage
+    loadCustomBanes() {
+        try {
+            const saved = localStorage.getItem('openLegendCustomBanes');
+            return saved ? JSON.parse(saved) : [];
+        } catch (error) {
+            console.error('Error loading custom banes:', error);
+            return [];
+        }
+    }
+
+    // Save custom banes to localStorage
+    saveCustomBanes() {
+        try {
+            localStorage.setItem('openLegendCustomBanes', JSON.stringify(this.customBanes));
+        } catch (error) {
+            console.error('Error saving custom banes:', error);
+            this.showNotification('Error saving custom banes.', 'error');
+        }
+    }
+
+    // Get current timestamp with Berlin timezone
+    getCurrentTimestamp() {
+        const date = new Date();
+        // Convert to Berlin time (UTC+1 or UTC+2 depending on DST)
+        const berlinTime = new Date(date.toLocaleString('en-US', { timeZone: 'Europe/Berlin' }));
+        return berlinTime.toISOString();
+    }
+
+    // Create or update custom boon
+    saveCustomBoon(boonData) {
+        try {
+            const timestamp = this.getCurrentTimestamp();
+            
+            if (boonData.id) {
+                // Update existing boon
+                const index = this.customBoons.findIndex(b => b.id === boonData.id);
+                if (index !== -1) {
+                    this.customBoons[index] = {
+                        ...boonData,
+                        updatedAt: timestamp
+                    };
+                }
+            } else {
+                // Create new boon
+                const newBoon = {
+                    ...boonData,
+                    id: Date.now().toString() + '_custom_boon',
+                    createdAt: timestamp,
+                    updatedAt: timestamp,
+                    isCustom: true
+                };
+                this.customBoons.push(newBoon);
+            }
+            
+            this.saveCustomBoons();
+            this.populateCustomBoonsGrid();
+            this.populateBoonsDropdown(); // Refresh dropdowns
+            this.showNotification('Custom boon saved successfully!', 'success');
+        } catch (error) {
+            console.error('Error saving custom boon:', error);
+            this.showNotification('Error saving custom boon.', 'error');
+        }
+    }
+
+    // Create or update custom bane
+    saveCustomBane(baneData) {
+        try {
+            const timestamp = this.getCurrentTimestamp();
+            
+            if (baneData.id) {
+                // Update existing bane
+                const index = this.customBanes.findIndex(b => b.id === baneData.id);
+                if (index !== -1) {
+                    this.customBanes[index] = {
+                        ...baneData,
+                        updatedAt: timestamp
+                    };
+                }
+            } else {
+                // Create new bane
+                const newBane = {
+                    ...baneData,
+                    id: Date.now().toString() + '_custom_bane',
+                    createdAt: timestamp,
+                    updatedAt: timestamp,
+                    isCustom: true
+                };
+                this.customBanes.push(newBane);
+            }
+            
+            this.saveCustomBanes();
+            this.populateCustomBanesGrid();
+            this.populateBanesDropdown(); // Refresh dropdowns
+            this.showNotification('Custom bane saved successfully!', 'success');
+        } catch (error) {
+            console.error('Error saving custom bane:', error);
+            this.showNotification('Error saving custom bane.', 'error');
+        }
+    }
+
+    // Delete custom boon
+    deleteCustomBoon(boonId) {
+        if (confirm('Are you sure you want to delete this custom boon?')) {
+            this.customBoons = this.customBoons.filter(b => b.id !== boonId);
+            this.saveCustomBoons();
+            this.populateCustomBoonsGrid();
+            this.populateBoonsDropdown(); // Refresh dropdowns
+            this.showNotification('Custom boon deleted.', 'success');
+        }
+    }
+
+    // Delete custom bane
+    deleteCustomBane(baneId) {
+        if (confirm('Are you sure you want to delete this custom bane?')) {
+            this.customBanes = this.customBanes.filter(b => b.id !== baneId);
+            this.saveCustomBanes();
+            this.populateCustomBanesGrid();
+            this.populateBanesDropdown(); // Refresh dropdowns
+            this.showNotification('Custom bane deleted.', 'success');
+        }
+    }
+
+    // Populate custom boons grid in Options List page
+    populateCustomBoonsGrid() {
+        const grid = document.getElementById('customBoonsGrid');
+        if (!grid) return;
+        
+        grid.innerHTML = '';
+        
+        if (this.customBoons.length === 0) {
+            grid.innerHTML = '<p class="text-secondary">No custom boons yet. Click "Add Custom Boon" to create one.</p>';
+            return;
+        }
+        
+        this.customBoons.forEach(boon => {
+            const card = document.createElement('div');
+            card.className = 'custom-entry-card';
+            card.innerHTML = `
+                <div class="custom-entry-main">
+                    <div class="custom-entry-title">${boon.name}</div>
+                    <div class="custom-entry-meta">
+                        <span><strong>Power Levels:</strong> ${boon.powerLevels.join(', ')}</span>
+                        <span><strong>Attributes:</strong> ${boon.attributes.join(', ')}</span>
+                    </div>
+                    <div class="custom-entry-description">
+                        ${boon.generalDescription.substring(0, 200)}${boon.generalDescription.length > 200 ? '...' : ''}
+                    </div>
+                </div>
+                <div class="custom-entry-actions">
+                    <button class="btn btn-small btn-secondary" onclick="window.app.editCustomBoon('${boon.id}')">
+                        <i class="fas fa-edit"></i> Edit
+                    </button>
+                    <button class="btn btn-small btn-danger" onclick="window.app.deleteCustomBoon('${boon.id}')">
+                        <i class="fas fa-trash"></i> Delete
+                    </button>
+                </div>
+            `;
+            grid.appendChild(card);
+        });
+    }
+
+    // Populate custom banes grid in Options List page
+    populateCustomBanesGrid() {
+        const grid = document.getElementById('customBanesGrid');
+        if (!grid) return;
+        
+        grid.innerHTML = '';
+        
+        if (this.customBanes.length === 0) {
+            grid.innerHTML = '<p class="text-secondary">No custom banes yet. Click "Add Custom Bane" to create one.</p>';
+            return;
+        }
+        
+        this.customBanes.forEach(bane => {
+            const card = document.createElement('div');
+            card.className = 'custom-entry-card';
+            card.innerHTML = `
+                <div class="custom-entry-main">
+                    <div class="custom-entry-title">${bane.name}</div>
+                    <div class="custom-entry-meta">
+                        <span><strong>Power Levels:</strong> ${bane.powerLevels.join(', ')}</span>
+                        <span><strong>Attributes:</strong> ${bane.attributes.join(', ')}</span>
+                    </div>
+                    <div class="custom-entry-description">
+                        ${bane.generalDescription.substring(0, 200)}${bane.generalDescription.length > 200 ? '...' : ''}
+                    </div>
+                </div>
+                <div class="custom-entry-actions">
+                    <button class="btn btn-small btn-secondary" onclick="window.app.editCustomBane('${bane.id}')">
+                        <i class="fas fa-edit"></i> Edit
+                    </button>
+                    <button class="btn btn-small btn-danger" onclick="window.app.deleteCustomBane('${bane.id}')">
+                        <i class="fas fa-trash"></i> Delete
+                    </button>
+                </div>
+            `;
+            grid.appendChild(card);
+        });
+    }
+
+    // Export custom boons and banes as file
+    exportCustomEntries() {
+        const data = {
+            customBoons: this.customBoons,
+            customBanes: this.customBanes,
+            exportedAt: this.getCurrentTimestamp()
+        };
+        
+        const json = JSON.stringify(data, null, 2);
+        const blob = new Blob([json], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `custom-boons-banes-${Date.now()}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+        
+        this.showNotification('Custom entries exported as file!', 'success');
+    }
+
+    // Export custom boons and banes as text for copying
+    exportCustomEntriesAsText() {
+        const data = {
+            customBoons: this.customBoons,
+            customBanes: this.customBanes,
+            exportedAt: this.getCurrentTimestamp()
+        };
+        
+        const json = JSON.stringify(data, null, 2);
+        const textarea = document.getElementById('exportCustomTextArea');
+        textarea.value = json;
+        
+        document.getElementById('exportCustomTextModal').style.display = 'block';
+    }
+
+    // Copy export text to clipboard
+    copyExportTextToClipboard() {
+        const textarea = document.getElementById('exportCustomTextArea');
+        textarea.select();
+        textarea.setSelectionRange(0, 99999); // For mobile devices
+        
+        try {
+            document.execCommand('copy');
+            this.showNotification('Copied to clipboard! You can now paste it anywhere.', 'success');
+        } catch (err) {
+            // Fallback to navigator.clipboard API
+            navigator.clipboard.writeText(textarea.value).then(() => {
+                this.showNotification('Copied to clipboard!', 'success');
+            }).catch(err => {
+                this.showNotification('Failed to copy. Please select and copy manually.', 'error');
+            });
+        }
+    }
+
+    // Import custom entries with duplicate handling (keep newest)
+    importCustomEntries(data) {
+        try {
+            let importedData;
+            if (typeof data === 'string') {
+                importedData = JSON.parse(data);
+            } else {
+                importedData = data;
+            }
+            
+            let boonsAdded = 0;
+            let boonsUpdated = 0;
+            let banesAdded = 0;
+            let banesUpdated = 0;
+            
+            // Import custom boons with duplicate handling
+            if (importedData.customBoons && Array.isArray(importedData.customBoons)) {
+                importedData.customBoons.forEach(importedBoon => {
+                    const existingIndex = this.customBoons.findIndex(b => b.name === importedBoon.name);
+                    
+                    if (existingIndex !== -1) {
+                        // Compare timestamps (keep newest)
+                        const existingTime = new Date(this.customBoons[existingIndex].updatedAt || this.customBoons[existingIndex].createdAt);
+                        const importedTime = new Date(importedBoon.updatedAt || importedBoon.createdAt);
+                        
+                        if (importedTime > existingTime) {
+                            this.customBoons[existingIndex] = {
+                                ...importedBoon,
+                                id: this.customBoons[existingIndex].id // Keep original ID
+                            };
+                            boonsUpdated++;
+                        }
+                    } else {
+                        // Add new custom boon
+                        this.customBoons.push({
+                            ...importedBoon,
+                            id: Date.now().toString() + '_' + Math.random().toString(36).substr(2, 9) + '_custom_boon',
+                            isCustom: true
+                        });
+                        boonsAdded++;
+                    }
+                });
+            }
+            
+            // Import custom banes with duplicate handling
+            if (importedData.customBanes && Array.isArray(importedData.customBanes)) {
+                importedData.customBanes.forEach(importedBane => {
+                    const existingIndex = this.customBanes.findIndex(b => b.name === importedBane.name);
+                    
+                    if (existingIndex !== -1) {
+                        // Compare timestamps (keep newest)
+                        const existingTime = new Date(this.customBanes[existingIndex].updatedAt || this.customBanes[existingIndex].createdAt);
+                        const importedTime = new Date(importedBane.updatedAt || importedBane.createdAt);
+                        
+                        if (importedTime > existingTime) {
+                            this.customBanes[existingIndex] = {
+                                ...importedBane,
+                                id: this.customBanes[existingIndex].id // Keep original ID
+                            };
+                            banesUpdated++;
+                        }
+                    } else {
+                        // Add new custom bane
+                        this.customBanes.push({
+                            ...importedBane,
+                            id: Date.now().toString() + '_' + Math.random().toString(36).substr(2, 9) + '_custom_bane',
+                            isCustom: true
+                        });
+                        banesAdded++;
+                    }
+                });
+            }
+            
+            this.saveCustomBoons();
+            this.saveCustomBanes();
+            this.populateCustomBoonsGrid();
+            this.populateCustomBanesGrid();
+            this.populateBoonsDropdown(); // Refresh dropdowns
+            this.populateBanesDropdown(); // Refresh dropdowns
+            
+            let message = 'Import complete! ';
+            if (boonsAdded > 0) message += `${boonsAdded} boon(s) added. `;
+            if (boonsUpdated > 0) message += `${boonsUpdated} boon(s) updated. `;
+            if (banesAdded > 0) message += `${banesAdded} bane(s) added. `;
+            if (banesUpdated > 0) message += `${banesUpdated} bane(s) updated.`;
+            
+            this.showNotification(message, 'success');
+            this.closeModal(document.getElementById('importCustomModal'));
+        } catch (error) {
+            console.error('Error importing custom entries:', error);
+            this.showNotification('Error importing custom entries. Please check the file format.', 'error');
+        }
+    }
+
+    // Show custom boon modal for creating new boon
+    showCustomBoonModal() {
+        const modal = document.getElementById('customBoonModal');
+        document.getElementById('customBoonModalTitle').textContent = 'Create Custom Boon';
+        document.getElementById('customBoonId').value = '';
+        document.getElementById('customBoonName').value = '';
+        document.getElementById('customBoonPowerLevels').value = '';
+        document.querySelectorAll('input[name="customBoonAttr"]').forEach(cb => cb.checked = false);
+        document.getElementById('customBoonInvocationTime').value = '';
+        document.getElementById('customBoonDuration').value = '';
+        document.getElementById('customBoonGeneralDesc').value = '';
+        document.getElementById('customBoonEffectDesc').value = '';
+        document.getElementById('customBoonSpecialText').value = '';
+        document.getElementById('customBoonPowerLevelDescs').innerHTML = '';
+        modal.style.display = 'block';
+    }
+
+    // Edit existing custom boon
+    editCustomBoon(boonId) {
+        const boon = this.customBoons.find(b => b.id === boonId);
+        if (!boon) return;
+        
+        const modal = document.getElementById('customBoonModal');
+        document.getElementById('customBoonModalTitle').textContent = 'Edit Custom Boon';
+        document.getElementById('customBoonId').value = boon.id;
+        document.getElementById('customBoonName').value = boon.name;
+        document.getElementById('customBoonPowerLevels').value = boon.powerLevels.join(',');
+        
+        // Set attributes
+        document.querySelectorAll('input[name="customBoonAttr"]').forEach(cb => {
+            cb.checked = boon.attributes.includes(cb.value);
+        });
+        
+        document.getElementById('customBoonInvocationTime').value = boon.invocationTime || '';
+        document.getElementById('customBoonDuration').value = boon.duration || '';
+        document.getElementById('customBoonGeneralDesc').value = boon.generalDescription || '';
+        document.getElementById('customBoonEffectDesc').value = boon.effectDescription || '';
+        document.getElementById('customBoonSpecialText').value = boon.specialText || '';
+        
+        // Generate power level description fields
+        this.generatePowerLevelFields('boon', boon.powerLevels, boon.powerLevelDescriptions);
+        
+        modal.style.display = 'block';
+    }
+
+    // Show custom bane modal for creating new bane
+    showCustomBaneModal() {
+        const modal = document.getElementById('customBaneModal');
+        document.getElementById('customBaneModalTitle').textContent = 'Create Custom Bane';
+        document.getElementById('customBaneId').value = '';
+        document.getElementById('customBaneName').value = '';
+        document.getElementById('customBanePowerLevels').value = '';
+        document.querySelectorAll('input[name="customBaneAttr"]').forEach(cb => cb.checked = false);
+        document.getElementById('customBaneDuration').value = '';
+        document.getElementById('customBaneGeneralDesc').value = '';
+        document.getElementById('customBaneEffectDesc').value = '';
+        document.getElementById('customBaneSpecialText').value = '';
+        document.getElementById('customBanePowerLevelDescs').innerHTML = '';
+        document.getElementById('customBaneDefenseTargets').innerHTML = '';
+        modal.style.display = 'block';
+    }
+
+    // Edit existing custom bane
+    editCustomBane(baneId) {
+        const bane = this.customBanes.find(b => b.id === baneId);
+        if (!bane) return;
+        
+        const modal = document.getElementById('customBaneModal');
+        document.getElementById('customBaneModalTitle').textContent = 'Edit Custom Bane';
+        document.getElementById('customBaneId').value = bane.id;
+        document.getElementById('customBaneName').value = bane.name;
+        document.getElementById('customBanePowerLevels').value = bane.powerLevels.join(',');
+        
+        // Set attributes
+        document.querySelectorAll('input[name="customBaneAttr"]').forEach(cb => {
+            cb.checked = bane.attributes.includes(cb.value);
+        });
+        
+        document.getElementById('customBaneDuration').value = bane.duration || '';
+        document.getElementById('customBaneGeneralDesc').value = bane.generalDescription || '';
+        document.getElementById('customBaneEffectDesc').value = bane.effectDescription || '';
+        document.getElementById('customBaneSpecialText').value = bane.specialText || '';
+        
+        // Generate defense targets and power level fields
+        this.generateDefenseTargetFields(bane.attributes, bane.defenseTargets);
+        this.generatePowerLevelFields('bane', bane.powerLevels, bane.powerLevelDescriptions);
+        
+        modal.style.display = 'block';
+    }
+
+    // Generate power level description fields dynamically
+    generatePowerLevelFields(type, powerLevels, existingDescriptions = {}) {
+        const container = document.getElementById(type === 'boon' ? 'customBoonPowerLevelDescs' : 'customBanePowerLevelDescs');
+        container.innerHTML = '';
+        
+        powerLevels.forEach(level => {
+            const fieldDiv = document.createElement('div');
+            fieldDiv.className = 'power-level-input';
+            fieldDiv.innerHTML = `
+                <label>Power Level ${level} Description</label>
+                <textarea data-power-level="${level}" rows="2" placeholder="Enter description for power level ${level}">${existingDescriptions[level]?.description || ''}</textarea>
+            `;
+            container.appendChild(fieldDiv);
+        });
+    }
+
+    // Generate defense target fields for bane
+    generateDefenseTargetFields(attributes, existingTargets = {}) {
+        const container = document.getElementById('customBaneDefenseTargets');
+        container.innerHTML = '';
+        
+        attributes.forEach(attr => {
+            const fieldDiv = document.createElement('div');
+            fieldDiv.className = 'defense-target-input';
+            fieldDiv.innerHTML = `
+                <label>${attr.charAt(0).toUpperCase() + attr.slice(1)}</label>
+                <select data-attribute="${attr}">
+                    <option value="">Select defense...</option>
+                    <option value="guard" ${existingTargets[attr] === 'guard' ? 'selected' : ''}>Guard</option>
+                    <option value="toughness" ${existingTargets[attr] === 'toughness' ? 'selected' : ''}>Toughness</option>
+                    <option value="resolve" ${existingTargets[attr] === 'resolve' ? 'selected' : ''}>Resolve</option>
+                </select>
+            `;
+            container.appendChild(fieldDiv);
+        });
+    }
+
+    // Handle custom boon form submission
+    handleCustomBoonSubmit() {
+        try {
+            const id = document.getElementById('customBoonId').value;
+            const name = document.getElementById('customBoonName').value.trim();
+            const powerLevelsStr = document.getElementById('customBoonPowerLevels').value.trim();
+            const invocationTime = document.getElementById('customBoonInvocationTime').value.trim();
+            const duration = document.getElementById('customBoonDuration').value.trim();
+            const generalDescription = document.getElementById('customBoonGeneralDesc').value.trim();
+            const effectDescription = document.getElementById('customBoonEffectDesc').value.trim();
+            const specialText = document.getElementById('customBoonSpecialText').value.trim();
+            
+            // Validate required fields
+            if (!name) {
+                this.showNotification('Please enter a boon name.', 'error');
+                return;
+            }
+            
+            if (!powerLevelsStr) {
+                this.showNotification('Please enter power levels.', 'error');
+                return;
+            }
+            
+            // Parse power levels
+            const powerLevels = powerLevelsStr.split(',').map(pl => parseInt(pl.trim())).filter(pl => !isNaN(pl));
+            if (powerLevels.length === 0) {
+                this.showNotification('Please enter valid power levels.', 'error');
+                return;
+            }
+            
+            // Get selected attributes
+            const attributes = [];
+            document.querySelectorAll('input[name="customBoonAttr"]:checked').forEach(cb => {
+                attributes.push(cb.value);
+            });
+            
+            if (attributes.length === 0) {
+                this.showNotification('Please select at least one attribute.', 'error');
+                return;
+            }
+            
+            if (!invocationTime || !duration || !generalDescription || !effectDescription) {
+                this.showNotification('Please fill in all required fields.', 'error');
+                return;
+            }
+            
+            // Get power level descriptions
+            const powerLevelDescriptions = {};
+            document.querySelectorAll('#customBoonPowerLevelDescs textarea').forEach(textarea => {
+                const level = parseInt(textarea.dataset.powerLevel);
+                const description = textarea.value.trim();
+                if (description) {
+                    powerLevelDescriptions[level] = { description };
+                }
+            });
+            
+            const boonData = {
+                id: id || undefined,
+                name,
+                powerLevels,
+                attributes,
+                invocationTime,
+                duration,
+                generalDescription,
+                effectDescription,
+                powerLevelDescriptions,
+                specialText
+            };
+            
+            this.saveCustomBoon(boonData);
+            this.closeModal(document.getElementById('customBoonModal'));
+        } catch (error) {
+            console.error('Error submitting custom boon:', error);
+            this.showNotification('Error saving custom boon.', 'error');
+        }
+    }
+
+    // Handle custom bane form submission
+    handleCustomBaneSubmit() {
+        try {
+            const id = document.getElementById('customBaneId').value;
+            const name = document.getElementById('customBaneName').value.trim();
+            const powerLevelsStr = document.getElementById('customBanePowerLevels').value.trim();
+            const duration = document.getElementById('customBaneDuration').value.trim();
+            const generalDescription = document.getElementById('customBaneGeneralDesc').value.trim();
+            const effectDescription = document.getElementById('customBaneEffectDesc').value.trim();
+            const specialText = document.getElementById('customBaneSpecialText').value.trim();
+            
+            // Validate required fields
+            if (!name) {
+                this.showNotification('Please enter a bane name.', 'error');
+                return;
+            }
+            
+            if (!powerLevelsStr) {
+                this.showNotification('Please enter power levels.', 'error');
+                return;
+            }
+            
+            // Parse power levels
+            const powerLevels = powerLevelsStr.split(',').map(pl => parseInt(pl.trim())).filter(pl => !isNaN(pl));
+            if (powerLevels.length === 0) {
+                this.showNotification('Please enter valid power levels.', 'error');
+                return;
+            }
+            
+            // Get selected attributes
+            const attributes = [];
+            document.querySelectorAll('input[name="customBaneAttr"]:checked').forEach(cb => {
+                attributes.push(cb.value);
+            });
+            
+            if (attributes.length === 0) {
+                this.showNotification('Please select at least one attribute.', 'error');
+                return;
+            }
+            
+            if (!duration || !generalDescription || !effectDescription) {
+                this.showNotification('Please fill in all required fields.', 'error');
+                return;
+            }
+            
+            // Get defense targets
+            const defenseTargets = {};
+            document.querySelectorAll('#customBaneDefenseTargets select').forEach(select => {
+                const attr = select.dataset.attribute;
+                const defense = select.value;
+                if (defense) {
+                    defenseTargets[attr] = defense;
+                }
+            });
+            
+            // Get power level descriptions
+            const powerLevelDescriptions = {};
+            document.querySelectorAll('#customBanePowerLevelDescs textarea').forEach(textarea => {
+                const level = parseInt(textarea.dataset.powerLevel);
+                const description = textarea.value.trim();
+                if (description) {
+                    powerLevelDescriptions[level] = { description };
+                }
+            });
+            
+            const baneData = {
+                id: id || undefined,
+                name,
+                powerLevels,
+                attributes,
+                defenseTargets,
+                duration,
+                generalDescription,
+                effectDescription,
+                powerLevelDescriptions,
+                specialText
+            };
+            
+            this.saveCustomBane(baneData);
+            this.closeModal(document.getElementById('customBaneModal'));
+        } catch (error) {
+            console.error('Error submitting custom bane:', error);
+            this.showNotification('Error saving custom bane.', 'error');
+        }
+    }
+
+    // Show import custom entries modal
+    showImportCustomModal() {
+        document.getElementById('importCustomModal').style.display = 'block';
+        this.selectedCustomFile = null;
+        document.getElementById('customFileInfo').style.display = 'none';
+        document.getElementById('customUploadPlaceholder').style.display = 'block';
+        document.getElementById('uploadCustomFileBtn').style.display = 'none';
+        document.getElementById('importCustomData').value = '';
+    }
+
+    // Handle custom file selection
+    handleCustomFileSelection(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        
+        if (!file.name.endsWith('.json')) {
+            this.showNotification('Please select a JSON file.', 'error');
+            return;
+        }
+        
+        this.selectedCustomFile = file;
+        document.getElementById('customFileName').textContent = file.name;
+        document.getElementById('customUploadPlaceholder').style.display = 'none';
+        document.getElementById('customFileInfo').style.display = 'flex';
+        document.getElementById('uploadCustomFileBtn').style.display = 'inline-flex';
+    }
+
+    // Remove selected custom file
+    removeCustomFile() {
+        this.selectedCustomFile = null;
+        document.getElementById('customJsonFileInput').value = '';
+        document.getElementById('customFileInfo').style.display = 'none';
+        document.getElementById('customUploadPlaceholder').style.display = 'block';
+        document.getElementById('uploadCustomFileBtn').style.display = 'none';
+    }
+
+    // Upload custom file
+    uploadCustomFile() {
+        if (!this.selectedCustomFile) {
+            this.showNotification('Please select a file first.', 'error');
+            return;
+        }
+        
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const data = JSON.parse(e.target.result);
+                this.importCustomEntries(data);
+            } catch (error) {
+                console.error('Error reading file:', error);
+                this.showNotification('Invalid JSON file format.', 'error');
+            }
+        };
+        reader.readAsText(this.selectedCustomFile);
+    }
+
+    // Confirm import from text
+    confirmImportCustom() {
+        const data = document.getElementById('importCustomData').value.trim();
+        if (!data) {
+            this.showNotification('Please paste JSON data or select a file.', 'error');
+            return;
+        }
+        
+        try {
+            const parsedData = JSON.parse(data);
+            this.importCustomEntries(parsedData);
+        } catch (error) {
+            console.error('Error parsing JSON:', error);
+            this.showNotification('Invalid JSON format.', 'error');
+        }
+    }
+
+    // === END CUSTOM BOONS & BANES METHODS ===
+
     // Update character name display
     updateCharacterNameDisplay() {
         if (!this.currentCharacter) return;
@@ -10806,17 +11663,23 @@ class CharacterSheetApp {
             document.getElementById('weaponBane3')
         ];
         
+        // Combine official and custom banes
+        const allBanes = [...window.GAME_DATABASE.banes];
+        if (this.customBanes && this.customBanes.length > 0) {
+            allBanes.push(...this.customBanes);
+        }
+        const sortedBanes = this.sortItemsAlphabetically(allBanes);
+        
         baneSelects.forEach(select => {
             if (select) {
                 // Clear existing options except the first one
                 select.innerHTML = '<option value="">No Bane</option>';
                 
                 // Sort banes alphabetically and add to dropdown
-                const sortedBanes = this.sortItemsAlphabetically(window.GAME_DATABASE.banes);
                 sortedBanes.forEach(bane => {
                     const option = document.createElement('option');
                     option.value = bane.name;
-                    option.textContent = bane.name;
+                    option.textContent = bane.isCustom ? `${bane.name} (Custom)` : bane.name;
                     select.appendChild(option);
                 });
             }
@@ -10840,17 +11703,23 @@ class CharacterSheetApp {
     populateBanefulBaneDropdown() {
         if (!window.GAME_DATABASE || !window.GAME_DATABASE.banes) return;
         
+        // Combine official and custom banes
+        const allBanes = [...window.GAME_DATABASE.banes];
+        if (this.customBanes && this.customBanes.length > 0) {
+            allBanes.push(...this.customBanes);
+        }
+        const sortedBanes = this.sortItemsAlphabetically(allBanes);
+        
         const banefulBaneSelect = document.getElementById('weaponBanefulSelect');
         if (banefulBaneSelect) {
             // Clear existing options except the first one
             banefulBaneSelect.innerHTML = '<option value="">Choose a bane...</option>';
             
-            // Sort banes alphabetically and add to dropdown
-            const sortedBanes = this.sortItemsAlphabetically(window.GAME_DATABASE.banes);
+            // Add all banes to dropdown
             sortedBanes.forEach(bane => {
                 const option = document.createElement('option');
                 option.value = bane.name;
-                option.textContent = bane.name;
+                option.textContent = bane.isCustom ? `${bane.name} (Custom)` : bane.name;
                 banefulBaneSelect.appendChild(option);
             });
         }
@@ -10862,18 +11731,24 @@ class CharacterSheetApp {
         
         const equipmentTypes = ['item', 'weapon', 'armor'];
         
+        // Combine official and custom boons
+        const allBoons = [...window.GAME_DATABASE.boons];
+        if (this.customBoons && this.customBoons.length > 0) {
+            allBoons.push(...this.customBoons);
+        }
+        const sortedBoons = this.sortItemsAlphabetically(allBoons);
+        
         equipmentTypes.forEach(type => {
             const persistentBoonSelect = document.getElementById(`${type}PersistentBoon`);
             if (persistentBoonSelect) {
                 // Clear existing options except the first one
                 persistentBoonSelect.innerHTML = '<option value="">Choose a boon...</option>';
                 
-                // Sort boons alphabetically and add to dropdown
-                const sortedBoons = this.sortItemsAlphabetically(window.GAME_DATABASE.boons);
+                // Add all boons to dropdown
                 sortedBoons.forEach(boon => {
                     const option = document.createElement('option');
                     option.value = boon.name;
-                    option.textContent = boon.name;
+                    option.textContent = boon.isCustom ? `${boon.name} (Custom)` : boon.name;
                     persistentBoonSelect.appendChild(option);
                 });
             }
@@ -10893,6 +11768,13 @@ class CharacterSheetApp {
         
         const equipmentTypes = ['item', 'weapon', 'armor'];
         
+        // Combine official and custom boons
+        const allBoons = [...window.GAME_DATABASE.boons];
+        if (this.customBoons && this.customBoons.length > 0) {
+            allBoons.push(...this.customBoons);
+        }
+        const sortedBoons = this.sortItemsAlphabetically(allBoons);
+        
         equipmentTypes.forEach(type => {
             const reliableBoonSelect = document.getElementById(`${type}ReliableBoon`);
             if (reliableBoonSelect) {
@@ -10900,12 +11782,11 @@ class CharacterSheetApp {
                 // Clear existing options except the first one
                 reliableBoonSelect.innerHTML = '<option value="">Choose a boon...</option>';
                 
-                // Sort boons alphabetically and add to dropdown
-                const sortedBoons = this.sortItemsAlphabetically(window.GAME_DATABASE.boons);
+                // Add all boons to dropdown
                 sortedBoons.forEach(boon => {
                     const option = document.createElement('option');
                     option.value = boon.name;
-                    option.textContent = boon.name;
+                    option.textContent = boon.isCustom ? `${boon.name} (Custom)` : boon.name;
                     reliableBoonSelect.appendChild(option);
                 });
                 
@@ -10922,18 +11803,24 @@ class CharacterSheetApp {
         
         const equipmentTypes = ['item', 'weapon', 'armor'];
         
+        // Combine official and custom banes
+        const allBanes = [...window.GAME_DATABASE.banes];
+        if (this.customBanes && this.customBanes.length > 0) {
+            allBanes.push(...this.customBanes);
+        }
+        const sortedBanes = this.sortItemsAlphabetically(allBanes);
+        
         equipmentTypes.forEach(type => {
             const cursedBaneSelect = document.getElementById(`${type}CursedBane`);
             if (cursedBaneSelect) {
                 // Clear existing options except the first one
                 cursedBaneSelect.innerHTML = '<option value="">Choose a bane...</option>';
                 
-                // Sort banes alphabetically and add to dropdown
-                const sortedBanes = this.sortItemsAlphabetically(window.GAME_DATABASE.banes);
+                // Add all banes to dropdown
                 sortedBanes.forEach(bane => {
                     const option = document.createElement('option');
                     option.value = bane.name;
-                    option.textContent = bane.name;
+                    option.textContent = bane.isCustom ? `${bane.name} (Custom)` : bane.name;
                     cursedBaneSelect.appendChild(option);
                 });
             }
@@ -10956,8 +11843,11 @@ class CharacterSheetApp {
             return; // No bane selected
         }
         
-        // Find the selected bane in the database
-        const selectedBane = window.GAME_DATABASE.banes.find(bane => bane.name === selectedBaneName);
+        // Find the selected bane in database or custom banes
+        let selectedBane = window.GAME_DATABASE.banes.find(bane => bane.name === selectedBaneName);
+        if (!selectedBane && this.customBanes) {
+            selectedBane = this.customBanes.find(bane => bane.name === selectedBaneName);
+        }
         
         if (selectedBane && selectedBane.powerLevels) {
             // Add power level options based on the selected bane's available power levels
@@ -10990,8 +11880,11 @@ class CharacterSheetApp {
             return; // No boon selected
         }
         
-        // Find the selected boon in the database
-        const selectedBoon = window.GAME_DATABASE.boons.find(boon => boon.name === selectedBoonName);
+        // Find the selected boon in database or custom boons
+        let selectedBoon = window.GAME_DATABASE.boons.find(boon => boon.name === selectedBoonName);
+        if (!selectedBoon && this.customBoons) {
+            selectedBoon = this.customBoons.find(boon => boon.name === selectedBoonName);
+        }
         
         if (selectedBoon && selectedBoon.powerLevels) {
             // Add power level options based on the selected boon's available power levels
@@ -11024,8 +11917,11 @@ class CharacterSheetApp {
             return; // No boon selected
         }
         
-        // Find the selected boon in the database
-        const selectedBoon = window.GAME_DATABASE.boons.find(boon => boon.name === selectedBoonName);
+        // Find the selected boon in database or custom boons
+        let selectedBoon = window.GAME_DATABASE.boons.find(boon => boon.name === selectedBoonName);
+        if (!selectedBoon && this.customBoons) {
+            selectedBoon = this.customBoons.find(boon => boon.name === selectedBoonName);
+        }
         
         if (selectedBoon && selectedBoon.powerLevels) {
             // Add power level options based on the selected boon's available power levels
@@ -12026,7 +12922,13 @@ class CharacterSheetApp {
         
         const availableBoons = [];
         
-        window.GAME_DATABASE.boons.forEach(boon => {
+        // Combine official and custom boons
+        const allBoons = [...window.GAME_DATABASE.boons];
+        if (this.customBoons && this.customBoons.length > 0) {
+            allBoons.push(...this.customBoons);
+        }
+        
+        allBoons.forEach(boon => {
             // Track which attributes the character can actually use for this boon
             const usableAttributes = [];
             
@@ -12068,7 +12970,11 @@ class CharacterSheetApp {
         if (this.currentCharacter.feats) {
             const boonAccessFeats = this.currentCharacter.feats.filter(feat => feat.name === 'Boon Access' && feat.customDetails);
             boonAccessFeats.forEach(feat => {
-                const selectedBoon = window.GAME_DATABASE.boons.find(boon => boon.name === feat.customDetails);
+                // Check both official and custom boons
+                let selectedBoon = window.GAME_DATABASE.boons.find(boon => boon.name === feat.customDetails);
+                if (!selectedBoon && this.customBoons) {
+                    selectedBoon = this.customBoons.find(boon => boon.name === feat.customDetails);
+                }
                 if (selectedBoon) {
                     // Create a modified boon with the appropriate power level based on feat tier
                     const maxPowerLevel = Math.min(feat.tier, Math.max(...selectedBoon.powerLevels));
@@ -12104,8 +13010,14 @@ class CharacterSheetApp {
         
         const availableBanes = [];
         
-        // Add database banes based on character attributes
-        window.GAME_DATABASE.banes.forEach(bane => {
+        // Combine official and custom banes
+        const allBanes = [...window.GAME_DATABASE.banes];
+        if (this.customBanes && this.customBanes.length > 0) {
+            allBanes.push(...this.customBanes);
+        }
+        
+        // Add database and custom banes based on character attributes
+        allBanes.forEach(bane => {
             // Track which attributes the character can actually use for this bane
             const usableAttributes = [];
             
@@ -12154,13 +13066,16 @@ class CharacterSheetApp {
                 
                 item.banes.forEach(baneName => {
                     if (baneName && baneName.trim() !== '') {
-                        // Find the bane in the database
-                        const databaseBane = window.GAME_DATABASE.banes.find(b => b.name === baneName);
+                        // Find the bane in database or custom banes
+                        let foundBane = window.GAME_DATABASE.banes.find(b => b.name === baneName);
+                        if (!foundBane && this.customBanes) {
+                            foundBane = this.customBanes.find(b => b.name === baneName);
+                        }
                         
-                        if (databaseBane) {
+                        if (foundBane) {
                             // Create a weapon-based bane object with unique ID
                             const weaponBane = {
-                                ...databaseBane,
+                                ...foundBane,
                                 id: `weapon_${item.id}_${baneName}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
                                 weaponSource: item.name,
                                 isWeaponBased: true
@@ -12168,7 +13083,7 @@ class CharacterSheetApp {
                             
                             weaponBanes.push(weaponBane);
                         } else {
-                            console.warn(`🔍 Bane not found in database: ${baneName}`);
+                            console.warn(`🔍 Bane not found in database or custom banes: ${baneName}`);
                         }
                     }
                 });

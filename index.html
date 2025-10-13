@@ -145,6 +145,49 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Custom Boons & Banes Section -->
+                <div class="option-category">
+                    <div class="category-header custom-category" onclick="window.app.toggleCategoryList('customBoonsBanes')">
+                        <h3><i class="fas fa-plus-circle"></i> Custom Boons & Banes</h3>
+                        <span class="expand-icon">▼</span>
+                    </div>
+                    <div class="category-content" id="customBoonsBanesContent" style="display: none;">
+                        <div class="custom-actions-header">
+                            <button id="exportCustomBtn" class="btn btn-secondary btn-small">
+                                <i class="fas fa-download"></i> Export as File
+                            </button>
+                            <button id="exportCustomTextBtn" class="btn btn-secondary btn-small">
+                                <i class="fas fa-copy"></i> Copy as Text
+                            </button>
+                            <button id="importCustomBtn" class="btn btn-secondary btn-small">
+                                <i class="fas fa-upload"></i> Import Custom Entries
+                            </button>
+                        </div>
+
+                        <!-- Custom Boons Section -->
+                        <div class="custom-subsection">
+                            <h4><i class="fas fa-magic"></i> Custom Boons</h4>
+                            <button id="addCustomBoonBtn" class="btn btn-primary btn-small">
+                                <i class="fas fa-plus"></i> Add Custom Boon
+                            </button>
+                            <div class="options-grid" id="customBoonsGrid">
+                                <!-- Custom boons will be populated here -->
+                            </div>
+                        </div>
+
+                        <!-- Custom Banes Section -->
+                        <div class="custom-subsection">
+                            <h4><i class="fas fa-skull"></i> Custom Banes</h4>
+                            <button id="addCustomBaneBtn" class="btn btn-primary btn-small">
+                                <i class="fas fa-plus"></i> Add Custom Bane
+                            </button>
+                            <div class="options-grid" id="customBanesGrid">
+                                <!-- Custom banes will be populated here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -1624,6 +1667,243 @@
                     <h3><i class="fas fa-keyboard"></i> Paste JSON Data</h3>
                     <textarea id="importData" placeholder="Paste character data here..."></textarea>
                     <button id="confirmImportBtn" class="btn btn-primary">Import from Text</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Custom Boon Modal -->
+        <div id="customBoonModal" class="modal" style="display: none;">
+            <div class="modal-content modal-large">
+                <span class="close">&times;</span>
+                <h2><i class="fas fa-magic"></i> <span id="customBoonModalTitle">Create Custom Boon</span></h2>
+                
+                <div class="custom-form">
+                    <input type="hidden" id="customBoonId" value="">
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="customBoonName">Boon Name *</label>
+                            <input type="text" id="customBoonName" placeholder="Enter boon name" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="customBoonPowerLevels">Power Levels * (comma-separated, e.g., 1,3,5)</label>
+                            <input type="text" id="customBoonPowerLevels" placeholder="e.g., 1,3,5,7,9" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Attributes *</label>
+                        <div class="attributes-checkboxes">
+                            <label><input type="checkbox" name="customBoonAttr" value="agility"> Agility</label>
+                            <label><input type="checkbox" name="customBoonAttr" value="fortitude"> Fortitude</label>
+                            <label><input type="checkbox" name="customBoonAttr" value="might"> Might</label>
+                            <label><input type="checkbox" name="customBoonAttr" value="learning"> Learning</label>
+                            <label><input type="checkbox" name="customBoonAttr" value="logic"> Logic</label>
+                            <label><input type="checkbox" name="customBoonAttr" value="perception"> Perception</label>
+                            <label><input type="checkbox" name="customBoonAttr" value="will"> Will</label>
+                            <label><input type="checkbox" name="customBoonAttr" value="deception"> Deception</label>
+                            <label><input type="checkbox" name="customBoonAttr" value="persuasion"> Persuasion</label>
+                            <label><input type="checkbox" name="customBoonAttr" value="presence"> Presence</label>
+                            <label><input type="checkbox" name="customBoonAttr" value="alteration"> Alteration</label>
+                            <label><input type="checkbox" name="customBoonAttr" value="creation"> Creation</label>
+                            <label><input type="checkbox" name="customBoonAttr" value="energy"> Energy</label>
+                            <label><input type="checkbox" name="customBoonAttr" value="entropy"> Entropy</label>
+                            <label><input type="checkbox" name="customBoonAttr" value="influence"> Influence</label>
+                            <label><input type="checkbox" name="customBoonAttr" value="movement"> Movement</label>
+                            <label><input type="checkbox" name="customBoonAttr" value="prescience"> Prescience</label>
+                            <label><input type="checkbox" name="customBoonAttr" value="protection"> Protection</label>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="customBoonInvocationTime">Invocation Time *</label>
+                            <input type="text" id="customBoonInvocationTime" placeholder="e.g., 1 Major Action" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="customBoonDuration">Duration *</label>
+                            <input type="text" id="customBoonDuration" placeholder="e.g., sustained, instantaneous, permanent" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="customBoonGeneralDesc">General Description *</label>
+                        <textarea id="customBoonGeneralDesc" rows="3" placeholder="Enter general description of the boon" required></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="customBoonEffectDesc">Effect Description *</label>
+                        <textarea id="customBoonEffectDesc" rows="3" placeholder="Enter effect description" required></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Power Level Descriptions</label>
+                        <div id="customBoonPowerLevelDescs">
+                            <!-- Power level description fields will be generated dynamically -->
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="customBoonSpecialText">Special Text (optional)</label>
+                        <textarea id="customBoonSpecialText" rows="2" placeholder="Enter any special rules or notes"></textarea>
+                    </div>
+
+                    <div class="modal-actions">
+                        <button id="saveCustomBoonBtn" class="btn btn-primary">Save Boon</button>
+                        <button id="cancelCustomBoonBtn" class="btn btn-secondary">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Custom Bane Modal -->
+        <div id="customBaneModal" class="modal" style="display: none;">
+            <div class="modal-content modal-large">
+                <span class="close">&times;</span>
+                <h2><i class="fas fa-skull"></i> <span id="customBaneModalTitle">Create Custom Bane</span></h2>
+                
+                <div class="custom-form">
+                    <input type="hidden" id="customBaneId" value="">
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="customBaneName">Bane Name *</label>
+                            <input type="text" id="customBaneName" placeholder="Enter bane name" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="customBanePowerLevels">Power Levels * (comma-separated, e.g., 1,3,5)</label>
+                            <input type="text" id="customBanePowerLevels" placeholder="e.g., 1,3,5,7,9" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Attributes *</label>
+                        <div class="attributes-checkboxes">
+                            <label><input type="checkbox" name="customBaneAttr" value="agility"> Agility</label>
+                            <label><input type="checkbox" name="customBaneAttr" value="fortitude"> Fortitude</label>
+                            <label><input type="checkbox" name="customBaneAttr" value="might"> Might</label>
+                            <label><input type="checkbox" name="customBaneAttr" value="learning"> Learning</label>
+                            <label><input type="checkbox" name="customBaneAttr" value="logic"> Logic</label>
+                            <label><input type="checkbox" name="customBaneAttr" value="perception"> Perception</label>
+                            <label><input type="checkbox" name="customBaneAttr" value="will"> Will</label>
+                            <label><input type="checkbox" name="customBaneAttr" value="deception"> Deception</label>
+                            <label><input type="checkbox" name="customBaneAttr" value="persuasion"> Persuasion</label>
+                            <label><input type="checkbox" name="customBaneAttr" value="presence"> Presence</label>
+                            <label><input type="checkbox" name="customBaneAttr" value="alteration"> Alteration</label>
+                            <label><input type="checkbox" name="customBaneAttr" value="creation"> Creation</label>
+                            <label><input type="checkbox" name="customBaneAttr" value="energy"> Energy</label>
+                            <label><input type="checkbox" name="customBaneAttr" value="entropy"> Entropy</label>
+                            <label><input type="checkbox" name="customBaneAttr" value="influence"> Influence</label>
+                            <label><input type="checkbox" name="customBaneAttr" value="movement"> Movement</label>
+                            <label><input type="checkbox" name="customBaneAttr" value="prescience"> Prescience</label>
+                            <label><input type="checkbox" name="customBaneAttr" value="protection"> Protection</label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Defense Targets *</label>
+                        <p class="field-help">Specify which defense each attribute targets (leave blank if not applicable)</p>
+                        <div id="customBaneDefenseTargets">
+                            <!-- Defense target fields will be generated dynamically based on selected attributes -->
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="customBaneDuration">Duration *</label>
+                        <input type="text" id="customBaneDuration" placeholder="e.g., 1 round, 1 minute, instantaneous" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="customBaneGeneralDesc">General Description *</label>
+                        <textarea id="customBaneGeneralDesc" rows="3" placeholder="Enter general description of the bane" required></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="customBaneEffectDesc">Effect Description *</label>
+                        <textarea id="customBaneEffectDesc" rows="3" placeholder="Enter effect description" required></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Power Level Descriptions</label>
+                        <div id="customBanePowerLevelDescs">
+                            <!-- Power level description fields will be generated dynamically -->
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="customBaneSpecialText">Special Text (optional)</label>
+                        <textarea id="customBaneSpecialText" rows="2" placeholder="Enter any special rules or notes"></textarea>
+                    </div>
+
+                    <div class="modal-actions">
+                        <button id="saveCustomBaneBtn" class="btn btn-primary">Save Bane</button>
+                        <button id="cancelCustomBaneBtn" class="btn btn-secondary">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Export Custom Entries as Text Modal -->
+        <div id="exportCustomTextModal" class="modal" style="display: none;">
+            <div class="modal-content modal-large">
+                <span class="close">&times;</span>
+                <h2><i class="fas fa-copy"></i> Export Custom Entries as Text</h2>
+                
+                <div class="export-text-section">
+                    <p class="text-secondary">Copy the JSON data below to share or backup your custom boons and banes:</p>
+                    <textarea id="exportCustomTextArea" readonly rows="15" style="width: 100%; font-family: monospace; font-size: 0.85rem;"></textarea>
+                    <div class="modal-actions">
+                        <button id="copyExportTextBtn" class="btn btn-primary">
+                            <i class="fas fa-copy"></i> Copy to Clipboard
+                        </button>
+                        <button id="closeExportTextBtn" class="btn btn-secondary">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Import Custom Entries Modal -->
+        <div id="importCustomModal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h2>Import Custom Boons & Banes</h2>
+                
+                <!-- File Upload Section -->
+                <div class="import-section">
+                    <h3><i class="fas fa-file-upload"></i> Upload JSON File</h3>
+                    <div class="file-upload-area" id="customFileUploadArea">
+                        <input type="file" id="customJsonFileInput" accept=".json" style="display: none;">
+                        <div class="upload-placeholder" id="customUploadPlaceholder">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <p>Click to select a JSON file or drag and drop here</p>
+                            <p class="upload-hint">Supports .json files only</p>
+                        </div>
+                        <div class="file-info" id="customFileInfo" style="display: none;">
+                            <i class="fas fa-file-code"></i>
+                            <span id="customFileName">filename.json</span>
+                            <button type="button" id="removeCustomFileBtn" class="btn btn-small btn-danger">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <button id="uploadCustomFileBtn" class="btn btn-primary" style="display: none;">
+                        <i class="fas fa-upload"></i> Import from File
+                    </button>
+                </div>
+                
+                <!-- Divider -->
+                <div class="import-divider">
+                    <span>or</span>
+                </div>
+                
+                <!-- Manual Input Section -->
+                <div class="import-section">
+                    <h3><i class="fas fa-keyboard"></i> Paste JSON Data</h3>
+                    <textarea id="importCustomData" placeholder="Paste custom boons and banes data here..."></textarea>
+                    <button id="confirmImportCustomBtn" class="btn btn-primary">Import from Text</button>
                 </div>
             </div>
         </div>
