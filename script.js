@@ -245,6 +245,9 @@ class CharacterSheetApp {
             document.getElementById('addPerkBtn').addEventListener('click', () => this.addPerk());
             document.getElementById('addFlawBtn').addEventListener('click', () => this.addFlaw());
         
+            // Favorite actions
+            this.safeAddEventListener('addFavoriteActionBtn', 'click', () => this.addFavoriteAction());
+        
             // Character image upload
             document.getElementById('uploadImageBtn').addEventListener('click', () => this.triggerImageUpload());
             document.getElementById('imagePreview').addEventListener('click', () => this.triggerImageUpload());
@@ -954,6 +957,22 @@ class CharacterSheetApp {
             
         } catch (error) {
             console.error('Error switching section:', error);
+        }
+    }
+
+    // Toggle collapsible section
+    toggleCollapsibleSection(contentId) {
+        const content = document.getElementById(contentId);
+        const icon = document.getElementById(contentId.replace('Content', 'Icon'));
+        
+        if (!content) return;
+        
+        if (content.classList.contains('collapsed')) {
+            content.classList.remove('collapsed');
+            if (icon) icon.classList.remove('collapsed');
+        } else {
+            content.classList.add('collapsed');
+            if (icon) icon.classList.add('collapsed');
         }
     }
 
@@ -2249,6 +2268,9 @@ class CharacterSheetApp {
         if (this.currentCharacter.manualSettings === undefined) {
             this.currentCharacter.manualSettings = false;
         }
+        if (this.currentCharacter.favoriteActions === undefined) {
+            this.currentCharacter.favoriteActions = [];
+        }
         // swiftWeaponAdvantage removed - no longer needed
 
         
@@ -2291,6 +2313,7 @@ class CharacterSheetApp {
         this.updateFeatIcons();
         this.populatePerks();
         this.populateFlaws();
+        this.populateFavoriteActions();
         this.populateEquipment();
         this.updateWealthDisplay(); // Update wealth display to include feat bonuses
         
@@ -2875,6 +2898,9 @@ class CharacterSheetApp {
         
         // Update total points spent
         this.updateTotalPointsSpent();
+        
+        // Update favorite actions (attribute scores and dice may have changed)
+        this.populateFavoriteActions();
         
         // Update feat icons
         this.updateFeatIcons();
@@ -3875,7 +3901,7 @@ class CharacterSheetApp {
         // Add disadvantage for all attributes
         this.currentCharacter.disadvantages.push({
             name: 'Blinded',
-            attribute: 'All Attributes',
+            attribute: 'all attributes',
             count: 5,
             source: 'Blinded Bane'
         });
@@ -3931,7 +3957,7 @@ class CharacterSheetApp {
             // Add disadvantage for all attributes
             this.currentCharacter.disadvantages.push({
                 name: 'Demoralized',
-                attribute: 'All Attributes',
+                attribute: 'all attributes',
                 count: disadvantageValue,
                 source: 'Demoralized Bane'
             });
@@ -3973,7 +3999,7 @@ class CharacterSheetApp {
         if (level >= 1) {
             this.currentCharacter.disadvantages.push({
                 name: 'Fatigued: 1 - Non-Attack Actions',
-                attribute: 'All Attributes',
+                attribute: 'all attributes',
                 count: 1,
                 source: 'Fatigued Bane'
             });
@@ -4002,7 +4028,7 @@ class CharacterSheetApp {
         if (level >= 3) {
             this.currentCharacter.disadvantages.push({
                 name: 'Fatigued: 3 - Attack Rolls',
-                attribute: 'All Attributes',
+                attribute: 'all attributes',
                 count: 1,
                 source: 'Fatigued Bane'
             });
@@ -4108,7 +4134,7 @@ class CharacterSheetApp {
         // Add disadvantage for all attributes
         this.currentCharacter.disadvantages.push({
             name: 'Prone: Attack',
-            attribute: 'All Attributes',
+            attribute: 'all attributes',
             count: 1,
             source: 'Knockdown Bane'
         });
@@ -4144,7 +4170,7 @@ class CharacterSheetApp {
             // Add disadvantage for all attributes
             this.currentCharacter.disadvantages.push({
                 name: 'Provoked',
-                attribute: 'All Attributes',
+                attribute: 'all attributes',
                 count: disadvantageValue,
                 source: 'Provoked Bane'
             });
@@ -4168,7 +4194,7 @@ class CharacterSheetApp {
         // Add disadvantage for all attributes
         this.currentCharacter.disadvantages.push({
             name: 'Sickened: Action Rolls',
-            attribute: 'All Attributes',
+            attribute: 'all attributes',
             count: 1,
             source: 'Sickened Bane'
         });
@@ -7413,7 +7439,7 @@ class CharacterSheetApp {
         if (!this.currentCharacter.disadvantages.some(d => d.name === disadvantageName)) {
             const disadvantage = {
                 name: disadvantageName,
-                attribute: attribute || 'All Attributes', // Default to "All Attributes" if undefined
+                attribute: attribute || 'all attributes', // Default to "all attributes" if undefined
                 count: count
             };
             this.currentCharacter.disadvantages.push(disadvantage);
@@ -7601,7 +7627,7 @@ class CharacterSheetApp {
         if (hasteBoon.powerLevel >= 6) {
             this.currentCharacter.disadvantages.push({
                 name: 'Haste: Extra Major Action',
-                attribute: 'All Attributes',
+                attribute: 'all attributes',
                 count: 3,
                 source: 'Haste Boon'
             });
@@ -7610,7 +7636,7 @@ class CharacterSheetApp {
         if (hasteBoon.powerLevel >= 8) {
             this.currentCharacter.disadvantages.push({
                 name: 'Haste: Extra Major Action 2',
-                attribute: 'All Attributes',
+                attribute: 'all attributes',
                 count: 3,
                 source: 'Haste Boon'
             });
@@ -8079,7 +8105,7 @@ class CharacterSheetApp {
         if (hasResilient) {
             this.currentCharacter.advantages.push({
                 name: 'Resist Bane',
-                attribute: 'Any',
+                attribute: 'all attributes',
                 count: 1
             });
         }
@@ -8089,7 +8115,7 @@ class CharacterSheetApp {
             if (feat.tier > 0 && feat.customDetails) {
                 this.currentCharacter.advantages.push({
                     name: `Attack Specialization: ${feat.customDetails}`,
-                    attribute: 'All Attributes', // Applies to all attributes since weapons can use different attributes
+                    attribute: 'all attributes', // Applies to all attributes since weapons can use different attributes
                     count: feat.tier
                 });
             }
@@ -8101,7 +8127,7 @@ class CharacterSheetApp {
             if (feat.tier > 0 && feat.customDetails) {
                 this.currentCharacter.advantages.push({
                     name: `Bane Attack: ${feat.customDetails}`,
-                    attribute: 'All Attributes',
+                    attribute: 'all attributes',
                     count: 2 // Advantage 2 on bane attack roll as per feat description
                 });
             }
@@ -8130,7 +8156,7 @@ class CharacterSheetApp {
                 
                 this.currentCharacter.advantages.push({
                     name: `Boon Focus: ${feat.customDetails}`,
-                    attribute: 'All Attributes',
+                    attribute: 'all attributes',
                     count: advantageValue
                 });
             }
@@ -8197,14 +8223,14 @@ class CharacterSheetApp {
                     // Two-handed weapon: Add advantage 1 for all attributes
                     this.currentCharacter.advantages.push({
                         name: 'Two-Handed Weapon',
-                        attribute: 'All Attributes',
+                        attribute: 'all attributes',
                         count: 1
                     });
                 } else if (oneHandedWeapons.length >= 2) {
                     // Dual-wielding: Add advantage 1 for all attributes
                     this.currentCharacter.advantages.push({
                         name: '2 One-Handed Weapons',
-                        attribute: 'All Attributes',
+                        attribute: 'all attributes',
                         count: 1
                     });
                 }
@@ -8364,6 +8390,9 @@ class CharacterSheetApp {
         } else {
             resultElement.textContent = 'Advantage: 0';
         }
+        
+        // Refresh favorite actions to update their advantage/disadvantage displays
+        this.populateFavoriteActions();
     }
 
     // Update advantage count
@@ -11694,6 +11723,177 @@ class CharacterSheetApp {
     }
 
     // === END MANUAL SETTINGS & CUSTOM HEALTH BUFF ===
+
+    // === FAVORITE ACTIONS ===
+
+    // Add favorite action
+    addFavoriteAction() {
+        if (!this.currentCharacter) return;
+        
+        const nameInput = document.getElementById('favoriteActionName');
+        const attributeSelect = document.getElementById('favoriteActionAttribute');
+        const timeInput = document.getElementById('favoriteActionTime');
+        
+        const name = nameInput.value.trim();
+        const attribute = attributeSelect.value;
+        const invocationTime = timeInput.value.trim();
+        
+        if (!name) {
+            this.showNotification('Please enter an action name.', 'error');
+            return;
+        }
+        
+        if (!attribute) {
+            this.showNotification('Please select an attribute.', 'error');
+            return;
+        }
+        
+        if (!invocationTime) {
+            this.showNotification('Please enter an invocation time.', 'error');
+            return;
+        }
+        
+        // Initialize favoriteActions array if it doesn't exist
+        if (!this.currentCharacter.favoriteActions) {
+            this.currentCharacter.favoriteActions = [];
+        }
+        
+        const favoriteAction = {
+            id: Date.now().toString() + '_fav',
+            name,
+            attribute,
+            invocationTime
+        };
+        
+        this.currentCharacter.favoriteActions.push(favoriteAction);
+        
+        // Clear inputs
+        nameInput.value = '';
+        attributeSelect.value = '';
+        timeInput.value = '';
+        
+        // Refresh display
+        this.populateFavoriteActions();
+        this.autoSave();
+        this.showNotification('Favorite action added!', 'success');
+    }
+
+    // Remove favorite action
+    removeFavoriteAction(actionId) {
+        if (!this.currentCharacter) return;
+        
+        this.currentCharacter.favoriteActions = this.currentCharacter.favoriteActions.filter(a => a.id !== actionId);
+        this.populateFavoriteActions();
+        this.autoSave();
+        this.showNotification('Favorite action removed.', 'info');
+    }
+
+    // Populate favorite actions list
+    populateFavoriteActions() {
+        if (!this.currentCharacter) return;
+        
+        const listEl = document.getElementById('favoriteActionsList');
+        if (!listEl) return;
+        
+        listEl.innerHTML = '';
+        
+        if (!this.currentCharacter.favoriteActions || this.currentCharacter.favoriteActions.length === 0) {
+            listEl.innerHTML = '<p class="text-secondary" style="text-align: center; padding: var(--spacing-lg);">No favorite actions yet. Add one below!</p>';
+            return;
+        }
+        
+        this.currentCharacter.favoriteActions.forEach(action => {
+            const item = document.createElement('div');
+            item.className = 'favorite-action-item';
+            
+            // Get attribute score and dice
+            const attributeScore = this.getEffectiveAttributeScore(action.attribute);
+            const attributeDice = this.calculateAttributeDice(attributeScore, action.attribute);
+            
+            // Calculate advantage/disadvantage for this attribute
+            const advantageResult = this.calculateAttributeAdvantageDisadvantage(action.attribute);
+            
+            // Format advantage/disadvantage display
+            let advantageText = '';
+            let advantageClass = 'neutral';
+            if (advantageResult > 0) {
+                advantageText = `Advantage ${advantageResult}`;
+                advantageClass = 'positive';
+            } else if (advantageResult < 0) {
+                advantageText = `Disadvantage ${Math.abs(advantageResult)}`;
+                advantageClass = 'negative';
+            } else {
+                advantageText = 'No Adv/Dis';
+                advantageClass = 'neutral';
+            }
+            
+            item.innerHTML = `
+                <div class="favorite-action-main">
+                    <div class="favorite-action-header">
+                        <span class="favorite-action-name">${action.name}</span>
+                        <span class="favorite-action-badge">${action.attribute.charAt(0).toUpperCase() + action.attribute.slice(1)}</span>
+                        <span class="favorite-action-badge">${action.invocationTime}</span>
+                    </div>
+                    <div class="favorite-action-stats">
+                        <div class="favorite-action-stat">
+                            <strong>Score:</strong> <span>${attributeScore}</span>
+                        </div>
+                        <div class="favorite-action-stat">
+                            <strong>Dice:</strong> <span class="favorite-action-dice">${attributeDice}</span>
+                        </div>
+                        <div class="favorite-action-stat">
+                            <span class="favorite-action-advantage ${advantageClass}">${advantageText}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="favorite-action-remove">
+                    <button class="btn btn-small btn-danger favorite-action-delete-btn" onclick="window.app.removeFavoriteAction('${action.id}')">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            `;
+            
+            listEl.appendChild(item);
+        });
+    }
+
+    // Calculate advantage/disadvantage for a specific attribute
+    calculateAttributeAdvantageDisadvantage(attributeName) {
+        if (!this.currentCharacter) return 0;
+        
+        let totalAdvantage = 0;
+        let totalDisadvantage = 0;
+        
+        // Check advantages - read from DOM checkboxes
+        if (this.currentCharacter.advantages) {
+            this.currentCharacter.advantages.forEach(adv => {
+                // Check if checkbox is checked in DOM
+                const checkbox = document.getElementById(`adv_${adv.name}`);
+                const isChecked = checkbox ? checkbox.checked : true; // Default to true if checkbox not found
+                
+                if (isChecked && (adv.attribute === attributeName || adv.attribute === 'all attributes')) {
+                    totalAdvantage += adv.count || 1;
+                }
+            });
+        }
+        
+        // Check disadvantages - read from DOM checkboxes
+        if (this.currentCharacter.disadvantages) {
+            this.currentCharacter.disadvantages.forEach(dis => {
+                // Check if checkbox is checked in DOM
+                const checkbox = document.getElementById(`dis_${dis.name}`);
+                const isChecked = checkbox ? checkbox.checked : true; // Default to true if checkbox not found
+                
+                if (isChecked && (dis.attribute === attributeName || dis.attribute === 'all attributes')) {
+                    totalDisadvantage += dis.count || 1;
+                }
+            });
+        }
+        
+        return totalAdvantage - totalDisadvantage;
+    }
+
+    // === END FAVORITE ACTIONS ===
 
     // Update character name display
     updateCharacterNameDisplay() {

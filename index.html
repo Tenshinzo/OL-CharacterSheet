@@ -768,9 +768,12 @@
 
                 <!-- Available Boons & Banes Section -->
                 <div id="availableBoonsBanesSection" class="content-section">
-                    <div class="section-header">
+                    <div class="section-header collapsible-header" onclick="window.app.toggleCollapsibleSection('availableBoonsBanesContent')">
                         <h3><i class="fas fa-magic"></i> Available Boons & Banes</h3>
+                        <i class="fas fa-chevron-down collapse-icon" id="availableBoonsBanesIcon"></i>
                     </div>
+                    
+                    <div id="availableBoonsBanesContent" class="collapsible-content">
                     <div class="boons-banes-container">
                         <!-- Boons Section -->
                         <div class="boons-section">
@@ -788,74 +791,62 @@
                             </div>
                         </div>
                     </div>
-                </div>
-                
-                <!-- Initiative & Movement Section -->
-                <div id="initiativeMovementSection" class="content-section">
-                    <div class="section-header">
-                        <h3><i class="fas fa-running"></i> Initiative & Movement</h3>
-                    </div>
-                    <div class="initiative-movement-section">
-                        <div class="initiative-group">
-                            <h5>Initiative</h5>
-                            <div class="initiative-display">
-                                <span class="initiative-label">Initiative Score:</span>
-                                <span id="initiativeScore" class="initiative-value">0</span>
-                                <span class="initiative-dice" id="initiativeDice">1d4</span>
-                            </div>
-                            <div class="initiative-advantage">
-                                <label class="initiative-checkbox" id="initiativeWeaponAdvantage">
-                                    
-                                </label>
-                            </div>
-                        </div>
-                        
-                        <div class="movement-group">
-                            <h5>Movement</h5>
-                            <div class="movement-stats">
-                                <div class="movement-stat">
-                                    <label>Movement Speed:</label>
-                                    <span id="movementSpeed" class="movement-value">30</span>
-                                    <input type="number" id="movementSpeedManual" class="manual-override-input manual-always-visible" style="display: none;" min="0" max="999" step="5">
-                                    <span class="movement-unit">feet</span>
-                                </div>
-                                <div class="movement-stat">
-                                    <label>Climbing Speed:</label>
-                                    <span id="climbingSpeed" class="movement-value">15</span>
-                                    <input type="number" id="climbingSpeedManual" class="manual-override-input manual-always-visible" style="display: none;" min="0" max="999" step="5">
-                                    <span class="movement-unit">feet</span>
-                                </div>
-                                <div class="movement-stat">
-                                    <label>Swimming Speed:</label>
-                                    <span id="swimmingSpeed" class="movement-value">15</span>
-                                    <input type="number" id="swimmingSpeedManual" class="manual-override-input manual-always-visible" style="display: none;" min="0" max="999" step="5">
-                                    <span class="movement-unit">feet</span>
-                                </div>
-                                <div class="movement-stat hidden" id="flyingSpeedContainer">
-                                    <label>Flying Speed:</label>
-                                    <span id="flyingSpeed" class="movement-value">30</span>
-                                    <input type="number" id="flyingSpeedManual" class="manual-override-input manual-always-visible" style="display: none;" min="0" max="999" step="5">
-                                    <span class="movement-unit">feet</span>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="legend-points-group">
-                            <h5>Legend Points</h5>
-                            <div class="legend-points-display">
-                                <button id="decreaseLegendBtn" class="btn btn-small view-mode-btn">-</button>
-                                <span id="legendPoints" class="legend-points-value">0</span>
-                                <button id="increaseLegendBtn" class="btn btn-small view-mode-btn">+</button>
-                                <span class="legend-points-max">/ 10</span>
-                            </div>
-                        </div>
-                    </div>
+                    </div> <!-- Close collapsible-content -->
                 </div>
                 
                 <!-- Effects Section -->
                 <div id="effectsSection" class="content-section">
                     <div class="section-header">
                         <h3><i class="fas fa-magic"></i> Effects</h3>
+                    </div>
+                    
+                    <!-- Favorite Actions Section -->
+                    <div class="favorite-actions-section">
+                        <div class="section-header">
+                            <h4><i class="fas fa-star"></i> Favorite Actions</h4>
+                        </div>
+                        <div class="favorite-actions-list" id="favoriteActionsList">
+                            <!-- Favorite actions will be populated here -->
+                        </div>
+                        <div class="add-favorite-action">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="favoriteActionName">Action Name/Description</label>
+                                    <input type="text" id="favoriteActionName" placeholder="e.g., Fireball Attack, Persuade Guard">
+                                </div>
+                                <div class="form-group">
+                                    <label for="favoriteActionAttribute">Attribute</label>
+                                    <select id="favoriteActionAttribute">
+                                        <option value="">Choose Attribute...</option>
+                                        <option value="agility">Agility</option>
+                                        <option value="fortitude">Fortitude</option>
+                                        <option value="might">Might</option>
+                                        <option value="learning">Learning</option>
+                                        <option value="logic">Logic</option>
+                                        <option value="perception">Perception</option>
+                                        <option value="will">Will</option>
+                                        <option value="deception">Deception</option>
+                                        <option value="persuasion">Persuasion</option>
+                                        <option value="presence">Presence</option>
+                                        <option value="alteration">Alteration</option>
+                                        <option value="creation">Creation</option>
+                                        <option value="energy">Energy</option>
+                                        <option value="entropy">Entropy</option>
+                                        <option value="influence">Influence</option>
+                                        <option value="movement">Movement</option>
+                                        <option value="prescience">Prescience</option>
+                                        <option value="protection">Protection</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="favoriteActionTime">Invocation Time</label>
+                                    <input type="text" id="favoriteActionTime" placeholder="e.g., 1 Major Action">
+                                </div>
+                            </div>
+                            <button id="addFavoriteActionBtn" class="btn btn-primary btn-small">
+                                <i class="fas fa-plus"></i> Add Favorite Action
+                            </button>
+                        </div>
                     </div>
                     
                     <!-- Advantage Summary and Filter -->
@@ -1039,6 +1030,68 @@
                                     <option value="">Choose Power Level...</option>
                                 </select>
                                 <button id="addBaneBtn" class="btn btn-small view-mode-btn">Add</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Initiative & Movement Section -->
+                <div id="initiativeMovementSection" class="content-section">
+                    <div class="section-header">
+                        <h3><i class="fas fa-running"></i> Initiative & Movement</h3>
+                    </div>
+                    <div class="initiative-movement-section">
+                        <div class="initiative-group">
+                            <h5>Initiative</h5>
+                            <div class="initiative-display">
+                                <span class="initiative-label">Initiative Score:</span>
+                                <span id="initiativeScore" class="initiative-value">0</span>
+                                <span class="initiative-dice" id="initiativeDice">1d4</span>
+                            </div>
+                            <div class="initiative-advantage">
+                                <label class="initiative-checkbox" id="initiativeWeaponAdvantage">
+                                    
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="movement-group">
+                            <h5>Movement</h5>
+                            <div class="movement-stats">
+                                <div class="movement-stat">
+                                    <label>Movement Speed:</label>
+                                    <span id="movementSpeed" class="movement-value">30</span>
+                                    <input type="number" id="movementSpeedManual" class="manual-override-input manual-always-visible" style="display: none;" min="0" max="999" step="5">
+                                    <span class="movement-unit">feet</span>
+                                </div>
+                                <div class="movement-stat">
+                                    <label>Climbing Speed:</label>
+                                    <span id="climbingSpeed" class="movement-value">15</span>
+                                    <input type="number" id="climbingSpeedManual" class="manual-override-input manual-always-visible" style="display: none;" min="0" max="999" step="5">
+                                    <span class="movement-unit">feet</span>
+                                </div>
+                                <div class="movement-stat">
+                                    <label>Swimming Speed:</label>
+                                    <span id="swimmingSpeed" class="movement-value">15</span>
+                                    <input type="number" id="swimmingSpeedManual" class="manual-override-input manual-always-visible" style="display: none;" min="0" max="999" step="5">
+                                    <span class="movement-unit">feet</span>
+                                </div>
+                                <div class="movement-stat hidden" id="flyingSpeedContainer">
+                                    <label>Flying Speed:</label>
+                                    <span id="flyingSpeed" class="movement-value">30</span>
+                                    <input type="number" id="flyingSpeedManual" class="manual-override-input manual-always-visible" style="display: none;" min="0" max="999" step="5">
+                                    <span class="movement-unit">feet</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="legend-points-group">
+                            <h5>Legend Points</h5>
+                            <div class="legend-points-display">
+                                <button id="decreaseLegendBtn" class="btn btn-small view-mode-btn">-</button>
+                                <span id="legendPoints" class="legend-points-value">0</span>
+                                <button id="increaseLegendBtn" class="btn btn-small view-mode-btn">+</button>
+                                <span class="legend-points-max">/ 10</span>
                             </div>
                         </div>
                     </div>

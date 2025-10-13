@@ -1794,6 +1794,39 @@ body {
     font-size: var(--font-size-base);
 }
 
+/* Collapsible Section Styles */
+.collapsible-header {
+    cursor: pointer;
+    user-select: none;
+    transition: background-color 0.2s ease;
+}
+
+.collapsible-header:hover {
+    background: linear-gradient(135deg, rgba(241, 245, 249, 0.95) 0%, rgba(226, 232, 240, 0.95) 100%);
+}
+
+.collapse-icon {
+    color: var(--primary);
+    font-size: var(--font-size-base);
+    transition: transform 0.3s ease;
+}
+
+.collapse-icon.collapsed {
+    transform: rotate(-90deg);
+}
+
+.collapsible-content {
+    max-height: 5000px;
+    overflow: hidden;
+    transition: max-height 0.4s ease, opacity 0.3s ease;
+    opacity: 1;
+}
+
+.collapsible-content.collapsed {
+    max-height: 0;
+    opacity: 0;
+}
+
 .section-content {
     padding: var(--spacing-lg);
 }
@@ -6317,6 +6350,129 @@ input[type="range"]::-moz-range-thumb:hover {
     margin-left: var(--spacing-xs);
 }
 
+/* Favorite Actions Styles */
+.favorite-actions-section {
+    margin-bottom: var(--spacing-2xl);
+    padding-bottom: var(--spacing-2xl);
+    border-bottom: 2px solid var(--border-light);
+}
+
+.favorite-actions-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-lg);
+}
+
+.favorite-action-item {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(139, 92, 246, 0.05) 100%);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-md);
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: var(--spacing-md);
+    transition: var(--transition-base);
+}
+
+.favorite-action-item:hover {
+    box-shadow: var(--shadow-md);
+    border-color: var(--perk-color);
+    transform: translateY(-1px);
+}
+
+.favorite-action-main {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+}
+
+.favorite-action-header {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    flex-wrap: wrap;
+}
+
+.favorite-action-name {
+    font-weight: 600;
+    color: var(--perk-dark);
+    font-size: var(--font-size-base);
+}
+
+.favorite-action-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    padding: var(--spacing-xs) var(--spacing-sm);
+    background: var(--perk-color);
+    color: white;
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+}
+
+.favorite-action-stats {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-lg);
+    flex-wrap: wrap;
+    font-size: var(--font-size-sm);
+}
+
+.favorite-action-stat {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+}
+
+.favorite-action-stat strong {
+    color: var(--text-secondary);
+}
+
+.favorite-action-dice {
+    font-weight: 700;
+    color: var(--perk-color);
+    background: var(--perk-light);
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: var(--radius-sm);
+}
+
+.favorite-action-advantage {
+    font-weight: 600;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: var(--radius-sm);
+}
+
+.favorite-action-advantage.positive {
+    color: var(--success);
+    background: rgba(16, 185, 129, 0.1);
+}
+
+.favorite-action-advantage.negative {
+    color: var(--danger);
+    background: rgba(239, 68, 68, 0.1);
+}
+
+.favorite-action-advantage.neutral {
+    color: var(--text-secondary);
+}
+
+.favorite-action-remove {
+    align-self: flex-start;
+}
+
+.add-favorite-action {
+    background: var(--gray-50);
+    padding: var(--spacing-lg);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-light);
+}
+
+.add-favorite-action .form-row {
+    margin-bottom: var(--spacing-md);
+}
+
 .custom-health-buff {
     display: flex;
     align-items: center;
@@ -7888,7 +8044,14 @@ input[type="range"]::-moz-range-thumb:hover {
 }
 
 .view-mode .form-group textarea:not(#charNotes),
-.view-mode .form-group input:not(#charNotes):not(.manual-override-input):not(#customHealthBuff) {
+.view-mode .form-group input:not(#charNotes):not(.manual-override-input):not(#customHealthBuff):not(#favoriteActionName):not(#favoriteActionTime) {
+    pointer-events: none;
+    background-color: var(--gray-100);
+    color: var(--text-secondary);
+    border: 1px solid var(--gray-300);
+}
+
+.view-mode .form-group select:not(#favoriteActionAttribute) {
     pointer-events: none;
     background-color: var(--gray-100);
     color: var(--text-secondary);
@@ -7898,6 +8061,33 @@ input[type="range"]::-moz-range-thumb:hover {
 /* Manual override inputs and custom health buff remain editable in view mode */
 .view-mode .manual-override-input,
 .view-mode #customHealthBuff {
+    pointer-events: auto;
+    cursor: pointer;
+}
+
+/* Favorite actions remain editable in view mode */
+.view-mode #favoriteActionName,
+.view-mode #favoriteActionAttribute,
+.view-mode #favoriteActionTime {
+    pointer-events: auto !important;
+    cursor: pointer !important;
+    background-color: var(--white) !important;
+    color: var(--text-primary) !important;
+    border-color: var(--border-light) !important;
+}
+
+.view-mode #addFavoriteActionBtn {
+    display: inline-flex !important;
+    pointer-events: auto !important;
+    cursor: pointer !important;
+    opacity: 1 !important;
+}
+
+.view-mode .add-favorite-action {
+    display: block !important;
+}
+
+.view-mode .favorite-action-remove button {
     pointer-events: auto;
     cursor: pointer;
 }
@@ -7938,7 +8128,7 @@ input[type="range"]::-moz-range-thumb:hover {
     box-shadow: none;
 }
 
-.view-mode .btn:not(.edit-mode-btn):not(.view-mode-btn):not(#addEquipmentBtn) {
+.view-mode .btn:not(.edit-mode-btn):not(.view-mode-btn):not(#addEquipmentBtn):not(#addFavoriteActionBtn):not(.favorite-action-delete-btn) {
     display: none !important;
 }
 
