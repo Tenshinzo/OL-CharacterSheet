@@ -801,7 +801,7 @@ class CharacterSheetApp {
             // Showing main page...
             const mainPage = document.getElementById('mainPage');
             const characterSheetPage = document.getElementById('characterSheetPage');
-            const headerSection = document.getElementById('headerSection');
+            const headerSection = document.getElementById('appHeader');
             
             if (!mainPage || !characterSheetPage) {
                 throw new Error('Required page elements not found');
@@ -9743,7 +9743,7 @@ class CharacterSheetApp {
         
         window.GAME_DATABASE.boons.forEach(boon => {
             // Check if character has any of the required attributes at sufficient level
-            const hasRequiredAttribute = boon.attributes.some(attributeName => {
+            const hasRequiredAttribute = (boon.attributes || []).some(attributeName => {
                 const attributeScore = this.getEffectiveAttributeScoreForPDF(character, attributeName);
                 
                 // Check if any power level is accessible
@@ -9777,7 +9777,7 @@ class CharacterSheetApp {
         
         window.GAME_DATABASE.banes.forEach(bane => {
             // Check if character has any of the required attributes at sufficient level
-            const hasRequiredAttribute = bane.attributes.some(attributeName => {
+            const hasRequiredAttribute = (bane.attributes || []).some(attributeName => {
                 const attributeScore = this.getEffectiveAttributeScoreForPDF(character, attributeName);
                 
                 // Check if any power level is accessible
@@ -11181,7 +11181,7 @@ class CharacterSheetApp {
         const target = document.getElementById(pageId);
         if (target) target.style.display = 'block';
         document.body.classList.toggle('showing-main-page', pageId === 'mainPage');
-        const header = document.getElementById('headerSection');
+        const header = document.getElementById('appHeader');
         if (header) header.style.display = 'block';
         if (pageId !== 'characterSheetPage') this.currentCharacter = null;
     }
@@ -14124,7 +14124,7 @@ class CharacterSheetApp {
             const usableAttributes = [];
             
             // Check if character has any of the required attributes at sufficient level
-            const hasRequiredAttribute = boon.attributes.some(attributeName => {
+            const hasRequiredAttribute = (boon.attributes || []).some(attributeName => {
                 const attributeScore = this.getEffectiveAttributeScore(attributeName);
                 
                 // Check if any power level is accessible (including equipment bonuses)
@@ -14213,7 +14213,7 @@ class CharacterSheetApp {
             const usableAttributes = [];
             
             // Check if character has any of the required attributes at sufficient level
-            const hasRequiredAttribute = bane.attributes.some(attributeName => {
+            const hasRequiredAttribute = (bane.attributes || []).some(attributeName => {
                 const attributeScore = this.getEffectiveAttributeScore(attributeName);
                 
                 // Check if any power level is accessible (including equipment bonuses)
