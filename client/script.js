@@ -10872,7 +10872,13 @@ class CharacterSheetApp {
             if (window.OLAuthUI) window.OLAuthUI.features = this.cloud.features;
             if (res.user) {
                 this.currentUser = res.user;
-                if (this.needsEmailVerification(res.user) && !this.isAuthRoute(this.parseRoute().route, ['verify-email'])) {
+                const { route, params } = this.parseRoute();
+                if (route === 'verify-email' && params.token) {
+                    // Let the auth UI consume the token; it calls onAuthenticated() afterwards.
+                    window.OLAuthUI?.show?.('verify-email', params);
+                    return;
+                }
+                if (this.needsEmailVerification(res.user)) {
                     window.OLAuthUI?.renderUserMenu?.(null);
                     window.OLAuthUI?.showVerifyNotice?.(res.user);
                     this.showPage('loginPage');
