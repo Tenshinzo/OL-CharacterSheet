@@ -6,21 +6,18 @@ class CharacterSheetApp {
             // Check if required elements exist - moved to after DOM is ready
             // this.checkRequiredElements();
             
-            this.characters = this.loadCharacters();
-            // Clean up any remaining legacy fields and save
-            if (this.characters.length > 0) {
-                this.characters.forEach(character => this.migrateLegacyFields(character));
-                this.saveCharacters();
-            }
+            // Characters are loaded from the server after authentication (see initializeCloud).
+            this.characters = [];
+            this.characterMeta = {};   // id -> { ownerId, ownerName, access: 'owner'|'gm', version }
+            this.currentUser = null;
             this.currentCharacter = null;
             this.selectedFile = null;
-            
-            // Load custom boons and banes
-            this.customBoons = this.loadCustomBoons();
-            this.customBanes = this.loadCustomBanes();
-            
+            this.customBoons = [];
+            this.customBanes = [];
+            this.cloud = { ready: false, snapshot: new Map(), applyingRemote: false, features: {} };
+
             this.initializeEventListeners();
-            this.showMainPage();
+            this.initializeCloud();
 
             // Populate dropdowns after a short delay to ensure DOM is ready
             setTimeout(() => {
@@ -132,11 +129,12 @@ class CharacterSheetApp {
         
             // Main page controls
             this.safeAddEventListener('createFirstCharBtn', 'click', () => this.createNewCharacter());
-            this.safeAddEventListener('optionsListBtn', 'click', () => this.showOptionsListPage());
+            this.safeAddEventListener('optionsListBtn', 'click', () => this.navigate('#/options'));
+            this.safeAddEventListener('groupsBtn', 'click', () => this.navigate('#/groups'));
         
             // Character sheet controls
-            this.safeAddEventListener('backToMainBtn', 'click', () => this.showMainPage());
-            this.safeAddEventListener('backToMainFromOptionsBtn', 'click', () => this.showMainPage());
+            this.safeAddEventListener('backToMainBtn', 'click', () => this.navigate('#/'));
+            this.safeAddEventListener('backToMainFromOptionsBtn', 'click', () => this.navigate('#/'));
             this.safeAddEventListener('saveCharBtn', 'click', () => this.saveCurrentCharacter());
             this.safeAddEventListener('editCharBtn', 'click', () => this.toggleViewMode());
         
@@ -809,10 +807,12 @@ class CharacterSheetApp {
                 throw new Error('Required page elements not found');
             }
             
+            this.hideCloudPages();
             mainPage.style.display = 'block';
             characterSheetPage.style.display = 'none';
             document.getElementById('optionsListPage').style.display = 'none';
             this.currentCharacter = null;
+            this.stopPeriodicValidation();
             
             // Add class to body to show footer
             document.body.classList.add('showing-main-page');
@@ -841,7 +841,9 @@ class CharacterSheetApp {
 
     // Show character sheet page
     showCharacterSheetPage(initialMode = 'view') {
+        this.hideCloudPages();
         document.getElementById('mainPage').style.display = 'none';
+        document.getElementById('optionsListPage').style.display = 'none';
         document.getElementById('characterSheetPage').style.display = 'block';
         
         // Remove class from body to hide footer
@@ -861,7 +863,9 @@ class CharacterSheetApp {
     // Show options list page
     showOptionsListPage() {
         // showOptionsListPage called
+        this.hideCloudPages();
         document.getElementById('mainPage').style.display = 'none';
+        document.getElementById('characterSheetPage').style.display = 'none';
         document.getElementById('optionsListPage').style.display = 'block';
         
         // Remove class from body to hide footer
@@ -989,21 +993,23 @@ class CharacterSheetApp {
             
             // Characters found
             
-            if (this.characters.length === 0) {
+            const own = this.characters.filter(c => this.getCharacterAccess(c.id) !== 'gm');
+            const gm = this.characters.filter(c => this.getCharacterAccess(c.id) === 'gm');
+
+            if (own.length === 0) {
                 characterGrid.style.display = 'none';
                 emptyState.style.display = 'block';
-                // Showing empty state
             } else {
                 characterGrid.style.display = 'grid';
                 emptyState.style.display = 'none';
-                
+
                 characterGrid.innerHTML = '';
-                this.characters.forEach(char => {
+                own.forEach(char => {
                     const charCard = this.createCharacterCard(char);
                     characterGrid.appendChild(charCard);
                 });
-                // Character grid populated
             }
+            this.renderGmCharacterSections(gm);
         } catch (error) {
             console.error('Error updating character grid:', error);
             this.showErrorNotification('Failed to update character grid: ' + error.message);
@@ -1016,27 +1022,33 @@ class CharacterSheetApp {
         card.className = 'character-card';
         card.addEventListener('click', () => this.loadCharacter(character.id));
         
+        const esc = (v) => window.OLCloud.escapeHtml(v);
+        const id = esc(character.id);
+        const isGm = this.getCharacterAccess(character.id) === 'gm';
+        const meta = this.characterMeta[character.id];
         card.innerHTML = `
-            <h3>${character.name}${character.isAlternateForm ? ' <i class="fas fa-magic" title="Alternate Form"></i>' : ''}</h3>
-            ${character.archetype ? `<div class="character-overview-archetype">${character.archetype}</div>` : ''}
-            ${character.isAlternateForm ? `<div class="character-overview-alternate">Alternate Form (Tier ${character.alternateFormTier})</div>` : ''}
+            <h3>${esc(character.name)}${character.isAlternateForm ? ' <i class="fas fa-magic" title="Alternate Form"></i>' : ''}${character.isCompanion ? ' <i class="fas fa-paw" title="Companion"></i>' : ''}</h3>
+            ${character.archetype ? `<div class="character-overview-archetype">${esc(character.archetype)}</div>` : ''}
+            ${character.isAlternateForm ? `<div class="character-overview-alternate">Alternate Form (Tier ${esc(character.alternateFormTier)})</div>` : ''}
+            ${character.isCompanion ? `<div class="character-overview-alternate">Companion (Tier ${esc(character.companionTier)})</div>` : ''}
+            ${isGm && meta ? `<div class="character-overview-owner"><i class="fas fa-user"></i> ${esc(meta.ownerName || 'Player')}</div>` : ''}
             <div class="character-meta">
-                <span>Level ${character.level}</span>
-                <span>XP: ${character.experiencePoints}</span>
+                <span>Level ${esc(character.level)}</span>
+                <span>XP: ${esc(character.experiencePoints)}</span>
             </div>
             <div class="character-actions">
-                <button class="btn btn-primary btn-small" onclick="event.stopPropagation(); window.app.editCharacter('${character.id}')">
+                <button class="btn btn-primary btn-small" onclick="event.stopPropagation(); window.app.editCharacter('${id}')">
                     <i class="fas fa-edit"></i> Edit
                 </button>
-                <button class="btn btn-info btn-small" onclick="event.stopPropagation(); window.app.exportSingleCharacter('${character.id}')">
+                <button class="btn btn-info btn-small" onclick="event.stopPropagation(); window.app.exportSingleCharacter('${id}')">
                     <i class="fas fa-download"></i> Export
                 </button>
-                <button class="btn btn-secondary btn-small" onclick="event.stopPropagation(); window.app.duplicateCharacter('${character.id}')">
+                ${isGm ? '' : `<button class="btn btn-secondary btn-small" onclick="event.stopPropagation(); window.app.duplicateCharacter('${id}')">
                     <i class="fas fa-copy"></i> Duplicate
                 </button>
-                <button class="btn btn-danger btn-small" onclick="event.stopPropagation(); window.app.deleteCharacter('${character.id}')">
+                <button class="btn btn-danger btn-small" onclick="event.stopPropagation(); window.app.deleteCharacter('${id}')">
                     <i class="fas fa-trash"></i> Delete
-                </button>
+                </button>`}
             </div>
         `;
         
@@ -1048,14 +1060,23 @@ class CharacterSheetApp {
         const character = this.characters.find(c => c.id === characterId);
         if (!character) return;
         
-        const newChar = {
-            ...character,
-            id: Date.now().toString(),
-            name: `${character.name} (Copy)`,
-            createdAt: new Date().toISOString()
-        };
-        
+        const newChar = JSON.parse(JSON.stringify(character));
+        newChar.id = window.OLCloud.newId();
+        newChar.name = `${character.name} (Copy)`;
+        newChar.createdAt = new Date().toISOString();
+        // A copy is always a standalone primary character: links to forms,
+        // companions or a parent would otherwise point at the original's family.
+        for (const key of ['isAlternateForm', 'primaryCharacterId', 'alternateFormTier', 'alternateFormReferences',
+            'isCompanion', 'parentCharacterId', 'companionTier', 'companionReferences', 'featPointsFromParent',
+            'alternateForms', 'companions', 'allRelatedCharacters', 'rootPrimaryForSync',
+            'maxAttributePoints', 'maxFeatPoints', 'availableAttributePoints', 'availableFeatPoints',
+            'featPointsSpentOnCompanions', 'ownUsedFeatPoints']) {
+            delete newChar[key];
+        }
+        newChar.feats = (newChar.feats || []).filter(f => f.name !== 'Alternate Form' && f.name !== 'Companion');
+
         this.characters.push(newChar);
+        this.setCharacterMeta(newChar.id, { access: 'owner', ownerId: this.currentUser?.id, ownerName: this.currentUser?.displayName });
         this.saveCharacters();
         this.updateCharacterGrid();
         
@@ -1068,7 +1089,7 @@ class CharacterSheetApp {
         if (!name) return;
         
         const newChar = {
-            id: Date.now().toString(),
+            id: window.OLCloud.newId(),
             name: name,
             archetype: '',
             experiencePoints: 0,
@@ -1164,7 +1185,7 @@ class CharacterSheetApp {
         }
         
         const companionChar = {
-            id: Date.now().toString() + '_comp',
+            id: window.OLCloud.newId(),
             name: companionName,
             archetype: '',
             experiencePoints: this.currentCharacter.experiencePoints, // Same experience as parent
@@ -1268,7 +1289,7 @@ class CharacterSheetApp {
         }
         
         const alternateChar = {
-            id: Date.now().toString() + '_alt',
+            id: window.OLCloud.newId(),
             name: alternateFormName,
             archetype: '',
             experiencePoints: this.currentCharacter.experiencePoints, // Same experience as primary
@@ -8920,16 +8941,22 @@ class CharacterSheetApp {
         const character = this.characters.find(c => c.id === characterId);
         if (!character) return;
         
-        if (confirm(`Are you sure you want to delete "${character.name}"?`)) {
-            this.characters = this.characters.filter(c => c.id !== characterId);
-            this.saveCharacters();
+        if (this.getCharacterAccess(characterId) === 'gm') {
+            this.showNotification('Only the owner can delete this character.', 'warning');
+            return;
+        }
+        const family = this.getAllCharactersInHierarchy(character);
+        const extra = family.length > 1 ? ` This also deletes ${family.length - 1} linked form(s)/companion(s).` : '';
+        if (confirm(`Are you sure you want to delete "${character.name}"?${extra}`)) {
+            this.removeCharactersLocally(family.map(c => c.id));
+            window.OLCloud.sync.queueDelete(characterId);
             this.updateCharacterGrid();
-            
-            if (this.currentCharacter && this.currentCharacter.id === characterId) {
+
+            if (this.currentCharacter && family.some(c => c.id === this.currentCharacter.id)) {
                 this.currentCharacter = null;
                 this.showMainPage();
             }
-            
+
             this.showNotification('Character deleted successfully!', 'success');
         }
     }
@@ -8938,14 +8965,7 @@ class CharacterSheetApp {
     deleteCurrentCharacter() {
         if (!this.currentCharacter) return;
         
-        if (confirm(`Are you sure you want to delete "${this.currentCharacter.name}"?`)) {
-            this.characters = this.characters.filter(c => c.id !== this.currentCharacter.id);
-            this.saveCharacters();
-            this.currentCharacter = null;
-            this.showMainPage();
-            
-            this.showNotification('Character deleted successfully!', 'success');
-        }
+        this.deleteCharacter(this.currentCharacter.id);
     }
 
     // Show import modal
@@ -9189,7 +9209,7 @@ class CharacterSheetApp {
         
         // First pass: generate new IDs for all characters
         characters.forEach(character => {
-            const newId = Date.now().toString() + '_' + Math.random().toString(36).substr(2, 9);
+            const newId = window.OLCloud.newId();
             idMapping.set(character.id, newId);
             character.id = newId;
         });
@@ -9330,7 +9350,7 @@ class CharacterSheetApp {
         console.log('Character attributes:', character.attributes);
         console.log('Character keys:', Object.keys(character));
 
-        character.id = Date.now().toString();
+        character.id = window.OLCloud.newId();
         character.createdAt = new Date().toISOString();
 
         // Ensure all required fields exist
@@ -9384,7 +9404,7 @@ class CharacterSheetApp {
 
     // Export characters
     exportCharacters() {
-        if (this.characters.length === 0) {
+        if (this.characters.filter(c => this.getCharacterAccess(c.id) !== 'gm').length === 0) {
             this.showNotification('No characters to export.', 'error');
             return;
         }
@@ -9394,7 +9414,9 @@ class CharacterSheetApp {
 
     // Show export modal with options
     showExportModal() {
-        const cleanedCharacters = this.characters.map(character => this.cleanCharacterForExport(character));
+        // Export only the user's own characters, never the GM-visible ones of other players.
+        const ownCharacters = this.characters.filter(c => this.getCharacterAccess(c.id) !== 'gm');
+        const cleanedCharacters = ownCharacters.map(character => this.cleanCharacterForExport(character));
         const exportData = JSON.stringify(cleanedCharacters, null, 2);
         
         // Create modal HTML
@@ -9524,12 +9546,12 @@ class CharacterSheetApp {
             <div id="singleExportModal" class="modal" style="display: block;">
                 <div class="modal-content">
                     <span class="close" onclick="window.app.closeSingleCharacterExportModal()">&times;</span>
-                    <h2>Export Character: ${character.name}</h2>
+                    <h2>Export Character: ${window.OLCloud.escapeHtml(character.name)}</h2>
                     
                     <!-- Download Section -->
                     <div class="export-section">
                         <h3><i class="fas fa-download"></i> Download as File</h3>
-                        <p>Download ${character.name} in different formats:</p>
+                        <p>Download ${window.OLCloud.escapeHtml(character.name)} in different formats:</p>
                         <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                             <button id="downloadSingleExportBtn" class="btn btn-primary">
                                 <i class="fas fa-download"></i> Download JSON
@@ -9548,7 +9570,7 @@ class CharacterSheetApp {
                     <!-- Copy as Text Section -->
                     <div class="export-section">
                         <h3><i class="fas fa-copy"></i> Copy as Text</h3>
-                        <p>Copy ${character.name}'s data to your clipboard for easy sharing or pasting.</p>
+                        <p>Copy ${window.OLCloud.escapeHtml(character.name)}'s data to your clipboard for easy sharing or pasting.</p>
                         <textarea id="singleExportDataText" readonly rows="8" style="width: 100%; margin-bottom: 15px; font-family: monospace; resize: vertical;">${exportData}</textarea>
                         <button id="copySingleExportBtn" class="btn btn-secondary">
                             <i class="fas fa-copy"></i> Copy to Clipboard
@@ -9594,12 +9616,12 @@ class CharacterSheetApp {
             <div id="singleExportModal" class="modal" style="display: block;">
                 <div class="modal-content">
                     <span class="close" onclick="window.app.closeSingleCharacterExportModal()">&times;</span>
-                    <h2>Export Character Hierarchy: ${character.name}</h2>
+                    <h2>Export Character Hierarchy: ${window.OLCloud.escapeHtml(character.name)}</h2>
                     
                     <div class="hierarchy-info" style="background: #f0f8ff; padding: 10px; border-radius: 5px; margin: 10px 0;">
                         <h4><i class="fas fa-sitemap"></i> Character Hierarchy</h4>
                         <p><strong>${hierarchyNames.length} characters</strong> will be exported:</p>
-                        <p style="font-family: monospace; color: #666;">${hierarchyDescription}</p>
+                        <p style="font-family: monospace; color: #666;">${window.OLCloud.escapeHtml(hierarchyDescription)}</p>
                     </div>
                     
                     <!-- Download Section -->
@@ -10779,12 +10801,640 @@ class CharacterSheetApp {
 
     // Save characters to localStorage
     saveCharacters() {
+        // Every mutation path in the app ends here. Instead of writing the whole
+        // array to localStorage we diff against the last known server state and
+        // queue only the characters that actually changed.
+        if (!this.cloud.ready) return;
         try {
-            localStorage.setItem('openLegendCharacters', JSON.stringify(this.characters));
+            const seen = new Set();
+            for (const character of this.characters) {
+                if (!character || !character.id) continue;
+                seen.add(character.id);
+                const json = JSON.stringify(character);
+                if (this.cloud.snapshot.get(character.id) === json) continue;
+                this.cloud.snapshot.set(character.id, json);
+                window.OLCloud.sync.queueCharacter(JSON.parse(json));
+            }
+            for (const id of [...this.cloud.snapshot.keys()]) {
+                if (!seen.has(id)) this.cloud.snapshot.delete(id);
+            }
         } catch (error) {
-            console.error('Error saving characters:', error);
-            this.showNotification('Error saving characters to local storage.', 'error');
+            console.error('Error queueing character sync:', error);
+            this.showNotification('Error saving characters.', 'error');
         }
+    }
+
+    // === CLOUD SYNC, AUTH & ROUTING ===
+    // Characters live on the server. This block boots the app after an auth
+    // check, loads data, keeps a per-character snapshot for change detection,
+    // applies live updates arriving over the WebSocket and owns hash routing.
+
+    initializeCloud() {
+        const C = window.OLCloud;
+        if (!C) {
+            this.showErrorNotification('Cloud module (api.js) failed to load.');
+            return;
+        }
+        try {
+            window.OLAuthUI?.mount?.();
+            window.OLGroupsUI?.mount?.();
+            window.OLAdminUI?.mount?.();
+        } catch (error) {
+            console.error('Error mounting cloud UI modules:', error);
+        }
+
+        C.ws.on('character.created', (msg) => this.applyRemoteCharacter(msg.character, msg.by));
+        C.ws.on('character.updated', (msg) => this.applyRemoteCharacter(msg.character, msg.by));
+        C.ws.on('character.deleted', (msg) => this.removeRemoteCharacters(msg.ids || [], msg.by));
+        C.ws.on('characters.refresh', () => this.refreshFromServer());
+        C.ws.on('unauthenticated', () => this.handleSessionLost());
+        C.ws.on('open', () => { if (this.cloud.ready && this.cloud.hadDisconnect) { this.cloud.hadDisconnect = false; this.refreshFromServer(); } });
+        C.ws.on('close', () => { if (this.cloud.ready) this.cloud.hadDisconnect = true; });
+
+        C.sync.on('unauthenticated', () => this.handleSessionLost());
+        C.sync.on('rejected', (err) => this.showNotification('Server rejected a change: ' + (err?.message || 'unknown error'), 'error'));
+        C.sync.on('status', ({ status }) => {
+            if (status === 'offline' && !this.cloud.offlineNotified) {
+                this.cloud.offlineNotified = true;
+                this.showNotification('You are offline. Changes are queued and will sync when you reconnect.', 'warning');
+            }
+            if (status === 'saved') this.cloud.offlineNotified = false;
+        });
+
+        window.addEventListener('hashchange', () => this.handleRoute());
+        this.checkAuth();
+    }
+
+    async checkAuth() {
+        try {
+            const res = await window.OLCloud.auth.me();
+            this.cloud.features = res.features || {};
+            if (window.OLAuthUI) window.OLAuthUI.features = this.cloud.features;
+            if (res.user) {
+                this.currentUser = res.user;
+                if (this.needsEmailVerification(res.user) && !this.isAuthRoute(this.parseRoute().route, ['verify-email'])) {
+                    window.OLAuthUI?.renderUserMenu?.(null);
+                    window.OLAuthUI?.showVerifyNotice?.(res.user);
+                    this.showPage('loginPage');
+                    return;
+                }
+                await this.onAuthenticated(res.user);
+            } else {
+                this.showLoginRoute();
+            }
+        } catch (error) {
+            console.error('Auth check failed:', error);
+            this.showLoginRoute();
+            this.showNotification('Could not reach the server: ' + error.message, 'error');
+        }
+    }
+
+    needsEmailVerification(user) {
+        return user && !user.emailVerified && user.hasPassword && !user.discordLinked;
+    }
+
+    isAuthRoute(route, only) {
+        const list = only || ['login', 'register', 'forgot-password', 'reset-password', 'verify-email'];
+        return list.includes(route);
+    }
+
+    showLoginRoute() {
+        const { route, params } = this.parseRoute();
+        if (this.isAuthRoute(route)) {
+            window.OLAuthUI?.show?.(route, params);
+        } else if (window.OLAuthUI) {
+            // Remember where the user wanted to go.
+            if (location.hash && location.hash !== '#/' && location.hash !== '#') this.cloud.afterLogin = location.hash;
+            window.OLAuthUI.show('login', {});
+        } else {
+            this.showErrorNotification('Login UI failed to load.');
+        }
+    }
+
+    /** Called by the auth UI after login/register/verify/reset. */
+    async onAuthenticated(user) {
+        this.currentUser = user;
+        if (this.needsEmailVerification(user)) {
+            window.OLAuthUI?.showVerifyNotice?.(user);
+            this.showPage('loginPage');
+            return;
+        }
+        try {
+            window.OLAuthUI?.renderUserMenu?.(user);
+            await this.loadFromServer();
+            this.cloud.ready = true;
+            window.OLCloud.ws.connect();
+            // Clean up legacy fields exactly like the old constructor did; the
+            // diff in saveCharacters() only uploads what actually changed.
+            this.characters.forEach(character => this.migrateLegacyFields(character));
+            this.saveCharacters();
+
+            const { route } = this.parseRoute();
+            if (this.cloud.afterLogin) {
+                const target = this.cloud.afterLogin;
+                this.cloud.afterLogin = null;
+                this.navigate(target);
+            } else if (this.isAuthRoute(route)) {
+                this.navigate('#/');
+            } else {
+                this.handleRoute();
+            }
+            this.maybeOfferLegacyImport();
+        } catch (error) {
+            console.error('Error loading data from server:', error);
+            this.showErrorNotification('Failed to load your characters: ' + error.message);
+        }
+    }
+
+    async loadFromServer() {
+        const C = window.OLCloud;
+        const [list, data] = await Promise.all([C.characters.list(), C.userData.get()]);
+        this.characters = [];
+        this.characterMeta = {};
+        this.cloud.snapshot = new Map();
+        for (const entry of [...(list.characters || []), ...(list.gmCharacters || [])]) {
+            this.ingestServerCharacter(entry);
+        }
+        this.customBoons = Array.isArray(data.customBoons) ? data.customBoons : [];
+        this.customBanes = Array.isArray(data.customBanes) ? data.customBanes : [];
+        this.userSettings = data.settings || {};
+    }
+
+    /** Re-fetch everything and reconcile in place (used after group changes / reconnects). */
+    async refreshFromServer() {
+        if (!this.cloud.ready) return;
+        try {
+            const list = await window.OLCloud.characters.list();
+            const incoming = [...(list.characters || []), ...(list.gmCharacters || [])];
+            const incomingIds = new Set(incoming.map(e => e.id));
+            // Remove characters we may no longer see (e.g. GM access revoked).
+            const gone = this.characters.filter(c => !incomingIds.has(c.id)).map(c => c.id);
+            if (gone.length) this.removeCharactersLocally(gone);
+            for (const entry of incoming) {
+                const local = this.characters.find(c => c.id === entry.id);
+                const localMeta = this.characterMeta[entry.id];
+                if (!local || !localMeta || localMeta.version !== entry.version) {
+                    this.applyRemoteCharacter(entry, null, { silent: true });
+                } else {
+                    this.setCharacterMeta(entry.id, { access: entry.access, ownerId: entry.ownerId, ownerName: entry.ownerName, version: entry.version });
+                }
+            }
+            if (this.isMainPageVisible()) this.updateCharacterGrid();
+            if (this.currentCharacter && gone.includes(this.currentCharacter.id)) {
+                this.showNotification('This character is no longer available to you.', 'warning');
+                this.showMainPage();
+            }
+        } catch (error) {
+            console.error('Refresh failed:', error);
+        }
+    }
+
+    ingestServerCharacter(entry) {
+        const character = entry.data;
+        if (!character || !character.id) return null;
+        this.applyLoadMigrations(character);
+        this.characters.push(character);
+        this.setCharacterMeta(character.id, { access: entry.access, ownerId: entry.ownerId, ownerName: entry.ownerName, version: entry.version });
+        this.cloud.snapshot.set(character.id, JSON.stringify(character));
+        return character;
+    }
+
+    /** The migrations loadCharacters() used to run on localStorage data. */
+    applyLoadMigrations(character) {
+        if (character.featPoints !== undefined && character.usedFeatPoints === undefined) {
+            character.usedFeatPoints = character.featPoints;
+            delete character.featPoints;
+        }
+        if (character.usedFeatPoints === undefined) character.usedFeatPoints = 0;
+        if (character.archetype === undefined) character.archetype = '';
+        this.migrateLegacyFields(character);
+        this.migrateAdvantageDisadvantageCounts(character);
+    }
+
+    setCharacterMeta(id, meta) {
+        this.characterMeta[id] = { ...(this.characterMeta[id] || {}), ...meta };
+    }
+
+    /** 'owner' | 'gm' for a known character; 'owner' for unknown (freshly created) ones. */
+    getCharacterAccess(id) {
+        return this.characterMeta[id]?.access || 'owner';
+    }
+
+    removeCharactersLocally(ids) {
+        const set = new Set(ids);
+        this.characters = this.characters.filter(c => !set.has(c.id));
+        for (const id of set) {
+            delete this.characterMeta[id];
+            this.cloud.snapshot.delete(id);
+        }
+    }
+
+    /**
+     * Apply a character received from the server. Existing objects are mutated
+     * in place so that this.currentCharacter and other references stay valid.
+     */
+    applyRemoteCharacter(entry, byUserId, opts = {}) {
+        if (!entry || !entry.data || !entry.id) return;
+        const incoming = entry.data;
+        this.applyLoadMigrations(incoming);
+        const json = JSON.stringify(incoming);
+        let local = this.characters.find(c => c.id === entry.id);
+        const existed = !!local;
+        if (local) {
+            if (this.cloud.snapshot.get(entry.id) === json) {
+                this.setCharacterMeta(entry.id, { version: entry.version });
+                return; // our own echo or nothing new
+            }
+            for (const key of Object.keys(local)) if (!(key in incoming)) delete local[key];
+            Object.assign(local, incoming);
+        } else {
+            local = incoming;
+            this.characters.push(local);
+        }
+        this.setCharacterMeta(entry.id, {
+            access: entry.access || this.characterMeta[entry.id]?.access || (entry.ownerId === this.currentUser?.id ? 'owner' : 'gm'),
+            ownerId: entry.ownerId, ownerName: entry.ownerName, version: entry.version,
+        });
+        this.cloud.snapshot.set(entry.id, json);
+
+        if (this.currentCharacter && this.currentCharacter.id === entry.id) {
+            this.refreshOpenSheet();
+            if (!opts.silent && byUserId && byUserId !== this.currentUser?.id) {
+                this.showNotification(`${this.characterMeta[entry.id]?.access === 'gm' ? 'The player' : 'Your GM'} updated this sheet.`, 'info');
+            }
+        } else if (this.currentCharacter && this.isRelatedToCurrent(local)) {
+            // A form/companion/parent changed: derived point budgets may change.
+            this.refreshOpenSheet();
+        }
+        if (this.isMainPageVisible() && !opts.silent) this.updateCharacterGrid();
+        if (!existed && !opts.silent && this.isMainPageVisible()) this.updateCharacterGrid();
+    }
+
+    isRelatedToCurrent(character) {
+        const cur = this.currentCharacter;
+        if (!cur || !character) return false;
+        return character.primaryCharacterId === cur.id || character.parentCharacterId === cur.id ||
+            cur.primaryCharacterId === character.id || cur.parentCharacterId === character.id;
+    }
+
+    removeRemoteCharacters(ids, byUserId) {
+        if (!ids.length) return;
+        const hadCurrent = this.currentCharacter && ids.includes(this.currentCharacter.id);
+        this.removeCharactersLocally(ids);
+        if (hadCurrent) {
+            this.showNotification('This character was deleted' + (byUserId && byUserId !== this.currentUser?.id ? ' by its owner.' : '.'), 'warning');
+            this.showMainPage();
+        } else if (this.isMainPageVisible()) {
+            this.updateCharacterGrid();
+        }
+    }
+
+    /**
+     * Re-render the open sheet from this.currentCharacter after a remote
+     * change, without re-registering listeners (displayCharacter does that)
+     * and without clobbering the field the user is typing in.
+     */
+    refreshOpenSheet() {
+        const c = this.currentCharacter;
+        if (!c) return;
+        const active = document.activeElement;
+        const setValue = (id, value) => {
+            const el = document.getElementById(id);
+            if (!el || el === active) return;
+            if (el.type === 'checkbox') el.checked = !!value; else el.value = value ?? '';
+        };
+        const setText = (id, value) => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = value ?? '';
+        };
+        this.cloud.applyingRemote = true;
+        try {
+            setValue('charName', c.name);
+            setValue('charArchetype', c.archetype || '');
+            setValue('experiencePoints', c.experiencePoints);
+            setText('sheetCharName', c.name);
+            setText('sheetCharArchetype', c.archetype || 'Archetype');
+            setText('sheetCharLevel', c.level);
+            setText('sheetExpPoints', c.experiencePoints);
+            Object.keys(c.attributes || {}).forEach(attr => {
+                setText(attr, c.attributes[attr]);
+                setText(`${attr}Score`, c.attributes[attr]);
+            });
+            setValue('viewWealthScore', c.wealthScore || 0);
+            setValue('viewWealthUsed', c.wealthUsed || false);
+            setValue('charDescription', c.charDescription || '');
+            setValue('charBackground', c.charBackground || '');
+            setValue('charNotes', c.charNotes || '');
+            setValue('customHealthBuff', c.customHealthBuff || 0);
+            setValue('manualSettingsToggle', !!c.manualSettings);
+            setText('movementSpeed', c.movementSpeed || 30);
+            setText('legendPoints', c.legendPoints || 0);
+
+            const safe = (fn) => { try { fn(); } catch (err) { console.warn('refreshOpenSheet step failed', err); } };
+            safe(() => this.displayCharacterImage());
+            safe(() => this.updateAttributeMaxValues && this.updateAttributeMaxValues());
+            safe(() => this.updateAttributeDisplays());
+            safe(() => this.updateMaxHP());
+            safe(() => this.updateHPDisplay());
+            safe(() => this.updateDefenseStats());
+            safe(() => this.updateMovementStats());
+            safe(() => this.updateInitiative());
+            safe(() => this.updateWeaponAdvantageDisplay && this.updateWeaponAdvantageDisplay());
+            safe(() => this.updateFeatPointsDisplay());
+            safe(() => this.updateWealthDisplay());
+            safe(() => this.populateAdvantages());
+            safe(() => this.populateDisadvantages());
+            safe(() => this.populateBoons());
+            safe(() => this.populateBanes());
+            safe(() => this.populateFeats());
+            safe(() => this.updateFeatIcons());
+            safe(() => this.populatePerks());
+            safe(() => this.populateFlaws());
+            safe(() => this.populateFavoriteActions());
+            safe(() => this.populateEquipment());
+            safe(() => this.updateEquipmentViewMode && this.updateEquipmentViewMode());
+            safe(() => this.populateAvailableBoonsAndBanes());
+            safe(() => this.updateAdvantageDisadvantageCalculation());
+            safe(() => this.updateAlternateFormSwitch());
+            safe(() => this.updateCompanionSwitch());
+            safe(() => (c.manualSettings ? this.showManualInputs() : this.hideManualInputs && this.hideManualInputs()));
+        } finally {
+            this.cloud.applyingRemote = false;
+        }
+    }
+
+    // ---- pages & routing ----------------------------------------------------
+
+    hideCloudPages() {
+        document.querySelectorAll('#cloudPages .cloud-page').forEach(el => { el.style.display = 'none'; });
+    }
+
+    /** Show one page div (main, sheet, options or any cloud page) and hide the rest. */
+    showPage(pageId) {
+        this.stopPeriodicValidation();
+        for (const id of ['mainPage', 'characterSheetPage', 'optionsListPage']) {
+            const el = document.getElementById(id);
+            if (el) el.style.display = 'none';
+        }
+        this.hideCloudPages();
+        const target = document.getElementById(pageId);
+        if (target) target.style.display = 'block';
+        document.body.classList.toggle('showing-main-page', pageId === 'mainPage');
+        const header = document.getElementById('headerSection');
+        if (header) header.style.display = 'block';
+        if (pageId !== 'characterSheetPage') this.currentCharacter = null;
+    }
+
+    isMainPageVisible() {
+        const el = document.getElementById('mainPage');
+        return !!el && el.style.display !== 'none';
+    }
+
+    navigate(hash) {
+        if (location.hash === hash) this.handleRoute();
+        else location.hash = hash;
+    }
+
+    parseRoute() {
+        const raw = (location.hash || '').replace(/^#\/?/, '');
+        const [path, query = ''] = raw.split('?');
+        const params = {};
+        for (const [k, v] of new URLSearchParams(query)) params[k] = v;
+        return { route: path.replace(/\/+$/, ''), params };
+    }
+
+    handleRoute() {
+        const { route, params } = this.parseRoute();
+        const user = this.currentUser;
+        if (this.isAuthRoute(route)) {
+            if (user && !this.needsEmailVerification(user) && route !== 'verify-email') { this.navigate('#/'); return; }
+            window.OLAuthUI?.show?.(route, params);
+            return;
+        }
+        if (!user || !this.cloud.ready) {
+            this.showLoginRoute();
+            return;
+        }
+        switch (route) {
+            case '':
+                this.showMainPage();
+                break;
+            case 'account':
+                window.OLAuthUI?.show?.('account', params);
+                break;
+            case 'groups':
+                window.OLGroupsUI?.show?.('groups', params);
+                break;
+            case 'group':
+                window.OLGroupsUI?.show?.('group', params);
+                break;
+            case 'admin':
+                window.OLAdminUI?.show?.('admin', params);
+                break;
+            case 'options':
+                this.showOptionsListPage();
+                break;
+            case 'character':
+                if (params.id) this.openCharacter(params.id, params.mode === 'edit' ? 'edit' : 'view');
+                else this.showMainPage();
+                break;
+            default:
+                this.showMainPage();
+        }
+    }
+
+    /** Open any accessible character (own or GM-visible). */
+    openCharacter(id, mode = 'view') {
+        if (!this.characters.find(c => c.id === id)) {
+            this.showNotification('Character not found or not accessible.', 'warning');
+            return;
+        }
+        if (mode === 'edit') this.editCharacter(id); else this.loadCharacter(id);
+    }
+
+    async logout() {
+        try { await window.OLCloud.sync.flush(); } catch (err) { console.warn('flush before logout failed', err); }
+        try { await window.OLCloud.auth.logout(); } catch (err) { console.warn('logout request failed', err); }
+        this.resetCloudState();
+        this.navigate('#/login');
+        window.OLAuthUI?.show?.('login', {});
+    }
+
+    handleSessionLost() {
+        if (!this.cloud.ready && !this.currentUser) return;
+        this.resetCloudState();
+        this.showNotification('Your session has expired. Please sign in again.', 'warning');
+        window.OLAuthUI?.show?.('login', {});
+    }
+
+    resetCloudState() {
+        window.OLCloud.ws.close();
+        this.cloud.ready = false;
+        this.cloud.snapshot = new Map();
+        this.currentUser = null;
+        this.currentCharacter = null;
+        this.characters = [];
+        this.characterMeta = {};
+        this.customBoons = [];
+        this.customBanes = [];
+        window.OLAuthUI?.renderUserMenu?.(null);
+    }
+
+    // ---- GM sections on the main page ---------------------------------------
+
+    renderGmCharacterSections(gmCharacters) {
+        let container = document.getElementById('gmCharacterSections');
+        if (!container) {
+            const grid = document.getElementById('characterGrid');
+            if (!grid) return;
+            container = document.createElement('div');
+            container.id = 'gmCharacterSections';
+            grid.parentNode.insertBefore(container, grid.nextSibling?.nextSibling || null);
+        }
+        container.innerHTML = '';
+        if (!gmCharacters.length) return;
+        const esc = (v) => window.OLCloud.escapeHtml(v);
+        const groups = window.OLGroupsUI?.getCachedGroups?.() || [];
+        const groupOfCharacter = (id) => {
+            const root = this.findHierarchyRootId(id);
+            return groups.find(g => g.role === 'gm' && (g.characters || []).some(c => c.id === id || c.id === root));
+        };
+        // Group by owner
+        const byOwner = new Map();
+        for (const c of gmCharacters) {
+            const meta = this.characterMeta[c.id] || {};
+            const key = meta.ownerId || 'unknown';
+            if (!byOwner.has(key)) byOwner.set(key, { name: meta.ownerName || 'Player', chars: [] });
+            byOwner.get(key).chars.push(c);
+        }
+        const header = document.createElement('div');
+        header.className = 'page-header gm-section-header';
+        header.innerHTML = `<h2 class="m-0 mb-sm"><i class="fas fa-hat-wizard"></i> Party Characters (GM view)</h2>
+            <p class="text-secondary m-0">Characters your players shared with you. Changes you make are synced live to them.</p>`;
+        container.appendChild(header);
+        for (const [, owner] of byOwner) {
+            const section = document.createElement('div');
+            section.className = 'gm-owner-section';
+            const primaries = owner.chars.filter(c => !c.isAlternateForm && !c.isCompanion);
+            const groupNames = [...new Set(primaries.map(c => groupOfCharacter(c.id)?.name).filter(Boolean))];
+            section.innerHTML = `<h3 class="gm-owner-title"><i class="fas fa-user"></i> ${esc(owner.name)}${groupNames.length ? ` <span class="gm-owner-group">${esc(groupNames.join(', '))}</span>` : ''}</h3>`;
+            const grid = document.createElement('div');
+            grid.className = 'character-grid';
+            owner.chars.forEach(ch => grid.appendChild(this.createCharacterCard(ch)));
+            section.appendChild(grid);
+            container.appendChild(section);
+        }
+    }
+
+    findHierarchyRootId(id) {
+        let cur = this.characters.find(c => c.id === id);
+        let guard = 0;
+        while (cur && guard++ < 10) {
+            const parentId = cur.primaryCharacterId || cur.parentCharacterId;
+            if (!parentId) break;
+            const parent = this.characters.find(c => c.id === parentId);
+            if (!parent) break;
+            cur = parent;
+        }
+        return cur ? cur.id : id;
+    }
+
+    // ---- one-time import of characters stored in this browser ----------------
+
+    maybeOfferLegacyImport() {
+        let legacy = [];
+        try {
+            legacy = this.loadCharacters();
+        } catch { legacy = []; }
+        if (!legacy.length) return;
+        if (sessionStorage.getItem('olLegacyImportDismissed') === this.currentUser?.id) return;
+        const esc = (v) => window.OLCloud.escapeHtml(v);
+        const names = legacy.slice(0, 8).map(c => esc(c.name)).join(', ') + (legacy.length > 8 ? ', …' : '');
+        const modal = document.createElement('div');
+        modal.className = 'modal';
+        modal.id = 'legacyImportModal';
+        modal.style.display = 'block';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <span class="close" id="legacyImportClose">&times;</span>
+                <h2><i class="fas fa-cloud-upload-alt"></i> Characters found in this browser</h2>
+                <p>This browser still holds <strong>${legacy.length}</strong> character(s) from the old, offline version of the sheet:</p>
+                <p class="text-secondary">${names}</p>
+                <p>Import them into your account now? They will be synced to the server and removed from this browser's local storage (a backup copy stays under a different key).</p>
+                <div class="modal-actions" style="display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;">
+                    <button class="btn btn-secondary" id="legacyImportLater">Not now</button>
+                    <button class="btn btn-danger btn-small" id="legacyImportDiscard">Discard local copies</button>
+                    <button class="btn btn-primary" id="legacyImportConfirm"><i class="fas fa-upload"></i> Import ${legacy.length} character(s)</button>
+                </div>
+            </div>`;
+        document.body.appendChild(modal);
+        const close = () => modal.remove();
+        modal.querySelector('#legacyImportClose').onclick = close;
+        modal.querySelector('#legacyImportLater').onclick = () => { sessionStorage.setItem('olLegacyImportDismissed', this.currentUser?.id || '1'); close(); };
+        modal.querySelector('#legacyImportDiscard').onclick = () => {
+            if (!confirm('Discard the characters stored in this browser? This cannot be undone.')) return;
+            localStorage.setItem('openLegendCharacters_backup', localStorage.getItem('openLegendCharacters') || '[]');
+            localStorage.removeItem('openLegendCharacters');
+            close();
+        };
+        modal.querySelector('#legacyImportConfirm').onclick = async () => {
+            const btn = modal.querySelector('#legacyImportConfirm');
+            btn.disabled = true;
+            try {
+                const count = await this.importLegacyCharacters(legacy);
+                localStorage.setItem('openLegendCharacters_backup', localStorage.getItem('openLegendCharacters') || '[]');
+                localStorage.removeItem('openLegendCharacters');
+                this.showNotification(`Imported ${count} character(s) into your account.`, 'success');
+                close();
+            } catch (error) {
+                console.error('Legacy import failed:', error);
+                this.showNotification('Import failed: ' + error.message, 'error');
+                btn.disabled = false;
+            }
+        };
+    }
+
+    /** Remap ids to fresh UUIDs (ids were timestamps and may collide server-side), upload as one batch. */
+    async importLegacyCharacters(list) {
+        const idMap = new Map();
+        const clones = list.map(c => JSON.parse(JSON.stringify(c)));
+        for (const c of clones) idMap.set(String(c.id), window.OLCloud.newId());
+        const remap = (v) => (v !== undefined && v !== null && idMap.has(String(v)) ? idMap.get(String(v)) : v);
+        for (const c of clones) {
+            c.id = idMap.get(String(c.id));
+            if (c.primaryCharacterId) c.primaryCharacterId = remap(c.primaryCharacterId);
+            if (c.parentCharacterId) c.parentCharacterId = remap(c.parentCharacterId);
+            if (c.rootPrimaryForSync) c.rootPrimaryForSync = remap(c.rootPrimaryForSync);
+            for (const key of ['alternateForms', 'companions', 'alternateFormReferences', 'companionReferences', 'allRelatedCharacters']) {
+                if (Array.isArray(c[key])) c[key].forEach(ref => { if (ref && ref.characterId) ref.characterId = remap(ref.characterId); });
+            }
+            // Links to characters that are not part of the import would dangle: drop them.
+            if (c.primaryCharacterId && !idMap.has(String(list.find(o => idMap.get(String(o.id)) === c.primaryCharacterId)?.id))) {
+                delete c.isAlternateForm; delete c.primaryCharacterId; delete c.alternateFormTier;
+            }
+            if (c.parentCharacterId && !idMap.has(String(list.find(o => idMap.get(String(o.id)) === c.parentCharacterId)?.id))) {
+                delete c.isCompanion; delete c.parentCharacterId; delete c.companionTier;
+            }
+            this.applyLoadMigrations(c);
+        }
+        // Also merge custom boons/banes stored locally.
+        try {
+            const boons = JSON.parse(localStorage.getItem('openLegendCustomBoons') || '[]');
+            const banes = JSON.parse(localStorage.getItem('openLegendCustomBanes') || '[]');
+            let changed = false;
+            for (const b of boons) if (b && b.name && !this.customBoons.some(x => x.name === b.name)) { this.customBoons.push(b); changed = true; }
+            for (const b of banes) if (b && b.name && !this.customBanes.some(x => x.name === b.name)) { this.customBanes.push(b); changed = true; }
+            if (changed) { this.saveCustomBoons(); this.saveCustomBanes(); }
+            localStorage.removeItem('openLegendCustomBoons');
+            localStorage.removeItem('openLegendCustomBanes');
+        } catch (err) { console.warn('custom entries merge failed', err); }
+
+        const res = await window.OLCloud.characters.batch(clones);
+        for (const entry of res.characters || []) {
+            if (!this.characters.find(c => c.id === entry.id)) this.ingestServerCharacter(entry);
+        }
+        if (this.isMainPageVisible()) this.updateCharacterGrid();
+        return clones.length;
     }
 
     // === CUSTOM BOONS & BANES METHODS ===
@@ -10803,7 +11453,7 @@ class CharacterSheetApp {
     // Save custom boons to localStorage
     saveCustomBoons() {
         try {
-            localStorage.setItem('openLegendCustomBoons', JSON.stringify(this.customBoons));
+            if (this.cloud.ready) window.OLCloud.sync.queueUserData('customBoons', this.customBoons);
         } catch (error) {
             console.error('Error saving custom boons:', error);
             this.showNotification('Error saving custom boons.', 'error');
@@ -10824,7 +11474,7 @@ class CharacterSheetApp {
     // Save custom banes to localStorage
     saveCustomBanes() {
         try {
-            localStorage.setItem('openLegendCustomBanes', JSON.stringify(this.customBanes));
+            if (this.cloud.ready) window.OLCloud.sync.queueUserData('customBanes', this.customBanes);
         } catch (error) {
             console.error('Error saving custom banes:', error);
             this.showNotification('Error saving custom banes.', 'error');
