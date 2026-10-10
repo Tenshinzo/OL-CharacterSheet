@@ -1,0 +1,4 @@
+# Nightly database backup for ol-character.de. Installed to /etc/cron.d/olchar-backup by bootstrap.sh.
+SHELL=/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+30 3 * * * deploy /opt/olchar/app/deploy/backup.sh >> /opt/olchar/backups/backup.log 2>&1

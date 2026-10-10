@@ -10922,6 +10922,7 @@ class CharacterSheetApp {
         try {
             window.OLAuthUI?.renderUserMenu?.(user);
             await this.loadFromServer();
+            try { await window.OLGroupsUI?.loadGroups?.(); } catch (err) { console.warn('groups preload failed', err); }
             this.cloud.ready = true;
             window.OLCloud.ws.connect();
             // Clean up legacy fields exactly like the old constructor did; the

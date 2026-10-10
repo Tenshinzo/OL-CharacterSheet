@@ -1004,11 +1004,38 @@
     dd.hidden = false;
     if (toggle) toggle.setAttribute('aria-expanded', 'true');
     state.menuOpen = true;
+    positionMenu();
     updateSyncStatusLine();
     setTimeout(() => {
       document.addEventListener('click', onDocClick);
       document.addEventListener('keydown', onDocKey);
+      window.addEventListener('scroll', onViewportChange, { passive: true });
+      window.addEventListener('resize', onViewportChange);
     }, 0);
+  }
+
+  // The header / app container may clip overflow (styles.css does so on
+  // mobile), so the dropdown is positioned fixed relative to the toggle.
+  function positionMenu() {
+    const host = document.getElementById('userMenu');
+    const dd = host ? host.querySelector('.user-menu-dropdown') : null;
+    const toggle = host ? host.querySelector('.user-menu-toggle') : null;
+    if (!dd || !toggle) return;
+    const rect = toggle.getBoundingClientRect();
+    const margin = 8;
+    const vw = window.innerWidth || document.documentElement.clientWidth;
+    const vh = window.innerHeight || document.documentElement.clientHeight;
+    dd.style.position = 'fixed';
+    dd.style.top = Math.round(rect.bottom + 6) + 'px';
+    dd.style.right = Math.max(margin, Math.round(vw - rect.right)) + 'px';
+    dd.style.left = 'auto';
+    dd.style.maxWidth = Math.max(200, vw - 2 * margin) + 'px';
+    dd.style.maxHeight = Math.max(120, vh - rect.bottom - 6 - margin) + 'px';
+    dd.style.overflowY = 'auto';
+  }
+
+  function onViewportChange() {
+    if (state.menuOpen) closeMenu();
   }
 
   function closeMenu() {
@@ -1020,6 +1047,8 @@
     state.menuOpen = false;
     document.removeEventListener('click', onDocClick);
     document.removeEventListener('keydown', onDocKey);
+    window.removeEventListener('scroll', onViewportChange);
+    window.removeEventListener('resize', onViewportChange);
   }
 
   function onDocClick(ev) {
