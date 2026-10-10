@@ -979,6 +979,7 @@
           '<a href="#/account" class="user-menu-item" role="menuitem"><i class="fas fa-user-circle"></i> My account</a>' +
           '<a href="#/groups" class="user-menu-item" role="menuitem"><i class="fas fa-users"></i> Groups</a>' +
           (user.role === 'admin' ? '<a href="#/admin" class="user-menu-item" role="menuitem"><i class="fas fa-shield-alt"></i> Admin</a>' : '') +
+          '<button type="button" class="user-menu-item" role="menuitem" data-menu-feedback><i class="fas fa-bug"></i> Bug report / feature request</button>' +
           '<div class="user-menu-sync" aria-live="polite">' + syncStatusHtml() + '</div>' +
           '<button type="button" class="user-menu-item user-menu-signout" role="menuitem" data-menu-signout><i class="fas fa-sign-out-alt"></i> Sign out</button>' +
         '</div>' +
@@ -987,6 +988,11 @@
     const toggle = host.querySelector('.user-menu-toggle');
     if (toggle) toggle.addEventListener('click', (ev) => { ev.stopPropagation(); state.menuOpen ? closeMenu() : openMenu(); });
     host.querySelectorAll('.user-menu-item[href]').forEach((a) => a.addEventListener('click', () => closeMenu()));
+    const feedback = host.querySelector('[data-menu-feedback]');
+    if (feedback) feedback.addEventListener('click', () => {
+      closeMenu();
+      if (window.OLFeedbackUI) window.OLFeedbackUI.open('bug');
+    });
     const signout = host.querySelector('[data-menu-signout]');
     if (signout) signout.addEventListener('click', () => {
       closeMenu();

@@ -13,8 +13,10 @@ import userDataRoutes from './routes/userdata.js';
 import groupRoutes from './routes/groups.js';
 import adminRoutes from './routes/admin.js';
 import wsRoutes from './routes/ws.js';
+import feedbackRoutes from './routes/feedback.js';
 
 export async function buildApp(opts = {}) {
+  const routeOpts = opts.routeOpts || {};
   const app = Fastify({
     logger: opts.logger ?? (config.isTest ? false : { level: config.isProd ? 'info' : 'debug' }),
     trustProxy: config.trustProxy,
@@ -74,6 +76,7 @@ export async function buildApp(opts = {}) {
     await api.register(groupRoutes);
     await api.register(adminRoutes);
     await api.register(wsRoutes);
+    await api.register(feedbackRoutes, routeOpts.feedback || {});
   }, { prefix: '/api' });
 
   if (existsSync(config.clientDir)) {

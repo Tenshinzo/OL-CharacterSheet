@@ -135,3 +135,17 @@ the ID is empty.
 - The app container runs as the non-root `node` user; `.env` is `chmod 600` and never committed.
 - Rotate `SECRET_KEY` only if compromised: it logs every user out and invalidates pending
   e-mail tokens.
+
+## In-app bug reports (GitHub issues)
+
+The user menu has "Bug report / feature request", which files a labelled issue in the repo through the server. It is hidden until the server has a token:
+
+1. Create a fine-grained personal access token at https://github.com/settings/personal-access-tokens with access to `Tenshinzo/OL-CharacterSheet` and the repository permission **Issues: Read and write** (nothing else).
+2. On the server add to `/opt/olchar/app/.env`:
+   ```
+   GITHUB_ISSUES_TOKEN=github_pat_...
+   GITHUB_REPO=Tenshinzo/OL-CharacterSheet
+   ```
+3. Restart the app: `docker compose -f docker-compose.prod.yml up -d app`.
+
+Issues get the labels `bug` or `enhancement` plus `from-app`, and the body includes reporter name/email, page, open character and browser (if the user left "include technical context" checked). Submissions are limited to 10 per user per hour.

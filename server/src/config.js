@@ -54,6 +54,11 @@ export const config = {
     clientSecret: env.DISCORD_CLIENT_SECRET || '',
   },
   adminEmail: (env.ADMIN_EMAIL || '').trim().toLowerCase(),
+  github: {
+    // Fine-grained PAT with "Issues: write" on the repo; enables the in-app bug report form.
+    token: env.GITHUB_ISSUES_TOKEN || '',
+    repo: env.GITHUB_REPO || 'Tenshinzo/OL-CharacterSheet',
+  },
   session: {
     cookieName: 'olsid',
     ttlDays: 30,

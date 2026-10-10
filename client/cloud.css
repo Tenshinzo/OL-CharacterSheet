@@ -2170,3 +2170,24 @@
         grid-template-columns: minmax(0, 2fr) 90px minmax(0, 1fr) 56px 100px 100px 80px minmax(0, 2.4fr);
     }
 }
+
+/* ===== feedback-ui ===== */
+.feedback-modal .feedback-content { max-width: 560px; }
+.feedback-modal h2 { display: flex; align-items: center; gap: var(--spacing-md); margin: 0 0 var(--spacing-sm); font-size: var(--font-size-2xl); color: var(--text-primary); }
+.feedback-modal h2 i { color: var(--primary); }
+.feedback-intro { margin: 0 0 var(--spacing-lg); font-size: var(--font-size-sm); }
+.feedback-type { display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-md); margin-bottom: var(--spacing-lg); }
+.feedback-type-option { display: flex; align-items: center; justify-content: center; gap: var(--spacing-sm); padding: var(--spacing-md) var(--spacing-lg); border: 2px solid var(--border-light, #e2e8f0); border-radius: var(--radius-lg); cursor: pointer; font-weight: 600; color: var(--text-secondary); background: var(--gray-50, #f8fafc); transition: border-color var(--transition-fast), color var(--transition-fast), background var(--transition-fast); }
+.feedback-type-option input { position: absolute; opacity: 0; pointer-events: none; }
+.feedback-type-option.is-selected { border-color: var(--primary); color: var(--primary); background: rgba(59, 130, 246, 0.08); }
+.feedback-type-option:focus-within { outline: 2px solid var(--primary); outline-offset: 2px; }
+.feedback-modal .form-group textarea { resize: vertical; min-height: 120px; }
+.feedback-context { display: flex; align-items: flex-start; gap: var(--spacing-sm); font-size: var(--font-size-sm); color: var(--text-secondary); margin: var(--spacing-md) 0 var(--spacing-lg); cursor: pointer; }
+.feedback-context input { margin-top: 3px; }
+.feedback-error { background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.35); color: #b91c1c; border-radius: var(--radius-md); padding: var(--spacing-md) var(--spacing-lg); margin-bottom: var(--spacing-lg); font-size: var(--font-size-sm); }
+.feedback-actions { display: flex; justify-content: flex-end; gap: var(--spacing-md); flex-wrap: wrap; }
+.feedback-success { text-align: center; padding: var(--spacing-xl) 0 var(--spacing-md); }
+.feedback-success-icon { font-size: 3rem; color: var(--success, #22c55e); margin-bottom: var(--spacing-md); }
+.feedback-success h3 { margin: 0 0 var(--spacing-sm); }
+.feedback-success p { margin: 0 0 var(--spacing-md); }
+@media (max-width: 480px) { .feedback-type { grid-template-columns: 1fr; } }
