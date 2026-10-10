@@ -75,8 +75,16 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p ~/.ssh && chmod 700 ~/.ssh
-          printf '%s\n' "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy_key
+          cat > ~/.ssh/deploy_key <<'KEY'
+          ${{ secrets.DEPLOY_SSH_KEY }}
+          KEY
           chmod 600 ~/.ssh/deploy_key
+          # Fail fast with a clear message if the secret is not a complete private key.
+          if ! ssh-keygen -y -f ~/.ssh/deploy_key > ~/.ssh/deploy_key.pub 2>/dev/null; then
+            echo "::error::DEPLOY_SSH_KEY is not a valid private key. Paste the COMPLETE file including the BEGIN/END lines ($(wc -l < ~/.ssh/deploy_key) lines received)." >&2
+            exit 1
+          fi
+          echo "Deploy key fingerprint: $(ssh-keygen -lf ~/.ssh/deploy_key.pub)"
           ssh-keyscan -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts 2>/dev/null
       - name: Run deploy.sh on server
         run: |
