@@ -172,7 +172,7 @@ export default async function authRoutes(app) {
     const nonce = randomToken(16);
     const payload = Buffer.from(JSON.stringify({ n: nonce, i: invite, m: mode, u: request.user?.id || null })).toString('base64url');
     const state = `${payload}.${hmac(payload)}`;
-    reply.setCookie('discord_oauth_nonce', nonce, { path: '/auth/discord', httpOnly: true, sameSite: 'lax', secure: cookieOptions().secure, maxAge: 600 });
+    reply.setCookie('discord_oauth_nonce', nonce, { path: '/api/auth/discord', httpOnly: true, sameSite: 'lax', secure: cookieOptions().secure, maxAge: 600 });
     const params = new URLSearchParams({
       client_id: config.discord.clientId,
       redirect_uri: redirectUri(),
@@ -194,7 +194,7 @@ export default async function authRoutes(app) {
     let st;
     try { st = JSON.parse(Buffer.from(payload, 'base64url').toString()); } catch { return fail('discord_state'); }
     if (st.n !== request.cookies?.discord_oauth_nonce) return fail('discord_state');
-    reply.clearCookie('discord_oauth_nonce', { path: '/auth/discord' });
+    reply.clearCookie('discord_oauth_nonce', { path: '/api/auth/discord' });
 
     const tokenRes = await fetch('https://discord.com/api/oauth2/token', {
       method: 'POST',
