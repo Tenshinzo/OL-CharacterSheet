@@ -44,9 +44,9 @@ Load order in `index.html`: `gameDatabase.js`, `api.js`, `auth-ui.js`, `groups-u
 
 ### `CharacterSheetApp` (script.js)
 One monolithic class holding all state and behavior:
-- `this.characters` — array of all character objects, loaded from / saved to `localStorage['openLegendCharacters']` via `loadCharacters()` / `saveCharacters()`.
+- `this.characters` — array of all character objects the user can see (own + GM-visible), loaded via `loadFromServer()` and synced through `saveCharacters()`.
 - `this.currentCharacter` — the character currently shown on the sheet page. Most `update*`/`calculate*` methods read from it and DOM inputs, then write back.
-- `this.customBoons` / `this.customBanes` — user-defined entries persisted under `openLegendCustomBoons` / `openLegendCustomBanes`; they are merged with `GAME_DATABASE` entries wherever boons/banes are listed (`findBoonOrBane`, `getBoonOrBaneByName`).
+- `this.customBoons` / `this.customBanes` — user-defined entries persisted per user on the server (`user_data`); they are merged with `GAME_DATABASE` entries wherever boons/banes are listed (`findBoonOrBane`, `getBoonOrBaneByName`).
 
 Pages are plain `<div>`s toggled by `showMainPage()`, `showCharacterSheetPage(mode)`, `showOptionsListPage()` (`#mainPage`, `#characterSheetPage`, `#optionsListPage`) and `showPage(id)` for the cloud pages. Beware the CSS rule `[id$="Section"] { display:none !important }`: never give a page container an id ending in "Section". The sheet page has an edit mode and a view mode (`enableViewMode` / `disableViewMode`); some inputs exist twice (e.g. `wealthScore` vs `viewWealthScore`), so saving code must read whichever is active.
 
