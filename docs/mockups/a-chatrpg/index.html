@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mockup A · Chat-RPG style</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ground: #0d0a14; --panel: #1b1430; --panel-deep: #120d22;
+    --ink: #efe8db; --ink-dim: #9b93aa;
+    --gold: #f2c359; --gold-dim: #a8833a; --edge-light: #e6d3a3; --edge-dark: #05040a;
+    --attack: #ea6a54; --defense: #61a8e8; --good: #7bc86c; --warn: #e8b84b; --support: #6fd08c;
+    --px: 4px;
+  }
+  * { box-sizing: border-box; }
+  html { background: var(--ground); overflow-x: hidden; }
+  body { margin: 0; color: var(--ink); font-family: 'VT323', 'Courier New', monospace; font-size: 22px; line-height: 1.35;
+    background: var(--ground);
+    background-image: radial-gradient(rgba(242,195,89,.06) 1px, transparent 1px); background-size: 24px 24px; }
+  .pixel { font-family: 'Press Start 2P', monospace; font-size: 13px; letter-spacing: 0; line-height: 1.6; }
+  a { color: var(--gold); text-decoration: none; border-bottom: 2px dotted var(--gold-dim); }
+  .wrap { max-width: 1240px; margin: 0 auto; padding: 20px; }
+
+  /* top bar */
+  .top { display: flex; align-items: center; justify-content: space-between; padding: 10px 0 18px; border-bottom: 3px solid var(--panel); margin-bottom: 26px; }
+  .brand { display: flex; align-items: center; gap: 14px; }
+  .brand .d20 { width: 34px; height: 34px; background: var(--gold); clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%); box-shadow: 0 0 0 var(--px) var(--edge-dark); }
+  .brand .pixel { color: var(--gold); font-size: 15px; }
+  .brand small { color: var(--ink-dim); font-size: 18px; display: block; margin-top: 4px; }
+  .nav { display: flex; gap: 10px; align-items: center; }
+  .chip { background: var(--panel); border: 3px solid var(--edge-dark); padding: 6px 12px; color: var(--ink); box-shadow: 0 var(--px) 0 var(--edge-dark); font-size: 20px; }
+  .chip.on { background: var(--gold); color: #1a1205; border-color: var(--edge-light); }
+  .avatar { width: 40px; height: 40px; background: var(--panel-deep); border: 3px solid var(--edge-light); display: grid; place-items: center; color: var(--gold); font-size: 20px; box-shadow: 0 0 0 var(--px) var(--edge-dark); }
+  .status { display: flex; align-items: center; gap: 8px; color: var(--ink-dim); font-size: 19px; }
+  .status i { width: 10px; height: 10px; background: var(--good); box-shadow: 0 0 0 2px var(--edge-dark); display: inline-block; }
+
+  /* panels */
+  .panel { background: var(--panel); border: var(--px) solid var(--edge-light); outline: var(--px) solid var(--edge-dark); padding: 22px 24px; position: relative; }
+  .panel + .panel, .panel + .grid { margin-top: 28px; }
+  .panel > h2 { margin: 0 0 14px; color: var(--gold); font-family: 'Press Start 2P', monospace; font-size: 13px; line-height: 1.6; }
+  .panel > h2 b { color: var(--ink); font-weight: normal; }
+  .sub { background: var(--panel-deep); border: 3px solid var(--edge-dark); padding: 14px 16px; }
+  .sub h3 { margin: 0 0 8px; font-size: 24px; color: var(--ink); }
+  .sub .kind { color: var(--gold); font-size: 18px; }
+  .sub p { margin: 6px 0 0; color: var(--ink-dim); }
+
+  .btn { display: inline-block; background: var(--panel-deep); border: var(--px) solid var(--edge-light); box-shadow: 0 0 0 var(--px) var(--edge-dark), 0 var(--px) 0 var(--px) var(--edge-dark); color: #fff; padding: 10px 18px; font-family: 'Press Start 2P', monospace; font-size: 11px; margin: 6px 10px 10px 0; }
+  .btn.primary { background: var(--gold); color: #1a1205; }
+  .btn.danger { color: var(--attack); }
+
+  /* overview */
+  .hero p { max-width: 70ch; margin: 0 0 14px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 22px; }
+  .card { background: var(--panel); border: var(--px) solid var(--edge-light); outline: var(--px) solid var(--edge-dark); padding: 16px 18px 12px; }
+  .card h3 { margin: 0; font-size: 26px; color: var(--ink); }
+  .card .arch { color: var(--gold); }
+  .card .meta { display: flex; gap: 14px; margin: 10px 0 12px; color: var(--ink-dim); }
+  .card .meta b { color: var(--ink); font-weight: normal; }
+  .bar { height: 14px; background: var(--edge-dark); border: 2px solid var(--edge-dark); margin: 6px 0 12px; }
+  .bar i { display: block; height: 100%; background: var(--good); }
+  .bar.hurt i { background: var(--warn); }
+  .card .btn { margin: 4px 6px 4px 0; padding: 8px 10px; font-size: 9px; }
+  .owner { color: var(--defense); font-size: 19px; }
+  .gm { border-color: var(--defense); }
+
+  /* sheet */
+  .sheet-head { display: grid; grid-template-columns: 1fr auto; gap: 20px; align-items: start; }
+  .sheet-head h1 { margin: 0; font-family: 'Press Start 2P', monospace; font-size: 20px; color: var(--gold); line-height: 1.5; }
+  .sheet-head .arch { color: var(--ink-dim); font-size: 22px; }
+  .lvl { display: flex; gap: 12px; flex-wrap: wrap; }
+  .lvl div { background: var(--panel-deep); border: 3px solid var(--edge-dark); padding: 8px 14px; text-align: center; }
+  .lvl span { display: block; color: var(--ink-dim); font-size: 17px; }
+  .lvl b { font-family: 'Press Start 2P', monospace; font-size: 16px; color: var(--ink); font-weight: normal; }
+  .tabs { display: flex; flex-wrap: wrap; gap: 8px; margin: 26px 0 18px; }
+  .tabs .chip { font-family: 'Press Start 2P', monospace; font-size: 10px; padding: 10px 14px; }
+  .cols { display: grid; grid-template-columns: 1.15fr .85fr; gap: 24px; }
+  .attrs { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+  .agroup h4 { margin: 0 0 8px; color: var(--gold); font-size: 20px; border-bottom: 2px dotted var(--gold-dim); padding-bottom: 4px; }
+  .arow { display: grid; grid-template-columns: 1fr 44px 58px 70px; align-items: center; gap: 6px; padding: 3px 0; }
+  .arow .n { color: var(--ink); }
+  .arow .v { text-align: center; font-family: 'Press Start 2P', monospace; font-size: 13px; color: var(--ink); background: var(--panel-deep); border: 2px solid var(--edge-dark); padding: 6px 0; }
+  .arow .d { color: var(--ink-dim); text-align: center; font-size: 19px; }
+  .arow .pm { display: flex; gap: 4px; justify-content: flex-end; }
+  .arow .pm b { width: 28px; height: 28px; display: grid; place-items: center; background: var(--panel-deep); border: 2px solid var(--edge-light); color: var(--gold); font-weight: normal; box-shadow: 0 2px 0 var(--edge-dark); }
+  .hp { display: grid; grid-template-columns: 1fr auto; gap: 14px; align-items: end; }
+  .hp .big { font-family: 'Press Start 2P', monospace; font-size: 26px; color: var(--good); }
+  .hp .big small { font-size: 12px; color: var(--ink-dim); }
+  .hpbar { height: 22px; background: var(--edge-dark); border: 3px solid var(--edge-dark); margin: 10px 0 14px; position: relative; }
+  .hpbar i { position: absolute; left: 0; top: 0; bottom: 0; background: var(--good); width: 64%; }
+  .hpbar u { position: absolute; right: 0; top: 0; bottom: 0; background: #000; width: 10%; }
+  .defs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .def { background: var(--panel-deep); border: 3px solid var(--edge-dark); padding: 10px; text-align: center; }
+  .def span { color: var(--ink-dim); font-size: 18px; display: block; }
+  .def b { font-family: 'Press Start 2P', monospace; font-size: 20px; color: var(--defense); font-weight: normal; }
+  .def.res b { color: var(--support); }
+  .def.tou b { color: var(--warn); }
+  .dmg { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; align-items: center; }
+  .dmg input { width: 90px; background: var(--edge-dark); border: 3px solid var(--edge-light); color: var(--ink); font: inherit; padding: 6px 10px; text-align: center; }
+  .dmg .btn { margin: 0; padding: 8px 12px; font-size: 9px; }
+  .list { display: grid; gap: 10px; }
+  .item { display: grid; grid-template-columns: 44px 1fr auto; gap: 12px; align-items: center; background: var(--panel-deep); border: 3px solid var(--edge-dark); padding: 10px 12px; }
+  .item .ic { width: 40px; height: 40px; display: grid; place-items: center; font-size: 22px; background: var(--panel); border: 2px solid var(--edge-light); }
+  .item .ic.b { color: var(--good); } .item .ic.n { color: var(--attack); } .item .ic.f { color: var(--gold); } .item .ic.e { color: var(--defense); }
+  .item h3 { margin: 0; font-size: 23px; }
+  .item h3 small { color: var(--gold); font-size: 18px; margin-left: 8px; }
+  .item p { margin: 2px 0 0; color: var(--ink-dim); font-size: 19px; }
+  .item .x { color: var(--ink-dim); font-size: 26px; }
+  .pill { display: inline-block; padding: 2px 8px; background: var(--edge-dark); color: var(--ink); font-size: 17px; margin-left: 6px; }
+  .pill.pl { color: var(--good); }
+  .note { color: var(--ink-dim); font-size: 19px; }
+  .divider { height: 3px; background: var(--panel); margin: 48px 0; }
+  .label { font-family: 'Press Start 2P', monospace; font-size: 10px; color: var(--gold-dim); margin: 0 0 16px; }
+  @media (max-width: 760px) {
+    body { font-size: 20px; }
+    .wrap { padding: 14px; }
+    .top { flex-wrap: wrap; gap: 12px; }
+    .cols, .attrs, .sheet-head { grid-template-columns: 1fr; }
+    .defs { grid-template-columns: repeat(3, 1fr); }
+    .panel { padding: 16px; }
+    .arow { grid-template-columns: 1fr 40px 46px 64px; }
+    .defs { gap: 6px; } .def { padding: 8px 4px; } .def span { font-size: 15px; } .def b { font-size: 15px; }
+    .lvl div { padding: 6px 10px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ============ SCREEN 1: OVERVIEW ============ -->
+  <p class="label">Screen 1 · Character overview</p>
+  <header class="top">
+    <div class="brand"><div class="d20"></div><div><span class="pixel">OPEN LEGEND</span><small>Online character sheet</small></div></div>
+    <nav class="nav">
+      <span class="status"><i></i> saved</span>
+      <span class="chip">Groups</span>
+      <span class="chip">Options</span>
+      <div class="avatar">MK</div>
+    </nav>
+  </header>
+
+  <section class="panel hero">
+    <h2>WELCOME BACK, <b>MARKUS</b></h2>
+    <p>Your heroes live on the server now. Edit them anywhere, hand a sheet to your game master, and watch changes land live at the table.</p>
+    <span class="btn primary">+ New character</span>
+    <span class="btn">Import JSON</span>
+    <span class="btn">Export all</span>
+  </section>
+
+  <section class="panel">
+    <h2>YOUR CHARACTERS</h2>
+    <div class="grid">
+      <div class="card">
+        <h3>Seraphine Vayle</h3>
+        <div class="arch">Battle-cleric of the Dawn</div>
+        <div class="meta"><span>Level <b>4</b></span><span>XP <b>9</b></span><span>Legend <b>2</b></span></div>
+        <div class="bar hurt"><i style="width:64%"></i></div>
+        <span class="btn primary">Open</span><span class="btn">Edit</span><span class="btn">Export</span><span class="btn danger">Delete</span>
+      </div>
+      <div class="card">
+        <h3>Korrak Emberjaw</h3>
+        <div class="arch">Orc pyromancer</div>
+        <div class="meta"><span>Level <b>3</b></span><span>XP <b>6</b></span><span>Legend <b>0</b></span></div>
+        <div class="bar"><i style="width:100%"></i></div>
+        <span class="btn primary">Open</span><span class="btn">Edit</span><span class="btn">Export</span><span class="btn danger">Delete</span>
+      </div>
+      <div class="card">
+        <h3>Wisp <span class="pill">alternate form</span></h3>
+        <div class="arch">Seraphine · tier 1</div>
+        <div class="meta"><span>Level <b>4</b></span><span>XP <b>9</b></span></div>
+        <div class="bar hurt"><i style="width:64%"></i></div>
+        <span class="btn primary">Open</span><span class="btn">Edit</span><span class="btn">Export</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>PARTY CHARACTERS <b>· GM view</b></h2>
+    <p class="note">Shared with you by the players of <span style="color:var(--gold)">Thursday Night Heroes</span>. Your edits sync to them live.</p>
+    <div class="grid">
+      <div class="card gm">
+        <div class="owner">▸ played by Lena</div>
+        <h3>Tamsin Quickfoot</h3>
+        <div class="arch">Halfling burglar</div>
+        <div class="meta"><span>Level <b>4</b></span><span>XP <b>10</b></span></div>
+        <div class="bar"><i style="width:88%"></i></div>
+        <span class="btn primary">Open</span><span class="btn">Edit</span><span class="btn">Export</span>
+      </div>
+      <div class="card gm">
+        <div class="owner">▸ played by Jonas</div>
+        <h3>Brother Alder</h3>
+        <div class="arch">Wandering monk</div>
+        <div class="meta"><span>Level <b>4</b></span><span>XP <b>9</b></span></div>
+        <div class="bar hurt"><i style="width:40%"></i></div>
+        <span class="btn primary">Open</span><span class="btn">Edit</span><span class="btn">Export</span>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ============ SCREEN 2: CHARACTER SHEET ============ -->
+  <p class="label">Screen 2 · Character sheet (view mode)</p>
+  <header class="top">
+    <div class="brand"><div class="d20"></div><div><span class="pixel">OPEN LEGEND</span><small>Online character sheet</small></div></div>
+    <nav class="nav">
+      <span class="status"><i></i> saved</span>
+      <span class="chip">← Overview</span>
+      <span class="chip on">Edit sheet</span>
+      <div class="avatar">MK</div>
+    </nav>
+  </header>
+
+  <section class="panel">
+    <div class="sheet-head">
+      <div>
+        <h1>SERAPHINE VAYLE</h1>
+        <div class="arch">Battle-cleric of the Dawn · human · 29 winters</div>
+      </div>
+      <div class="lvl">
+        <div><span>Level</span><b>4</b></div>
+        <div><span>XP</span><b>9</b></div>
+        <div><span>Legend</span><b>2</b></div>
+        <div><span>Attr. pts</span><b>58/67</b></div>
+      </div>
+    </div>
+    <div class="tabs">
+      <span class="chip on">Stats</span><span class="chip">Combat</span><span class="chip">Boons & banes</span><span class="chip">Equipment</span><span class="chip">Feats</span><span class="chip">Effects</span><span class="chip">Story</span>
+    </div>
+
+    <div class="cols">
+      <div>
+        <div class="attrs">
+          <div class="agroup"><h4>Physical</h4>
+            <div class="arow"><span class="n">Agility</span><span class="v">2</span><span class="d">1d6</span><span class="pm"><b>−</b><b>+</b></span></div>
+            <div class="arow"><span class="n">Fortitude</span><span class="v">3</span><span class="d">1d8</span><span class="pm"><b>−</b><b>+</b></span></div>
+            <div class="arow"><span class="n">Might</span><span class="v">4</span><span class="d">1d10</span><span class="pm"><b>−</b><b>+</b></span></div>
+          </div>
+          <div class="agroup"><h4>Mental</h4>
+            <div class="arow"><span class="n">Learning</span><span class="v">1</span><span class="d">1d4</span><span class="pm"><b>−</b><b>+</b></span></div>
+            <div class="arow"><span class="n">Logic</span><span class="v">0</span><span class="d">—</span><span class="pm"><b>−</b><b>+</b></span></div>
+            <div class="arow"><span class="n">Perception</span><span class="v">2</span><span class="d">1d6</span><span class="pm"><b>−</b><b>+</b></span></div>
+            <div class="arow"><span class="n">Will</span><span class="v">4</span><span class="d">1d10</span><span class="pm"><b>−</b><b>+</b></span></div>
+          </div>
+          <div class="agroup"><h4>Social</h4>
+            <div class="arow"><span class="n">Deception</span><span class="v">0</span><span class="d">—</span><span class="pm"><b>−</b><b>+</b></span></div>
+            <div class="arow"><span class="n">Persuasion</span><span class="v">2</span><span class="d">1d6</span><span class="pm"><b>−</b><b>+</b></span></div>
+            <div class="arow"><span class="n">Presence</span><span class="v">3</span><span class="d">1d8</span><span class="pm"><b>−</b><b>+</b></span></div>
+          </div>
+          <div class="agroup"><h4>Extraordinary</h4>
+            <div class="arow"><span class="n">Creation</span><span class="v">3</span><span class="d">1d8</span><span class="pm"><b>−</b><b>+</b></span></div>
+            <div class="arow"><span class="n">Energy</span><span class="v">0</span><span class="d">—</span><span class="pm"><b>−</b><b>+</b></span></div>
+            <div class="arow"><span class="n">Protection</span><span class="v">4</span><span class="d">1d10</span><span class="pm"><b>−</b><b>+</b></span></div>
+            <div class="arow"><span class="n">Influence</span><span class="v">1</span><span class="d">1d4</span><span class="pm"><b>−</b><b>+</b></span></div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="sub">
+          <h3>Hit points</h3>
+          <div class="hp"><div class="big">21 <small>/ 33</small></div><span class="note">lethal −3</span></div>
+          <div class="hpbar"><i></i><u></u></div>
+          <div class="defs">
+            <div class="def"><span>Guard</span><b>16</b></div>
+            <div class="def tou"><span>Toughness</span><b>18</b></div>
+            <div class="def res"><span>Resolve</span><b>17</b></div>
+          </div>
+          <div class="dmg"><input value="5"><span class="btn danger">Damage</span><span class="btn">Heal</span><span class="btn">Lethal</span></div>
+        </div>
+        <div class="sub" style="margin-top:16px">
+          <h3>Active effects</h3>
+          <div class="list">
+            <div class="item"><div class="ic b">✦</div><div><h3>Bolster <small>PL 4</small><span class="pill pl">sustain</span></h3><p>+1d8 to Might rolls · from Korrak</p></div><span class="x">×</span></div>
+            <div class="item"><div class="ic n">☠</div><div><h3>Fatigued <small>PL 3</small></h3><p>Disadvantage 1 on all rolls · resisted 1/3</p></div><span class="x">×</span></div>
+          </div>
+        </div>
+        <div class="sub" style="margin-top:16px">
+          <h3>Favorite actions</h3>
+          <div class="list">
+            <div class="item"><div class="ic f">⚔</div><div><h3>Warhammer strike</h3><p>Might 1d20+1d10 vs Guard · 1 action</p></div><span class="x">▶</span></div>
+            <div class="item"><div class="ic e">✚</div><div><h3>Healing light</h3><p>Creation 1d20+1d8 · Heal PL 3</p></div><span class="x">▶</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>EQUIPMENT <b>· 2 equipped</b></h2>
+    <div class="list">
+      <div class="item"><div class="ic f">⚒</div><div><h3>Warhammer of the First Light <span class="pill">equipped</span></h3><p>Two-handed · forceful · heavy · +1d4 on attacks vs undead</p></div><span class="x">…</span></div>
+      <div class="item"><div class="ic e">⛨</div><div><h3>Scale mail <span class="pill">equipped</span></h3><p>Guard +2 · requires Fortitude 3 · reduces Agility rolls by 1</p></div><span class="x">…</span></div>
+      <div class="item"><div class="ic">◈</div><div><h3>Holy symbol of the Dawn</h3><p>Grants Bolster at PL 2 once per scene</p></div><span class="x">…</span></div>
+    </div>
+  </section>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mockup B · Vellum &amp; ink</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=IM+Fell+English:ital@0;1&family=IM+Fell+English+SC&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --table: #1d1512;        /* dark oak table */
+    --leather: #2f3a2e;      /* green leather binding */
+    --vellum: #e9dcc0;       /* page */
+    --vellum-deep: #d9c7a2;  /* worn edges / inset wells */
+    --ink: #2a2118;          /* writing ink */
+    --ink-soft: #6b5a46;     /* faded ink */
+    --rule: #b9a27c;         /* ruled lines */
+    --brass: #a8832f;        /* fittings, accents */
+    --wax: #8a1c2b;          /* seal, damage */
+    --verdigris: #3f6b5e;    /* healing, boons */
+    --iron: #4f5a66;         /* defenses */
+  }
+  * { box-sizing: border-box; }
+  html { background: var(--table); }
+  body { margin: 0; font-family: 'IM Fell English', Georgia, serif; font-size: 19px; line-height: 1.5; color: var(--ink);
+    background: var(--table);
+    background-image: repeating-linear-gradient(90deg, rgba(0,0,0,.18) 0 2px, transparent 2px 140px), linear-gradient(180deg, #221915, #17110e); }
+  .caps { font-family: 'IM Fell English SC', 'IM Fell English', serif; letter-spacing: .02em; }
+  h1, h2, h3, .cinzel { font-family: 'Cinzel', serif; font-weight: 700; color: var(--ink); letter-spacing: .01em; }
+
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 28px 20px 60px; }
+  .label { color: #a08f70; font-family: 'IM Fell English', serif; font-style: italic; margin: 0 0 14px; }
+
+  /* leather bar */
+  .bar { background: var(--leather); color: var(--vellum); display: flex; align-items: center; justify-content: space-between; padding: 14px 22px; border: 2px solid #1a211a; box-shadow: inset 0 0 0 1px rgba(255,255,255,.08), 0 10px 30px rgba(0,0,0,.5); border-radius: 4px; }
+  .bar .title { font-family: 'Cinzel', serif; font-weight: 700; font-size: 20px; color: #e9dcc0; display: flex; align-items: center; gap: 12px; }
+  .bar .title .seal { width: 30px; height: 30px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #b63a4a, var(--wax) 60%, #5c0f1a); box-shadow: 0 2px 4px rgba(0,0,0,.6), inset 0 0 0 3px rgba(255,255,255,.08); }
+  .bar nav { display: flex; gap: 10px; align-items: center; }
+  .brassbtn { color: #e9dcc0; border: 1px solid var(--brass); padding: 6px 14px; border-radius: 3px; font-family: 'IM Fell English SC', serif; font-size: 18px; background: linear-gradient(#3a4738, #2b352a); box-shadow: inset 0 1px 0 rgba(255,255,255,.08); }
+  .brassbtn.gold { background: linear-gradient(#c9a24a, #9c7a2c); color: #241b0c; border-color: #6e5620; }
+  .status { font-style: italic; color: #b7c3b2; font-size: 17px; display: flex; gap: 8px; align-items: center; }
+  .status i { width: 9px; height: 9px; border-radius: 50%; background: #8fbf86; display: inline-block; box-shadow: 0 0 6px #8fbf86; }
+  .avatar { width: 36px; height: 36px; border-radius: 50%; border: 2px solid var(--brass); background: #1d1512; color: var(--brass); display: grid; place-items: center; font-family: 'Cinzel', serif; font-size: 14px; }
+
+  /* the page */
+  .page { background: var(--vellum); margin-top: 26px; padding: 40px 48px 44px; position: relative; border-radius: 3px;
+    box-shadow: 0 1px 0 #f3eadb inset, 0 30px 40px -20px rgba(0,0,0,.8), 0 0 0 1px #c9b893;
+    background-image:
+      radial-gradient(ellipse at 10% 0%, rgba(120,90,40,.10), transparent 50%),
+      radial-gradient(ellipse at 100% 100%, rgba(120,90,40,.12), transparent 45%),
+      repeating-linear-gradient(0deg, transparent 0 27px, rgba(185,162,124,.35) 27px 28px); }
+  .page::before { content: ""; position: absolute; inset: 14px; border: 1px solid #b9a27c; pointer-events: none; border-radius: 2px; }
+  .page::after { content: ""; position: absolute; inset: 18px; border: 2px double #b9a27c; pointer-events: none; border-radius: 2px; }
+  .page > * { position: relative; }
+  .page h2 { font-size: 15px; margin: 0 0 18px; letter-spacing: .14em; color: var(--ink-soft); display: flex; align-items: center; gap: 14px; }
+  .page h2::after { content: ""; flex: 1; height: 1px; background: linear-gradient(90deg, var(--rule), transparent); }
+  .lede { max-width: 66ch; font-size: 21px; margin: 0 0 16px; }
+  .ink { color: var(--ink); border: 1.5px solid var(--ink); padding: 8px 16px; border-radius: 2px; display: inline-block; margin: 6px 10px 6px 0; font-family: 'IM Fell English SC', serif; font-size: 19px; background: rgba(255,255,255,.25); box-shadow: 2px 2px 0 rgba(42,33,24,.25); }
+  .ink.wax { background: var(--wax); color: #f5e6cf; border-color: #5c0f1a; }
+  .ink.sm { font-size: 16px; padding: 4px 10px; margin: 4px 6px 4px 0; }
+
+  /* overview cards: index cards pinned to the page */
+  .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 26px; }
+  .card { background: #f1e6cf; border: 1px solid #c9b893; padding: 18px 20px 14px; position: relative; box-shadow: 0 6px 14px -6px rgba(0,0,0,.5); transform: rotate(-.4deg); }
+  .card:nth-child(2n) { transform: rotate(.5deg); }
+  .card::before { content: ""; position: absolute; top: -9px; left: 50%; width: 14px; height: 14px; margin-left: -7px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #d8b45a, var(--brass) 60%, #5e4717); box-shadow: 0 2px 3px rgba(0,0,0,.5); }
+  .card h3 { margin: 0; font-size: 21px; }
+  .card .arch { font-style: italic; color: var(--ink-soft); }
+  .card .meta { display: flex; gap: 16px; margin: 8px 0 6px; font-family: 'IM Fell English SC', serif; }
+  .card .meta b { font-weight: normal; }
+  .hp-line { height: 8px; border: 1px solid var(--ink-soft); border-radius: 4px; margin: 6px 0 12px; background: #e3d4b3; }
+  .hp-line i { display: block; height: 100%; background: var(--verdigris); border-radius: 4px; }
+  .hp-line.hurt i { background: var(--wax); }
+  .card .ink { margin-right: 6px; }
+  .owner { font-family: 'IM Fell English SC', serif; color: var(--iron); margin-bottom: 2px; }
+  .card.gm { border-left: 5px solid var(--verdigris); }
+
+  /* sheet */
+  .sheet-head { display: grid; grid-template-columns: 1fr auto; gap: 24px; align-items: end; border-bottom: 2px solid var(--ink); padding-bottom: 14px; margin-bottom: 22px; }
+  .sheet-head h1 { margin: 0; font-size: 36px; line-height: 1.1; }
+  .sheet-head .arch { font-style: italic; font-size: 21px; color: var(--ink-soft); margin-top: 4px; }
+  .seals { display: flex; gap: 14px; }
+  .sealstat { text-align: center; }
+  .sealstat span { display: block; font-family: 'IM Fell English SC', serif; color: var(--ink-soft); font-size: 16px; }
+  .sealstat b { display: grid; place-items: center; width: 58px; height: 58px; border-radius: 50%; border: 2px solid var(--ink); font-family: 'Cinzel', serif; font-size: 22px; font-weight: 700; background: rgba(255,255,255,.3); margin: 0 auto; }
+  .sealstat.big b { background: radial-gradient(circle at 35% 35%, #b63a4a, var(--wax) 60%, #5c0f1a); color: #f5e6cf; border-color: #5c0f1a; box-shadow: 0 3px 6px rgba(0,0,0,.4); }
+  .ribbons { display: flex; flex-wrap: wrap; gap: 6px 10px; margin: 0 0 26px; }
+  .ribbon { font-family: 'IM Fell English SC', serif; font-size: 18px; padding: 4px 14px; border-bottom: 3px solid transparent; color: var(--ink-soft); }
+  .ribbon.on { color: var(--ink); border-bottom-color: var(--wax); }
+
+  .cols { display: grid; grid-template-columns: 1.1fr .9fr; gap: 34px; }
+  .attrs { display: grid; grid-template-columns: 1fr 1fr; gap: 22px 28px; align-content: start; }
+  .agroup h4 { margin: 0 0 6px; font-family: 'Cinzel', serif; font-size: 14px; letter-spacing: .12em; color: var(--ink-soft); font-weight: 700; }
+  .arow { display: grid; grid-template-columns: 1fr 42px 54px 52px; align-items: center; gap: 8px; height: 28px; }
+  .arow .n { font-size: 20px; }
+  .arow .v { width: 36px; height: 36px; border-radius: 50%; border: 1.5px solid var(--ink); display: grid; place-items: center; font-family: 'Cinzel', serif; font-weight: 700; font-size: 17px; background: rgba(255,255,255,.35); }
+  .arow .v.zero { border-style: dashed; color: var(--ink-soft); }
+  .arow .d { color: var(--ink-soft); font-size: 17px; text-align: center; }
+  .arow .pm { display: flex; gap: 6px; justify-content: flex-end; font-family: 'Cinzel', serif; }
+  .arow .pm b { width: 22px; height: 22px; border: 1px solid var(--ink-soft); border-radius: 2px; display: grid; place-items: center; font-size: 13px; color: var(--ink-soft); }
+
+  .well { background: rgba(255,255,255,.28); border: 1px solid #c9b893; padding: 16px 18px; border-radius: 3px; box-shadow: inset 0 0 0 1px rgba(255,255,255,.4); }
+  .well + .well { margin-top: 18px; }
+  .well h3 { margin: 0 0 10px; font-size: 15px; letter-spacing: .12em; color: var(--ink-soft); }
+  .hp { display: flex; align-items: baseline; gap: 10px; }
+  .hp b { font-family: 'Cinzel', serif; font-size: 34px; color: var(--verdigris); }
+  .hp span { color: var(--ink-soft); }
+  .hp em { margin-left: auto; color: var(--wax); font-style: italic; }
+  .track { display: flex; gap: 3px; margin: 10px 0 14px; flex-wrap: wrap; }
+  .track i { width: 14px; height: 18px; border: 1px solid var(--ink); background: var(--verdigris); border-radius: 2px; }
+  .track i.e { background: transparent; }
+  .track i.l { background: var(--ink); }
+  .defs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .def { text-align: center; }
+  .def b { display: block; font-family: 'Cinzel', serif; font-size: 26px; color: var(--iron); border: 2px solid var(--iron); border-radius: 6px 6px 50% 50%; padding: 6px 0 10px; background: rgba(255,255,255,.3); }
+  .def span { font-family: 'IM Fell English SC', serif; color: var(--ink-soft); font-size: 17px; }
+  .dmg { display: flex; gap: 8px; margin-top: 14px; align-items: center; flex-wrap: wrap; }
+  .dmg input { width: 72px; font: inherit; background: transparent; border: 0; border-bottom: 1.5px solid var(--ink); text-align: center; padding: 4px; color: var(--ink); }
+  .entry { display: grid; grid-template-columns: 34px 1fr auto; gap: 12px; align-items: start; padding: 10px 0; border-bottom: 1px dashed var(--rule); }
+  .entry:last-child { border-bottom: 0; }
+  .glyph { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; color: #f5e6cf; font-size: 15px; font-family: 'Cinzel', serif; font-weight: 700; margin-top: 2px; }
+  .glyph.b { background: var(--verdigris); } .glyph.n { background: var(--wax); } .glyph.f { background: var(--brass); } .glyph.e { background: var(--iron); }
+  .entry h3 { margin: 0; font-size: 19px; font-family: 'IM Fell English', serif; font-weight: normal; }
+  .entry h3 b { font-family: 'Cinzel', serif; font-size: 13px; letter-spacing: .08em; margin-left: 8px; color: var(--ink-soft); font-weight: 700; }
+  .entry p { margin: 2px 0 0; color: var(--ink-soft); font-size: 17px; font-style: italic; }
+  .entry .x { color: var(--ink-soft); font-size: 20px; }
+  .tag { white-space: nowrap; font-family: 'IM Fell English SC', serif; font-size: 15px; color: var(--verdigris); border: 1px solid var(--verdigris); padding: 0 8px; border-radius: 10px; margin-left: 8px; }
+  .tag.wax { color: var(--wax); border-color: var(--wax); }
+  .marginalia { position: absolute; right: 60px; top: 118px; transform: rotate(-3deg); font-style: italic; color: var(--wax); font-size: 18px; opacity: .85; }
+  .divider { height: 70px; }
+  @media (max-width: 760px) {
+    body { font-size: 18px; }
+    .wrap { padding: 16px 10px 40px; }
+    .bar { flex-wrap: wrap; gap: 10px; padding: 12px 14px; }
+    .page { padding: 28px 22px 30px; }
+    .page::before { inset: 8px; } .page::after { inset: 11px; }
+    .cols, .attrs, .sheet-head { grid-template-columns: 1fr; }
+    .sheet-head .seals { justify-content: flex-start; flex-wrap: wrap; }
+    .marginalia { display: none; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ============ SCREEN 1: OVERVIEW ============ -->
+  <p class="label">Screen 1 · Character overview</p>
+  <header class="bar">
+    <div class="title"><span class="seal"></span> Open Legend</div>
+    <nav>
+      <span class="status"><i></i> saved a moment ago</span>
+      <span class="brassbtn">Groups</span>
+      <span class="brassbtn">Options</span>
+      <div class="avatar">MK</div>
+    </nav>
+  </header>
+
+  <main class="page">
+    <h2 class="cinzel">The Ledger of Heroes</h2>
+    <p class="lede">Every character you keep is written to your account and shared live with the table. Pick a card to open its sheet.</p>
+    <span class="ink">✎ Pen a new character</span>
+    <span class="ink">Import from file</span>
+    <span class="ink">Export all</span>
+
+    <h2 class="cinzel" style="margin-top:34px">Your characters</h2>
+    <div class="cards">
+      <div class="card">
+        <h3>Seraphine Vayle</h3>
+        <div class="arch">Battle-cleric of the Dawn</div>
+        <div class="meta"><span>Level <b>4</b></span><span>XP <b>9</b></span><span>Legend <b>2</b></span></div>
+        <div class="hp-line hurt"><i style="width:64%"></i></div>
+        <span class="ink sm">Open</span><span class="ink sm">Edit</span><span class="ink sm">Export</span>
+      </div>
+      <div class="card">
+        <h3>Korrak Emberjaw</h3>
+        <div class="arch">Orc pyromancer</div>
+        <div class="meta"><span>Level <b>3</b></span><span>XP <b>6</b></span><span>Legend <b>0</b></span></div>
+        <div class="hp-line"><i style="width:100%"></i></div>
+        <span class="ink sm">Open</span><span class="ink sm">Edit</span><span class="ink sm">Export</span>
+      </div>
+      <div class="card">
+        <h3>Wisp <span class="tag">alternate form</span></h3>
+        <div class="arch">of Seraphine · tier 1</div>
+        <div class="meta"><span>Level <b>4</b></span><span>XP <b>9</b></span></div>
+        <div class="hp-line hurt"><i style="width:64%"></i></div>
+        <span class="ink sm">Open</span><span class="ink sm">Edit</span><span class="ink sm">Export</span>
+      </div>
+    </div>
+
+    <h2 class="cinzel" style="margin-top:38px">Entrusted to you as game master</h2>
+    <p class="lede" style="font-size:19px;color:var(--ink-soft)">From the players of <i>Thursday Night Heroes</i>. Whatever you write here appears on their sheets at once.</p>
+    <div class="cards">
+      <div class="card gm">
+        <div class="owner">played by Lena</div>
+        <h3>Tamsin Quickfoot</h3>
+        <div class="arch">Halfling burglar</div>
+        <div class="meta"><span>Level <b>4</b></span><span>XP <b>10</b></span></div>
+        <div class="hp-line"><i style="width:88%"></i></div>
+        <span class="ink sm">Open</span><span class="ink sm">Edit</span>
+      </div>
+      <div class="card gm">
+        <div class="owner">played by Jonas</div>
+        <h3>Brother Alder</h3>
+        <div class="arch">Wandering monk</div>
+        <div class="meta"><span>Level <b>4</b></span><span>XP <b>9</b></span></div>
+        <div class="hp-line hurt"><i style="width:40%"></i></div>
+        <span class="ink sm">Open</span><span class="ink sm">Edit</span>
+      </div>
+    </div>
+  </main>
+
+  <div class="divider"></div>
+
+  <!-- ============ SCREEN 2: CHARACTER SHEET ============ -->
+  <p class="label">Screen 2 · Character sheet (view mode)</p>
+  <header class="bar">
+    <div class="title"><span class="seal"></span> Open Legend</div>
+    <nav>
+      <span class="status"><i></i> saved</span>
+      <span class="brassbtn">← Ledger</span>
+      <span class="brassbtn gold">Edit sheet</span>
+      <div class="avatar">MK</div>
+    </nav>
+  </header>
+
+  <main class="page">
+    <div class="marginalia">— mind the Fatigue, S.</div>
+    <div class="sheet-head">
+      <div>
+        <h1>Seraphine Vayle</h1>
+        <div class="arch">Battle-cleric of the Dawn · human · twenty-nine winters</div>
+      </div>
+      <div class="seals">
+        <div class="sealstat big"><b>4</b><span>Level</span></div>
+        <div class="sealstat"><b>9</b><span>XP</span></div>
+        <div class="sealstat"><b>2</b><span>Legend</span></div>
+        <div class="sealstat"><b style="font-size:15px;line-height:1">58<span style="font-size:10px;color:var(--ink-soft);margin-left:1px">/67</span></b><span>Points</span></div>
+      </div>
+    </div>
+    <div class="ribbons">
+      <span class="ribbon on">Attributes</span><span class="ribbon">Combat</span><span class="ribbon">Boons &amp; banes</span><span class="ribbon">Equipment</span><span class="ribbon">Feats</span><span class="ribbon">Effects</span><span class="ribbon">Story</span>
+    </div>
+
+    <div class="cols">
+      <div class="attrs">
+        <div class="agroup"><h4>Physical</h4>
+          <div class="arow"><span class="n">Agility</span><span class="v">2</span><span class="d">1d6</span><span class="pm"><b>−</b><b>+</b></span></div>
+          <div class="arow"><span class="n">Fortitude</span><span class="v">3</span><span class="d">1d8</span><span class="pm"><b>−</b><b>+</b></span></div>
+          <div class="arow"><span class="n">Might</span><span class="v">4</span><span class="d">1d10</span><span class="pm"><b>−</b><b>+</b></span></div>
+        </div>
+        <div class="agroup"><h4>Mental</h4>
+          <div class="arow"><span class="n">Learning</span><span class="v">1</span><span class="d">1d4</span><span class="pm"><b>−</b><b>+</b></span></div>
+          <div class="arow"><span class="n">Logic</span><span class="v zero">0</span><span class="d">—</span><span class="pm"><b>−</b><b>+</b></span></div>
+          <div class="arow"><span class="n">Perception</span><span class="v">2</span><span class="d">1d6</span><span class="pm"><b>−</b><b>+</b></span></div>
+          <div class="arow"><span class="n">Will</span><span class="v">4</span><span class="d">1d10</span><span class="pm"><b>−</b><b>+</b></span></div>
+        </div>
+        <div class="agroup"><h4>Social</h4>
+          <div class="arow"><span class="n">Deception</span><span class="v zero">0</span><span class="d">—</span><span class="pm"><b>−</b><b>+</b></span></div>
+          <div class="arow"><span class="n">Persuasion</span><span class="v">2</span><span class="d">1d6</span><span class="pm"><b>−</b><b>+</b></span></div>
+          <div class="arow"><span class="n">Presence</span><span class="v">3</span><span class="d">1d8</span><span class="pm"><b>−</b><b>+</b></span></div>
+        </div>
+        <div class="agroup"><h4>Extraordinary</h4>
+          <div class="arow"><span class="n">Creation</span><span class="v">3</span><span class="d">1d8</span><span class="pm"><b>−</b><b>+</b></span></div>
+          <div class="arow"><span class="n">Energy</span><span class="v zero">0</span><span class="d">—</span><span class="pm"><b>−</b><b>+</b></span></div>
+          <div class="arow"><span class="n">Protection</span><span class="v">4</span><span class="d">1d10</span><span class="pm"><b>−</b><b>+</b></span></div>
+          <div class="arow"><span class="n">Influence</span><span class="v">1</span><span class="d">1d4</span><span class="pm"><b>−</b><b>+</b></span></div>
+        </div>
+      </div>
+
+      <div>
+        <div class="well">
+          <h3 class="cinzel">Vitality</h3>
+          <div class="hp"><b>21</b><span>of 33</span><em>3 lethal</em></div>
+          <div class="track">
+            <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+            <i class="e"></i><i class="e"></i><i class="e"></i><i class="e"></i><i class="e"></i><i class="e"></i><i class="e"></i><i class="e"></i><i class="e"></i>
+            <i class="l"></i><i class="l"></i><i class="l"></i>
+          </div>
+          <div class="defs">
+            <div class="def"><b>16</b><span>Guard</span></div>
+            <div class="def"><b>18</b><span>Toughness</span></div>
+            <div class="def"><b>17</b><span>Resolve</span></div>
+          </div>
+          <div class="dmg"><input value="5"><span class="ink sm wax">Take damage</span><span class="ink sm">Heal</span><span class="ink sm">Lethal</span></div>
+        </div>
+        <div class="well">
+          <h3 class="cinzel">Active effects</h3>
+          <div class="entry"><div class="glyph b">✦</div><div><h3>Bolster <b>PL 4</b><span class="tag">sustained</span></h3><p>+1d8 to Might rolls · from Korrak</p></div><span class="x">×</span></div>
+          <div class="entry"><div class="glyph n">☠</div><div><h3>Fatigued <b>PL 3</b><span class="tag wax">resist 1 / 3</span></h3><p>Disadvantage 1 on all rolls</p></div><span class="x">×</span></div>
+        </div>
+        <div class="well">
+          <h3 class="cinzel">Favorite actions</h3>
+          <div class="entry"><div class="glyph f">⚔</div><div><h3>Warhammer strike</h3><p>Might 1d20+1d10 against Guard · one action</p></div><span class="x">▸</span></div>
+          <div class="entry"><div class="glyph e">✚</div><div><h3>Healing light</h3><p>Creation 1d20+1d8 · Heal at PL 3</p></div><span class="x">▸</span></div>
+        </div>
+      </div>
+    </div>
+
+    <h2 class="cinzel" style="margin-top:34px">Equipment</h2>
+    <div class="entry"><div class="glyph f">⚒</div><div><h3>Warhammer of the First Light <span class="tag">equipped</span></h3><p>Two-handed · forceful · heavy · +1d4 on attacks against undead</p></div><span class="x">…</span></div>
+    <div class="entry"><div class="glyph e">⛨</div><div><h3>Scale mail <span class="tag">equipped</span></h3><p>Guard +2 · requires Fortitude 3 · Agility rolls −1</p></div><span class="x">…</span></div>
+    <div class="entry"><div class="glyph" style="background:#6b5a46">◈</div><div><h3>Holy symbol of the Dawn</h3><p>Grants Bolster at PL 2 once per scene</p></div><span class="x">…</span></div>
+  </main>
+
+</div>
+</body>
+</html>
