@@ -6,7 +6,8 @@ A comprehensive web-based character sheet application for the Open Legend RPG sy
 
 ### Core Character Management
 - **Character Creation**: Create new characters with customizable names, descriptions, and backgrounds
-- **Character Storage**: All character data is automatically saved to local storage
+- **Accounts & Cloud Storage**: Characters are saved to your account on the server and synced live across devices
+- **Groups / GM view**: Share characters with your GM, who can view and edit them live
 - **Character Duplication**: Easily duplicate existing characters for variations
 - **Import/Export**: Import and export character data in JSON format
 - **Character Deletion**: Remove characters from the main overview page
@@ -63,18 +64,16 @@ A comprehensive web-based character sheet application for the Open Legend RPG sy
 ## Technical Details
 
 ### File Structure
-- `index.html` - Main application structure and UI
-- `script.js` - Core application logic and functionality
-- `styles.css` - Visual styling and animations
-- `gameDatabase.js` - Game content database
-- `run_server.ps1` - PowerShell script to start the server
-- `run_server.bat` - Batch script to start the server
+- `client/` - Frontend (`index.html`, `script.js`, `styles.css`, `gameDatabase.js`, `api.js`, `auth-ui.js`, `groups-ui.js`, `admin-ui.js`, `cloud.css`)
+- `server/` - Fastify API, SQL migrations, tests
+- `deploy/`, `Dockerfile`, `docker-compose.prod.yml` - Production stack
+- `docker-compose.dev.yml` - Local MySQL for development
 
 ### Technology Stack
 - **Frontend**: Pure HTML5, CSS3, and JavaScript (ES6+)
-- **Storage**: Browser Local Storage for data persistence
-- **Server**: Python HTTP server for local development
-- **No Dependencies**: Lightweight, no external libraries required
+- **Backend**: Node.js 22 + Fastify 5, MySQL 8, WebSocket live sync (see `server/`)
+- **Auth**: Email + password (invite-only), Discord login, email verification via Resend
+- **Deployment**: Docker Compose + Caddy on Hetzner, GitHub Actions CI/CD (see `DEPLOY.md`)
 
 ### Browser Compatibility
 - Modern browsers with ES6+ support

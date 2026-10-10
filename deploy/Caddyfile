@@ -1,0 +1,29 @@
+# Caddy config for ol-character.de. Mounted read-only into the caddy container
+# by docker-compose.prod.yml. Caddy obtains and renews Let's Encrypt
+# certificates automatically (DNS for both names must point at this server).
+#
+# To make the domain configurable instead of hardcoding it, you could write
+# `{$DOMAIN:ol-character.de} { ... }` here and add `environment: [DOMAIN=...]`
+# to the caddy service in docker-compose.prod.yml. Kept hardcoded on purpose.
+
+{
+    email admin@ol-character.de
+}
+
+www.ol-character.de {
+    redir https://ol-character.de{uri} 301
+}
+
+ol-character.de {
+    encode zstd gzip
+
+    header {
+        Strict-Transport-Security "max-age=31536000; includeSubDomains"
+        X-Content-Type-Options "nosniff"
+        Referrer-Policy "same-origin"
+        -Server
+    }
+
+    # WebSockets (/api/ws) are proxied transparently; no extra config needed.
+    reverse_proxy app:3000
+}

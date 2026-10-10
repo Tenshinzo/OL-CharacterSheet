@@ -1,0 +1,99 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "Git ref (sha/tag) to deploy; defaults to the pushed commit"
+        required: false
+        default: ""
+
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+jobs:
+  check:
+    name: Lint & test
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: olchar_test
+          MYSQL_USER: olchar
+          MYSQL_PASSWORD: olchar
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -proot --silent"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+    defaults:
+      run:
+        working-directory: server
+    env:
+      NODE_ENV: test
+      DB_HOST: 127.0.0.1
+      DB_PORT: "3306"
+      DB_USER: olchar
+      DB_PASSWORD: olchar
+      DB_NAME: olchar_test
+      SECRET_KEY: ci-secret
+      APP_URL: http://localhost:3000
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: server/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm test
+      - name: Docker image builds
+        working-directory: .
+        run: docker build -t olchar-app:ci .
+
+  deploy:
+    name: Deploy to production
+    needs: check
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: https://ol-character.de
+    env:
+      DEPLOY_HOST: ${{ secrets.DEPLOY_HOST || vars.DEPLOY_HOST || '178.104.37.74' }}
+      DEPLOY_USER: ${{ secrets.DEPLOY_USER || vars.DEPLOY_USER || 'deploy' }}
+      DEPLOY_REF: ${{ github.event.inputs.ref != '' && github.event.inputs.ref || github.sha }}
+    steps:
+      - name: Prepare SSH
+        run: |
+          set -euo pipefail
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
+          printf '%s\n' "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts 2>/dev/null
+      - name: Run deploy.sh on server
+        run: |
+          set -euo pipefail
+          ssh -i ~/.ssh/deploy_key -o BatchMode=yes -o StrictHostKeyChecking=yes \
+            "$DEPLOY_USER@$DEPLOY_HOST" \
+            "bash /opt/olchar/app/deploy/deploy.sh '$DEPLOY_REF'"
+      - name: Verify public health endpoint
+        run: |
+          for i in $(seq 1 10); do
+            if curl -fsS https://ol-character.de/api/health | grep -q '"ok":true'; then
+              echo "healthy"; exit 0
+            fi
+            sleep 5
+          done
+          echo "public health check failed" >&2
+          exit 1
+      - name: Cleanup
+        if: always()
+        run: rm -f ~/.ssh/deploy_key

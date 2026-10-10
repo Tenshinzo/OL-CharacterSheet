@@ -1,12 +1,22 @@
-# Default ignored files
+# IDE
 /shelf/
 /.idea/workspace.xml
-# Ignored default folder with query files
 /queries/
-# Datasource local storage ignored files
 /dataSources/
 /dataSources.local.xml
-# Editor-based HTTP Client requests
 /httpRequests/
-
 .idea/
+.vscode/
+.DS_Store
+
+# Secrets - never commit
+.env
+.env.*
+!.env.example
+.secrets.env
+server/.env
+
+# Dependencies / build
+node_modules/
+server/node_modules/
+coverage/

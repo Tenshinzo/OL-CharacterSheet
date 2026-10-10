@@ -1,0 +1,22 @@
+# Keep the build context small and never bake secrets into the image.
+.git
+.github
+.idea
+.vscode
+.DS_Store
+deploy
+node_modules
+server/node_modules
+server/test
+server/coverage
+coverage
+.env
+.env.*
+server/.env
+*.md
+!README.md
+docker-compose*.yml
+Dockerfile
+.dockerignore
+run_server.bat
+run_server.ps1
