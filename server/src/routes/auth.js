@@ -163,7 +163,7 @@ export default async function authRoutes(app) {
   // Flow: GET /auth/discord?invite=CODE  -> redirect to Discord
   //       GET /auth/discord/callback      -> exchange code, find/create user, set cookie, redirect to /
   const discordEnabled = () => !!(config.discord.clientId && config.discord.clientSecret);
-  const redirectUri = () => `${config.appUrl}/auth/discord/callback`;
+  const redirectUri = () => `${config.appUrl}/api/auth/discord/callback`;
 
   app.get('/auth/discord', async (request, reply) => {
     if (!discordEnabled()) throw notFound('Discord login is not configured');
