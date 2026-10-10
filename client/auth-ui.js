@@ -30,7 +30,7 @@
     discord_profile: 'Your Discord profile could not be read. Please try again.',
     discord_taken: 'This Discord account is already linked to another user.',
     invite_required: 'You need an invite code to create an account. Enter it under "Create account" and use Discord from there.',
-    invite_invalid: 'That invite code is invalid or has already been used.',
+    invite_invalid: 'That account invite code is invalid or has already been used. Note: a group code from the Groups page cannot be used to register.',
     discord_no_email: 'Your Discord account has no verified email address, so no account could be created.',
     account_disabled: 'This account has been disabled.',
   };
@@ -362,9 +362,9 @@
           '<small>Minimum 8 characters.</small>' +
         '</div>' +
         '<div class="form-group">' +
-          '<label for="authRegInvite">Invite code</label>' +
+          '<label for="authRegInvite">Account invite code</label>' +
           '<input id="authRegInvite" name="inviteCode" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" required class="auth-invite" value="' + esc(invite) + '" placeholder="XXXXXXXX">' +
-          '<small>Registration is invite-only. Ask your game master for a code.</small>' +
+          '<small>Registration is invite-only. An administrator creates account invite codes (10 characters). Group codes from the Groups page are something else: they join an existing account to a party.</small>' +
         '</div>' +
         '<button type="submit" class="btn btn-primary btn-block"><i class="fas fa-user-plus"></i> Create account</button>' +
         discordSectionHtml('Sign up with Discord') +

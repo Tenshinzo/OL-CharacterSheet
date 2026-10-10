@@ -41,7 +41,7 @@ async function redeemInvite(tx, code, userId) {
     'SELECT code FROM invites WHERE code = ? AND used_by IS NULL AND (expires_at IS NULL OR expires_at > NOW()) FOR UPDATE',
     [code],
   );
-  if (!invite) throw badRequest('Invite code is invalid or already used', 'INVITE_INVALID');
+  if (!invite) throw badRequest('Account invite code is invalid or already used (group codes cannot be used to register)', 'INVITE_INVALID');
   await tx.query('UPDATE invites SET used_by = ?, used_at = NOW() WHERE code = ?', [userId, code]);
 }
 
