@@ -143,7 +143,6 @@ body {
 }
 
 .app-container {
-    max-width: 1200px;
     padding: 24px 20px 48px;
 }
 
@@ -1263,12 +1262,14 @@ h3.character-title {
     padding: 0 !important;
 }
 
-@media (min-width: 769px) {
+@media (min-width: 769px) and (max-width: 1439px) {
     .view-mode .character-content {
         grid-template-columns: minmax(260px, 330px) 1fr !important;
         gap: 18px !important;
     }
+}
 
+@media (min-width: 769px) {
     .view-mode #statsSection {
         width: auto !important;
     }

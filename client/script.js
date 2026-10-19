@@ -795,6 +795,7 @@ class CharacterSheetApp {
             }
             
             this.hideCloudPages();
+            document.body.classList.remove('sheet-edit-mode');
             mainPage.style.display = 'block';
             characterSheetPage.style.display = 'none';
             document.getElementById('optionsListPage').style.display = 'none';
@@ -851,6 +852,7 @@ class CharacterSheetApp {
     showOptionsListPage() {
         // showOptionsListPage called
         this.hideCloudPages();
+        document.body.classList.remove('sheet-edit-mode');
         document.getElementById('mainPage').style.display = 'none';
         document.getElementById('characterSheetPage').style.display = 'none';
         document.getElementById('optionsListPage').style.display = 'block';
@@ -8815,6 +8817,7 @@ class CharacterSheetApp {
     enableViewMode() {
         const characterSheetPage = document.getElementById('characterSheetPage');
         characterSheetPage.classList.add('view-mode');
+        document.body.classList.remove('sheet-edit-mode');
         
         // Update button text and icon
         const saveBtn = document.getElementById('saveCharBtn');
@@ -8846,6 +8849,8 @@ class CharacterSheetApp {
     disableViewMode() {
         const characterSheetPage = document.getElementById('characterSheetPage');
         characterSheetPage.classList.remove('view-mode');
+        // Keeps the page narrower on wide screens while editing (see styles.css, wide screens)
+        document.body.classList.add('sheet-edit-mode');
         
         // Update button text and icon
         const saveBtn = document.getElementById('saveCharBtn');
@@ -11153,6 +11158,7 @@ class CharacterSheetApp {
         const target = document.getElementById(pageId);
         if (target) target.style.display = 'block';
         document.body.classList.toggle('showing-main-page', pageId === 'mainPage');
+        if (pageId !== 'characterSheetPage') document.body.classList.remove('sheet-edit-mode');
         const header = document.getElementById('appHeader');
         if (header) header.style.display = 'block';
         if (pageId !== 'characterSheetPage') this.currentCharacter = null;
