@@ -25,10 +25,16 @@ if [[ ! -f .env ]]; then
   exit 1
 fi
 
-echo "==> Fetching $REF"
-git fetch --prune origin
-git reset --hard "$REF"
-git log -1 --oneline
+if [[ -z "${DEPLOY_SH_REEXEC:-}" ]]; then
+  echo "==> Fetching $REF"
+  git fetch --prune origin
+  git reset --hard "$REF"
+  git log -1 --oneline
+  # The checkout may have replaced this very script. Bash would keep executing the old
+  # version, so hand over to the freshly checked-out one (once).
+  export DEPLOY_SH_REEXEC=1
+  exec bash "$APP_DIR/deploy/deploy.sh" "$REF"
+fi
 
 echo "==> Building app image"
 "${COMPOSE[@]}" build --pull app

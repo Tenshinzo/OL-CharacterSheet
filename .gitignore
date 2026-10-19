@@ -12,6 +12,7 @@
 # Secrets - never commit
 .env
 .env.*
+!deploy/.env.production.example
 !.env.example
 .secrets.env
 server/.env
