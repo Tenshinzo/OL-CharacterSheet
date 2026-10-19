@@ -1,17 +1,30 @@
 name: Deploy
 
+# push to main            -> production  https://ol-character.de       (/opt/olchar/app)
+# manual run, any branch  -> test        https://test.ol-character.de  (/opt/olchar-test/app)
+#   Actions -> Deploy -> Run workflow -> "Use workflow from: <feature branch>" -> target test.
+# Manual runs may also target production (e.g. to roll back to a sha).
 on:
   push:
     branches: [main]
   workflow_dispatch:
     inputs:
+      target:
+        description: "Instance to deploy to"
+        type: choice
+        options: [test, production]
+        default: test
       ref:
-        description: "Git ref (sha/tag) to deploy; defaults to the pushed commit"
+        description: "Git ref (sha/tag) to deploy; defaults to the commit of the selected branch"
         required: false
         default: ""
 
+env:
+  # push (only main) -> production; manual run -> chosen target (default test)
+  TARGET: ${{ (github.event_name == 'workflow_dispatch' && github.event.inputs.target) || (github.ref_name == 'main' && 'production') || 'test' }}
+
 concurrency:
-  group: deploy
+  group: deploy-${{ (github.event_name == 'workflow_dispatch' && github.event.inputs.target) || (github.ref_name == 'main' && 'production') || 'test' }}
   cancel-in-progress: false
 
 jobs:
@@ -60,17 +73,33 @@ jobs:
         run: docker build -t olchar-app:ci .
 
   deploy:
-    name: Deploy to production
+    name: Deploy to ${{ (github.event_name == 'workflow_dispatch' && github.event.inputs.target) || (github.ref_name == 'main' && 'production') || 'test' }}
     needs: check
     runs-on: ubuntu-latest
     environment:
-      name: production
-      url: https://ol-character.de
+      name: ${{ (github.event_name == 'workflow_dispatch' && github.event.inputs.target) || (github.ref_name == 'main' && 'production') || 'test' }}
+      url: ${{ steps.target.outputs.url }}
     env:
       DEPLOY_HOST: ${{ secrets.DEPLOY_HOST || vars.DEPLOY_HOST || '178.104.37.74' }}
       DEPLOY_USER: ${{ secrets.DEPLOY_USER || vars.DEPLOY_USER || 'deploy' }}
       DEPLOY_REF: ${{ github.event.inputs.ref != '' && github.event.inputs.ref || github.sha }}
     steps:
+      - name: Resolve target instance
+        id: target
+        run: |
+          set -euo pipefail
+          case "$TARGET" in
+            production)
+              echo "app_dir=/opt/olchar/app"      >> "$GITHUB_OUTPUT"
+              echo "with_proxy=1"                 >> "$GITHUB_OUTPUT"
+              echo "url=https://ol-character.de"  >> "$GITHUB_OUTPUT" ;;
+            test)
+              echo "app_dir=/opt/olchar-test/app"     >> "$GITHUB_OUTPUT"
+              echo "with_proxy=0"                     >> "$GITHUB_OUTPUT"
+              echo "url=https://test.ol-character.de" >> "$GITHUB_OUTPUT" ;;
+            *) echo "::error::unknown target '$TARGET'" >&2; exit 1 ;;
+          esac
+          echo "Deploying $DEPLOY_REF to $TARGET"
       - name: Prepare SSH
         run: |
           set -euo pipefail
@@ -91,11 +120,16 @@ jobs:
           set -euo pipefail
           ssh -i ~/.ssh/deploy_key -o BatchMode=yes -o StrictHostKeyChecking=yes \
             "$DEPLOY_USER@$DEPLOY_HOST" \
-            "bash /opt/olchar/app/deploy/deploy.sh '$DEPLOY_REF'"
+            "APP_DIR='$APP_DIR' WITH_PROXY='$WITH_PROXY' bash '$APP_DIR/deploy/deploy.sh' '$DEPLOY_REF'"
+        env:
+          APP_DIR: ${{ steps.target.outputs.app_dir }}
+          WITH_PROXY: ${{ steps.target.outputs.with_proxy }}
       - name: Verify public health endpoint
+        env:
+          URL: ${{ steps.target.outputs.url }}
         run: |
           for i in $(seq 1 10); do
-            if curl -fsS https://ol-character.de/api/health | grep -q '"ok":true'; then
+            if curl -fsS "$URL/api/health" | grep -q '"ok":true'; then
               echo "healthy"; exit 0
             fi
             sleep 5
