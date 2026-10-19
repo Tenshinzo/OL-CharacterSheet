@@ -1,20 +1,15 @@
-# Caddy config for ol-character.de. Mounted read-only into the caddy container
-# by docker-compose.prod.yml. Caddy obtains and renews Let's Encrypt
-# certificates automatically (DNS for both names must point at this server).
+# Caddy config for ol-character.de and test.ol-character.de. Mounted read-only into the
+# caddy container by deploy/docker-compose.proxy.yml. Caddy obtains and renews Let's Encrypt
+# certificates automatically (DNS for all names must point at this server).
 #
-# To make the domain configurable instead of hardcoding it, you could write
-# `{$DOMAIN:ol-character.de} { ... }` here and add `environment: [DOMAIN=...]`
-# to the caddy service in docker-compose.prod.yml. Kept hardcoded on purpose.
+# Upstreams are the aliases the app stacks register on the shared `olchar-proxy` network
+# (PROXY_ALIAS in each instance's .env). Kept hardcoded on purpose.
 
 {
     email admin@ol-character.de
 }
 
-www.ol-character.de {
-    redir https://ol-character.de{uri} 301
-}
-
-ol-character.de {
+(common) {
     encode zstd gzip
 
     header {
@@ -23,7 +18,22 @@ ol-character.de {
         Referrer-Policy "same-origin"
         -Server
     }
+}
 
+www.ol-character.de {
+    redir https://ol-character.de{uri} 301
+}
+
+# Production: /opt/olchar/app
+ol-character.de {
+    import common
     # WebSockets (/api/ws) are proxied transparently; no extra config needed.
-    reverse_proxy app:3000
+    reverse_proxy olchar-app:3000
+}
+
+# Test system: /opt/olchar-test/app, deployed from the develop branch.
+test.ol-character.de {
+    import common
+    header X-Robots-Tag "noindex, nofollow"
+    reverse_proxy olchar-test-app:3000
 }
