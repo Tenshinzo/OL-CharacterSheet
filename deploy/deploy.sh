@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 # Deploy (or roll back) an app instance. Run as the deploy user on the server:
 #   bash /opt/olchar/app/deploy/deploy.sh [git-ref]                            # production
-#   APP_DIR=/opt/olchar-test/app WITH_PROXY=0 bash /opt/olchar-test/app/deploy/deploy.sh [git-ref]   # test
-# git-ref defaults to DEFAULT_REF (origin/main); pass a commit sha or tag to roll back.
+#   APP_DIR=/opt/olchar-test/app WITH_PROXY=0 bash /opt/olchar-test/app/deploy/deploy.sh origin/feature/x   # test
+# git-ref defaults to DEFAULT_REF (origin/main); pass any commit sha, tag or origin/<branch>
+# (the test instance gets feature branches this way).
 #
 # WITH_PROXY=1 (default) also (re)starts the shared Caddy stack from this checkout's
 # deploy/docker-compose.proxy.yml. Only the production checkout should do that; the test

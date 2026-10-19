@@ -9,7 +9,7 @@ A character sheet web app for the Open Legend RPG with user accounts, a MySQL-ba
 - `client/` – the single-page frontend: HTML/CSS/vanilla JS (ES6+), no build step. External deps from CDN in `index.html`: Font Awesome (icons) and jsPDF (PDF export).
 - `server/` – Fastify 5 (plain JS, ESM) + MySQL 8 backend: session-cookie auth (scrypt), invite-only registration, email verification/password reset via Resend, Discord OAuth, characters CRUD, GM groups, admin endpoints and a WebSocket hub for live updates. It also serves `client/` statically.
 
-Production runs on a Hetzner box via Docker Compose at https://ol-character.de: a shared Caddy proxy stack (`deploy/docker-compose.proxy.yml`, network `olchar-proxy`) in front of per-instance app + MySQL stacks (`docker-compose.prod.yml`). `main` deploys to production (`/opt/olchar/app`), `develop` to the test system https://test.ol-character.de (`/opt/olchar-test/app`). See `DEPLOY.md` for the runbook; `deploy/` holds Caddyfile, bootstrap/deploy/backup scripts; `.github/workflows/` has CI (lint + tests + docker build) and the deploy workflow.
+Production runs on a Hetzner box via Docker Compose at https://ol-character.de: a shared Caddy proxy stack (`deploy/docker-compose.proxy.yml`, network `olchar-proxy`) in front of per-instance app + MySQL stacks (`docker-compose.prod.yml`). `main` deploys to production (`/opt/olchar/app`); any branch can be deployed manually (Actions -> Deploy) to the test system https://test.ol-character.de (`/opt/olchar-test/app`). See `DEPLOY.md` for the runbook; `deploy/` holds Caddyfile, bootstrap/deploy/backup scripts; `.github/workflows/` has CI (lint + tests + docker build) and the deploy workflow.
 
 ## Running locally
 

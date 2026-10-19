@@ -1,11 +1,12 @@
 name: Deploy
 
-# main    -> production  https://ol-character.de       (/opt/olchar/app)
-# develop -> test        https://test.ol-character.de  (/opt/olchar-test/app)
-# Manual runs (any branch) pick the target explicitly; default is test.
+# push to main            -> production  https://ol-character.de       (/opt/olchar/app)
+# manual run, any branch  -> test        https://test.ol-character.de  (/opt/olchar-test/app)
+#   Actions -> Deploy -> Run workflow -> "Use workflow from: <feature branch>" -> target test.
+# Manual runs may also target production (e.g. to roll back to a sha).
 on:
   push:
-    branches: [main, develop]
+    branches: [main]
   workflow_dispatch:
     inputs:
       target:
@@ -14,12 +15,12 @@ on:
         options: [test, production]
         default: test
       ref:
-        description: "Git ref (sha/tag) to deploy; defaults to the selected branch's commit"
+        description: "Git ref (sha/tag) to deploy; defaults to the commit of the selected branch"
         required: false
         default: ""
 
 env:
-  # production when pushed to main or chosen manually, otherwise test
+  # push (only main) -> production; manual run -> chosen target (default test)
   TARGET: ${{ (github.event_name == 'workflow_dispatch' && github.event.inputs.target) || (github.ref_name == 'main' && 'production') || 'test' }}
 
 concurrency:

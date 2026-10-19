@@ -31,7 +31,7 @@ ol-character.de {
     reverse_proxy olchar-app:3000
 }
 
-# Test system: /opt/olchar-test/app, deployed from the develop branch.
+# Test system: /opt/olchar-test/app, deployed manually from any branch (Actions -> Deploy).
 test.ol-character.de {
     import common
     header X-Robots-Tag "noindex, nofollow"

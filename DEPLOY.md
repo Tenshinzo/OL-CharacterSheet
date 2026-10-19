@@ -74,11 +74,14 @@ Optionally create a `production` environment with required reviewers to gate dep
   `deploy`, which SSHes to the server, runs `deploy/deploy.sh <commit sha>` in the instance
   directory and curls that instance's public health endpoint.
   - push to `main` -> **production** (`/opt/olchar/app`, https://ol-character.de)
-  - push to `develop` -> **test** (`/opt/olchar-test/app`, https://test.ol-character.de)
-- Deploys are serialized per target (`concurrency: deploy-production` / `deploy-test`); a
-  second push waits for the first. Production and test can deploy at the same time.
-- Manual deploy of any ref to either instance: **Actions -> Deploy -> Run workflow**, choose the
-  target (default `test`) and optionally a sha/tag. Handy for trying a feature branch on test.
+  - manual run -> **test** by default (`/opt/olchar-test/app`, https://test.ol-character.de)
+- Deploy a feature branch to test: **Actions -> Deploy -> Run workflow**, pick the branch under
+  "Use workflow from", leave target `test`. The `check` job (lint, tests, build) runs for that
+  branch first. Optionally enter a sha/tag instead of the branch head. There is no long-lived
+  staging branch; test always shows whatever was deployed there last.
+- Manual runs may also target `production`, e.g. to roll back to an older sha.
+- Deploys are serialized per target (`concurrency: deploy-production` / `deploy-test`);
+  production and test can deploy at the same time.
 
 `deploy.sh` does: `git fetch` + `git reset --hard <ref>` -> `docker compose build --pull app` ->
 `docker compose up -d --remove-orphans` -> (production only: `up -d` + `caddy reload` of the proxy
@@ -157,9 +160,14 @@ the ID is empty.
 ## 9. Test system (test.ol-character.de)
 
 A second, fully separate instance (own containers, database, secrets) on the same VM, served
-by the same Caddy. It is deployed from the `develop` branch or manually from any ref
-(section 3). Nothing is shared with production except the host and the proxy, so test data
-can be wiped at will and migrations can be tried before they hit `main`.
+by the same Caddy. It is deployed manually from any branch or ref (section 3). Nothing is
+shared with production except the host and the proxy, so test data can be wiped at will and
+migrations can be tried before they hit `main`.
+
+Why a second checkout: the pipeline has no image registry. `deploy.sh` fetches the ref into
+the checkout on the server and builds the image there, exactly as production does in
+`/opt/olchar/app`. The test checkout is simply that instance's working directory, holding its
+own `.env`; which branch is checked out there changes with every test deploy.
 
 One-time setup (production must already run the split proxy stack, i.e. a `main` with
 `deploy/docker-compose.proxy.yml` has been deployed once):
@@ -169,7 +177,7 @@ One-time setup (production must already run the split proxy stack, i.e. a `main`
    ```bash
    ssh deploy@178.104.37.74
    sudo install -d -o deploy -g deploy /opt/olchar-test     # or as root: mkdir + chown
-   git clone --branch develop https://github.com/Tenshinzo/OL-CharacterSheet.git /opt/olchar-test/app
+   git clone https://github.com/Tenshinzo/OL-CharacterSheet.git /opt/olchar-test/app
    cd /opt/olchar-test/app
    cp deploy/.env.production.example .env && chmod 600 .env
    nano .env
@@ -185,20 +193,22 @@ One-time setup (production must already run the split proxy stack, i.e. a `main`
      the key empty to have mails logged to stdout only
 3. First deploy and admin password:
    ```bash
-   APP_DIR=/opt/olchar-test/app WITH_PROXY=0 bash deploy/deploy.sh origin/develop
+   APP_DIR=/opt/olchar-test/app WITH_PROXY=0 bash deploy/deploy.sh origin/main
    docker compose -f docker-compose.prod.yml exec app node src/cli.js reset-password <email> '<password>'
    ```
    Caddy already knows the `test.ol-character.de` block and requests the certificate on the
    first request. Check https://test.ol-character.de/api/health.
-4. Create the `develop` branch in GitHub (from `main`) and optionally a `test` environment under
-   **Settings -> Environments**. The workflow reuses the production SSH key and deploy user.
+4. Optionally create a `test` environment under **Settings -> Environments**. The workflow
+   reuses the production SSH key and deploy user. From now on deploy feature branches via
+   **Actions -> Deploy -> Run workflow** (section 3).
 
 Notes:
 - `WITH_PROXY=0` keeps the test deploy from touching Caddy; only production manages the proxy.
 - The nightly backup cron covers production only. For a one-off test dump:
   `APP_DIR=/opt/olchar-test/app BACKUP_DIR=/opt/olchar-test/backups bash deploy/backup.sh`.
 - Reset the test database: `cd /opt/olchar-test/app && docker compose -f docker-compose.prod.yml down -v`
-  followed by a deploy (`-v` deletes the `olchar-test_dbdata` volume).
+  followed by a deploy (`-v` deletes the `olchar-test_dbdata` volume). Needed when switching
+  between feature branches whose migrations conflict: migrations are forward-only.
 - Test responses carry `X-Robots-Tag: noindex, nofollow`.
 - Memory: a second MySQL costs roughly 400 MB; the 4 GB VM has room for it.
 
