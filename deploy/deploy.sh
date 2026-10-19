@@ -1,12 +1,21 @@
 #!/usr/bin/env bash
-# Deploy (or roll back) the production stack. Run as the deploy user on the server:
-#   bash /opt/olchar/app/deploy/deploy.sh [git-ref]
-# git-ref defaults to origin/main; pass a commit sha or tag to roll back.
+# Deploy (or roll back) an app instance. Run as the deploy user on the server:
+#   bash /opt/olchar/app/deploy/deploy.sh [git-ref]                            # production
+#   APP_DIR=/opt/olchar-test/app WITH_PROXY=0 bash /opt/olchar-test/app/deploy/deploy.sh origin/feature/x   # test
+# git-ref defaults to DEFAULT_REF (origin/main); pass any commit sha, tag or origin/<branch>
+# (the test instance gets feature branches this way).
+#
+# WITH_PROXY=1 (default) also (re)starts the shared Caddy stack from this checkout's
+# deploy/docker-compose.proxy.yml. Only the production checkout should do that; the test
+# instance is just another upstream of the same proxy.
 set -euo pipefail
 
 APP_DIR="${APP_DIR:-/opt/olchar/app}"
 COMPOSE=(docker compose -f docker-compose.prod.yml)
-REF="${1:-origin/main}"
+PROXY_COMPOSE=(docker compose -p olchar-proxy -f deploy/docker-compose.proxy.yml)
+PROXY_NETWORK="olchar-proxy"
+WITH_PROXY="${WITH_PROXY:-1}"
+REF="${1:-${DEFAULT_REF:-origin/main}}"
 HEALTH_TIMEOUT="${HEALTH_TIMEOUT:-90}"
 
 cd "$APP_DIR"
@@ -16,16 +25,35 @@ if [[ ! -f .env ]]; then
   exit 1
 fi
 
-echo "==> Fetching $REF"
-git fetch --prune origin
-git reset --hard "$REF"
-git log -1 --oneline
+if [[ -z "${DEPLOY_SH_REEXEC:-}" ]]; then
+  echo "==> Fetching $REF"
+  git fetch --prune origin
+  git reset --hard "$REF"
+  git log -1 --oneline
+  # The checkout may have replaced this very script. Bash would keep executing the old
+  # version, so hand over to the freshly checked-out one (once).
+  export DEPLOY_SH_REEXEC=1
+  exec bash "$APP_DIR/deploy/deploy.sh" "$REF"
+fi
 
 echo "==> Building app image"
 "${COMPOSE[@]}" build --pull app
 
+if ! docker network inspect "$PROXY_NETWORK" >/dev/null 2>&1; then
+  echo "==> Creating shared network $PROXY_NETWORK"
+  docker network create "$PROXY_NETWORK"
+fi
+
 echo "==> Starting stack"
 "${COMPOSE[@]}" up -d --remove-orphans
+
+if [[ "$WITH_PROXY" == "1" ]]; then
+  echo "==> Starting shared proxy (Caddy)"
+  "${PROXY_COMPOSE[@]}" pull -q caddy || true
+  "${PROXY_COMPOSE[@]}" up -d --remove-orphans
+  # Caddyfile is a bind mount: pick up edits without recreating the container.
+  "${PROXY_COMPOSE[@]}" exec -T caddy caddy reload --config /etc/caddy/Caddyfile 2>/dev/null || true
+fi
 
 echo "==> Waiting for app health (timeout ${HEALTH_TIMEOUT}s)"
 deadline=$(( $(date +%s) + HEALTH_TIMEOUT ))
@@ -58,6 +86,9 @@ echo
 
 echo "==> Status"
 "${COMPOSE[@]}" ps
+if [[ "$WITH_PROXY" == "1" ]]; then
+  "${PROXY_COMPOSE[@]}" ps
+fi
 
 echo "==> Pruning dangling images"
 docker image prune -f >/dev/null || true

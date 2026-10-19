@@ -1,0 +1,39 @@
+# Shared reverse proxy: one Caddy for every app instance on this host
+# (production ol-character.de, test test.ol-character.de).
+# Run from the PRODUCTION checkout only, as the deploy user:
+#   docker compose -p olchar-proxy -f deploy/docker-compose.proxy.yml up -d
+# deploy/deploy.sh does this automatically unless WITH_PROXY=0.
+# App stacks join the external network `olchar-proxy`; Caddy addresses them by the
+# alias they register there (PROXY_ALIAS in each instance's .env, see Caddyfile).
+services:
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - proxy
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+networks:
+  proxy:
+    name: olchar-proxy
+    external: true
+
+volumes:
+  # Named after the volumes the original single-stack setup created, so existing
+  # Let's Encrypt certificates are reused instead of re-issued.
+  caddy_data:
+    name: app_caddy_data
+  caddy_config:
+    name: app_caddy_config

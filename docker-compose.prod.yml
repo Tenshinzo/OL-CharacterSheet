@@ -1,16 +1,32 @@
-# Production stack: Caddy (TLS) -> app (Fastify) -> db (MySQL 8.4).
-# Usage on the server (as the deploy user, in /opt/olchar/app):
+# Application stack: app (Fastify) -> db (MySQL 8.4).
+# TLS termination lives in a separate, shared stack (deploy/docker-compose.proxy.yml)
+# that reaches the app through the external network `olchar-proxy`. This lets several
+# instances (production, test) run side by side behind one Caddy.
+#
+# Usage on the server (as the deploy user, in the instance directory):
 #   cp deploy/.env.production.example .env   # then fill in the secrets
 #   docker compose -f docker-compose.prod.yml up -d
-# Only Caddy publishes ports; app and db are reachable on the compose network only.
+# Nothing here publishes ports; db is only reachable on this stack's default network,
+# app additionally on `olchar-proxy` under the alias PROXY_ALIAS (see .env).
+#
+# Per-instance values read from .env:
+#   COMPOSE_PROJECT_NAME  production leaves it unset (project "app", volumes app_*),
+#                         the test instance sets olchar-test
+#   PROXY_ALIAS           hostname Caddy proxies to: olchar-app (prod) / olchar-test-app
+#   APP_IMAGE             image tag; must differ per instance
 services:
   app:
     build: .
-    image: olchar-app
+    image: ${APP_IMAGE:-olchar-app}
     env_file: ./.env
     restart: unless-stopped
     expose:
       - "3000"
+    networks:
+      default:
+      proxy:
+        aliases:
+          - ${PROXY_ALIAS:-olchar-app}
     depends_on:
       db:
         condition: service_healthy
@@ -49,26 +65,11 @@ services:
         max-size: "10m"
         max-file: "3"
 
-  caddy:
-    image: caddy:2
-    restart: unless-stopped
-    ports:
-      - "80:80"
-      - "443:443"
-      - "443:443/udp"
-    volumes:
-      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
-      - caddy_data:/data
-      - caddy_config:/config
-    depends_on:
-      - app
-    logging:
-      driver: json-file
-      options:
-        max-size: "10m"
-        max-file: "3"
+networks:
+  default:
+  proxy:
+    name: olchar-proxy
+    external: true
 
 volumes:
   dbdata:
-  caddy_data:
-  caddy_config:
