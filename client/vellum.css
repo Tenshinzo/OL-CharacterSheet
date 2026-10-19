@@ -1,0 +1,3124 @@
+/* ==========================================================================
+   Vellum & ink – visual theme (issue #8, direction B)
+
+   Loaded after styles.css and cloud.css. It re-tokens :root and re-skins the
+   structural components so the sheet reads as a vellum page on a dark oak
+   table, with a strip of green leather as app chrome. Behaviour, markup and
+   the layout rules of the base stylesheets are untouched wherever possible;
+   this file only changes how things look.
+
+   Palette (see docs/mockups/README.md):
+     table #1d1512 · leather #2f3a2e · vellum #e9dcc0 · ink #2a2118
+     brass #a8832f · wax #8a1c2b · verdigris #3f6b5e · iron #4f5a66
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=IM+Fell+English:ital@0;1&family=IM+Fell+English+SC&display=swap');
+
+:root {
+    /* theme palette */
+    --table: #1d1512;
+    --leather: #2f3a2e;
+    --leather-dark: #1a211a;
+    --vellum: #e9dcc0;
+    --vellum-light: #f1e6cf;
+    --vellum-deep: #d9c7a2;
+    --ink: #2a2118;
+    --ink-soft: #6b5a46;
+    --ink-faint: #8a7a60;
+    --rule: #b9a27c;
+    --rule-light: #c9b893;
+    --brass: #a8832f;
+    --brass-dark: #6e5620;
+    --brass-light: #d8b45a;
+    --wax: #8a1c2b;
+    --wax-dark: #5c0f1a;
+    --wax-text: #f5e6cf;
+    --verdigris: #3f6b5e;
+    --iron: #4f5a66;
+    --plum: #6b4a7a;
+    --umber: #7a4b1e;
+    --amber: #9a6b1e;
+
+    --font-body: 'IM Fell English', Georgia, 'Times New Roman', serif;
+    --font-caps: 'IM Fell English SC', 'IM Fell English', Georgia, serif;
+    --font-display: 'Cinzel', Georgia, serif;
+
+    /* re-map the base design tokens */
+    --primary: var(--brass);
+    --primary-light: var(--brass-light);
+    --primary-dark: var(--brass-dark);
+    --secondary: var(--ink-soft);
+    --success: var(--verdigris);
+    --danger: var(--wax);
+    --warning: var(--amber);
+    --info: var(--iron);
+
+    --boon-color: var(--verdigris);
+    --boon-light: rgba(63, 107, 94, 0.12);
+    --boon-dark: #2d4f45;
+    --bane-color: var(--wax);
+    --bane-light: rgba(138, 28, 43, 0.10);
+    --bane-dark: var(--wax-dark);
+    --feat-color: var(--brass);
+    --feat-light: rgba(168, 131, 47, 0.14);
+    --feat-dark: var(--brass-dark);
+    --perk-color: var(--plum);
+    --perk-light: rgba(107, 74, 122, 0.12);
+    --perk-dark: #4a3156;
+    --flaw-color: var(--umber);
+    --flaw-light: rgba(122, 75, 30, 0.12);
+    --flaw-dark: #4e2f12;
+
+    --white: var(--vellum-light);
+    --gray-50: #f3ead7;
+    --gray-100: #ecdfc4;
+    --gray-200: var(--vellum-deep);
+    --gray-300: var(--rule-light);
+    --gray-400: #a08f70;
+    --gray-500: var(--ink-soft);
+    --gray-600: #574836;
+    --gray-700: #40321f;
+    --gray-800: var(--ink);
+    --gray-900: #1a140e;
+
+    --text-primary: var(--ink);
+    --text-secondary: var(--ink-soft);
+    --text-muted: var(--ink-faint);
+    --border-light: var(--rule-light);
+    --border-medium: var(--rule);
+    --border-color: var(--rule-light);
+    --bg-glass: var(--vellum);
+    --bg-overlay: rgba(168, 131, 47, 0.12);
+    --background-light: #f3ead7;
+    --background-lighter: #ecdfc4;
+    --primary-color-light: rgba(168, 131, 47, 0.18);
+
+    --radius-sm: 2px;
+    --radius-md: 3px;
+    --radius-lg: 4px;
+    --radius-xl: 4px;
+
+    --shadow-sm: 0 1px 2px rgba(42, 33, 24, 0.12);
+    --shadow-md: 0 4px 10px -4px rgba(42, 33, 24, 0.35);
+    --shadow-lg: 0 10px 20px -10px rgba(0, 0, 0, 0.5);
+    --shadow-xl: 0 24px 40px -20px rgba(0, 0, 0, 0.7);
+
+    --font-family: var(--font-body);
+    --font-size-xs: 0.8rem;
+    --font-size-sm: 0.9rem;
+    --font-size-base: 1rem;
+    --font-size-md: 1.05rem;
+    --font-size-lg: 1.15rem;
+    --font-size-xl: 1.3rem;
+    --font-size-2xl: 1.5rem;
+    --font-size-3xl: 1.9rem;
+    --font-size-4xl: 2.3rem;
+
+    --paper-texture:
+        radial-gradient(ellipse at 10% 0%, rgba(120, 90, 40, 0.10), transparent 50%),
+        radial-gradient(ellipse at 100% 100%, rgba(120, 90, 40, 0.12), transparent 45%),
+        repeating-linear-gradient(0deg, transparent 0 27px, rgba(185, 162, 124, 0.28) 27px 28px);
+    --wax-seal: radial-gradient(circle at 35% 35%, #b63a4a, var(--wax) 60%, var(--wax-dark));
+    --brass-tack: radial-gradient(circle at 35% 35%, var(--brass-light), var(--brass) 60%, #5e4717);
+}
+
+/* --------------------------------------------------------------------------
+   Ground: the oak table
+   -------------------------------------------------------------------------- */
+
+html {
+    background: var(--table);
+}
+
+body {
+    font-family: var(--font-body);
+    font-size: var(--font-size-base);
+    line-height: 1.45;
+    color: var(--ink);
+    background: var(--table);
+    background-image:
+        repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.18) 0 2px, transparent 2px 140px),
+        linear-gradient(180deg, #221915, #17110e);
+    background-attachment: fixed;
+}
+
+.app-container {
+    max-width: 1200px;
+    padding: 24px 20px 48px;
+}
+
+.app-container::before {
+    display: none;
+}
+
+.caps,
+.text-caps {
+    font-family: var(--font-caps);
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+    color: var(--ink);
+    letter-spacing: 0.01em;
+}
+
+::selection {
+    background: rgba(138, 28, 43, 0.25);
+}
+
+/* --------------------------------------------------------------------------
+   Leather bar (app header + user menu)
+   -------------------------------------------------------------------------- */
+
+.app-header {
+    background: var(--leather);
+    color: var(--vellum);
+    border: 2px solid var(--leather-dark);
+    border-radius: 4px;
+    padding: 12px 20px;
+    margin-bottom: 24px;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08), 0 10px 30px rgba(0, 0, 0, 0.5);
+    gap: 10px;
+}
+
+.app-header::before {
+    content: none;
+}
+
+.app-header h1 {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--vellum);
+    letter-spacing: 0.02em;
+    text-align: center;
+}
+
+.app-header h1::before {
+    content: '';
+    flex: 0 0 auto;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: var(--wax-seal);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.6), inset 0 0 0 3px rgba(255, 255, 255, 0.08);
+}
+
+.app-header h1 i {
+    display: none;
+}
+
+@media (min-width: 769px) {
+    .app-header h1 {
+        justify-content: flex-start;
+    }
+}
+
+.user-menu-toggle {
+    background: linear-gradient(#3a4738, #2b352a);
+    border: 1px solid var(--brass);
+    border-radius: 3px;
+    color: var(--vellum);
+    font-family: var(--font-caps);
+    font-size: 1.05rem;
+    font-weight: 400;
+    padding: 4px 14px 4px 5px;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.user-menu-toggle:hover,
+.user-menu-toggle:focus-visible {
+    border-color: var(--brass-light);
+    box-shadow: 0 0 0 2px rgba(168, 131, 47, 0.35);
+}
+
+.user-menu-avatar,
+.account-avatar {
+    background: var(--table);
+    border: 2px solid var(--brass);
+    color: var(--brass);
+    font-family: var(--font-display);
+    font-size: 0.8rem;
+    width: 32px;
+    height: 32px;
+}
+
+.account-avatar.large {
+    font-size: 1.1rem;
+}
+
+.user-menu-avatar::after {
+    border-color: var(--leather);
+}
+
+.user-menu-caret {
+    color: var(--brass);
+}
+
+.user-menu-dropdown {
+    background: var(--vellum);
+    background-image: var(--paper-texture);
+    border: 1px solid var(--rule-light);
+    border-radius: 3px;
+    box-shadow: 0 24px 40px -16px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(0, 0, 0, 0.2);
+    color: var(--ink);
+}
+
+.user-menu-header {
+    border-bottom: 1px solid var(--rule);
+}
+
+.user-menu-header-name {
+    font-family: var(--font-display);
+    font-size: 1rem;
+}
+
+.user-menu-item {
+    font-family: var(--font-caps);
+    font-size: 1.05rem;
+    border-radius: 2px;
+}
+
+.user-menu-item i {
+    color: var(--brass);
+}
+
+.user-menu-item:hover,
+.user-menu-item:focus-visible {
+    background: rgba(255, 255, 255, 0.45);
+}
+
+.user-menu-signout,
+.user-menu-signout i {
+    color: var(--wax);
+}
+
+.user-menu-signout {
+    border-top: 1px solid var(--rule);
+}
+
+.user-menu-sync {
+    background: rgba(255, 255, 255, 0.3);
+    border: 1px dashed var(--rule);
+    border-radius: 2px;
+    font-style: italic;
+}
+
+.sync-dot {
+    box-shadow: 0 0 6px currentColor;
+}
+
+/* --------------------------------------------------------------------------
+   Pages: vellum sheets with a double-ruled border
+   -------------------------------------------------------------------------- */
+
+.main-page,
+.character-sheet-page,
+.options-list-page,
+.auth-panel,
+.groups-page,
+.admin-page,
+.modal-content {
+    background: var(--vellum);
+    background-image: var(--paper-texture);
+    border: 0;
+    border-radius: 3px;
+    box-shadow: 0 1px 0 #f3eadb inset, 0 30px 40px -20px rgba(0, 0, 0, 0.8), 0 0 0 1px var(--rule-light);
+    color: var(--ink);
+    position: relative;
+}
+
+.main-page,
+.character-sheet-page,
+.options-list-page,
+.groups-page,
+.admin-page {
+    padding: 40px 48px 44px;
+}
+
+.main-page::before,
+.character-sheet-page::before,
+.options-list-page::before,
+.auth-panel::before,
+.groups-page::before,
+.admin-page::before,
+.modal-content::before {
+    content: '';
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    bottom: 14px;
+    left: 14px;
+    height: auto;
+    width: auto;
+    background: none;
+    border: 1px solid var(--rule);
+    border-radius: 2px;
+    pointer-events: none;
+    opacity: 1;
+    z-index: 0;
+}
+
+.main-page::after,
+.character-sheet-page::after,
+.options-list-page::after,
+.auth-panel::after,
+.groups-page::after,
+.admin-page::after,
+.modal-content::after {
+    content: '';
+    position: absolute;
+    top: 18px;
+    right: 18px;
+    bottom: 18px;
+    left: 18px;
+    background: none;
+    border: 2px double var(--rule);
+    border-radius: 2px;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.main-page > *,
+.character-sheet-page > *,
+.options-list-page > *,
+.auth-panel > *,
+.groups-page > *,
+.admin-page > *,
+.modal-content > * {
+    position: relative;
+    z-index: 1;
+}
+
+/* Section titles on a page: small caps with a trailing rule */
+.page-header {
+    text-align: left;
+    margin-bottom: 18px;
+}
+
+.page-header h2,
+.gm-owner-title,
+.groups-section-title,
+.groups-header h2,
+.admin-page .adm-header h2,
+.account-page .page-header h2,
+.auth-heading {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin: 0 0 8px;
+    font-family: var(--font-display);
+    font-size: 0.95rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+}
+
+.page-header h2::after,
+.gm-owner-title::after,
+.groups-section-title::after,
+.auth-heading::after {
+    content: '';
+    flex: 1 1 40px;
+    height: 1px;
+    background: linear-gradient(90deg, var(--rule), transparent);
+}
+
+.page-header h2 i,
+.gm-owner-title i,
+.groups-section-title i,
+.groups-header h2 i,
+.admin-page .adm-header h2 i {
+    color: var(--brass);
+    font-size: 0.95em;
+}
+
+.page-header p,
+.text-secondary {
+    font-style: italic;
+    color: var(--ink-soft);
+}
+
+/* --------------------------------------------------------------------------
+   Buttons: ink stamps and brass fittings
+   -------------------------------------------------------------------------- */
+
+.btn,
+.btn-small,
+.btn-large,
+.switch-button,
+.footer-link,
+.btn-block {
+    font-family: var(--font-caps);
+    font-weight: 400;
+    letter-spacing: 0.02em;
+    border-radius: 2px;
+    border: 1.5px solid var(--ink);
+    background: rgba(255, 255, 255, 0.3);
+    color: var(--ink);
+    box-shadow: 2px 2px 0 rgba(42, 33, 24, 0.25);
+    text-transform: none;
+    overflow: visible;
+}
+
+.btn {
+    font-size: 1rem;
+    padding: 5px 14px;
+    min-height: 36px;
+}
+
+.btn-small {
+    font-size: 0.9rem;
+    padding: 2px 10px;
+    min-height: 30px;
+}
+
+.btn-large {
+    font-size: 1.1rem;
+    padding: 8px 18px;
+    min-height: 44px;
+}
+
+.btn::before {
+    content: none;
+}
+
+.btn:hover,
+.switch-button:hover {
+    transform: translate(-1px, -1px);
+    box-shadow: 3px 3px 0 rgba(42, 33, 24, 0.3);
+    background: rgba(255, 255, 255, 0.5);
+}
+
+.btn:active,
+.switch-button:active {
+    transform: translate(1px, 1px);
+    box-shadow: 1px 1px 0 rgba(42, 33, 24, 0.3);
+}
+
+.btn:focus,
+.btn:focus-visible {
+    outline: none;
+    box-shadow: 2px 2px 0 rgba(42, 33, 24, 0.25), 0 0 0 3px rgba(168, 131, 47, 0.4);
+}
+
+.btn-secondary,
+.btn-secondary:hover,
+.view-mode .btn.view-mode-btn,
+.view-mode .btn.view-mode-btn:hover,
+.character-actions .btn-secondary,
+.character-actions .btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.3);
+    color: var(--ink);
+    border-color: var(--ink);
+}
+
+.btn-secondary:hover,
+.view-mode .btn.view-mode-btn:hover,
+.character-actions .btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.55);
+}
+
+.btn-primary,
+.character-actions .btn-primary,
+.btn-primary:hover,
+.character-actions .btn-primary:hover {
+    background: linear-gradient(#c9a24a, #9c7a2c);
+    color: #241b0c;
+    border-color: var(--brass-dark);
+}
+
+.btn-primary:hover,
+.character-actions .btn-primary:hover {
+    background: linear-gradient(#d8b45a, #a8832f);
+}
+
+.btn-danger,
+.character-actions .btn-danger,
+.btn-danger:hover,
+.character-actions .btn-danger:hover,
+#damageBtn,
+#lethalDamageBtn,
+#damageBtn:hover,
+#lethalDamageBtn:hover {
+    background: var(--wax) !important;
+    color: var(--wax-text) !important;
+    border: 1.5px solid var(--wax-dark) !important;
+    box-shadow: 2px 2px 0 rgba(42, 33, 24, 0.25) !important;
+}
+
+.btn-danger:hover,
+.character-actions .btn-danger:hover,
+#damageBtn:hover,
+#lethalDamageBtn:hover {
+    background: #a1253a !important;
+}
+
+.btn-success,
+.btn-success:hover,
+#healBtn,
+#lethalHealBtn,
+#healBtn:hover,
+#lethalHealBtn:hover {
+    background: var(--verdigris) !important;
+    color: var(--wax-text) !important;
+    border: 1.5px solid #2d4f45 !important;
+    box-shadow: 2px 2px 0 rgba(42, 33, 24, 0.25) !important;
+}
+
+.btn-success:hover,
+#healBtn:hover,
+#lethalHealBtn:hover {
+    background: #4b7d6e !important;
+}
+
+.btn-warning,
+.btn-warning:hover {
+    background: var(--amber);
+    color: var(--wax-text);
+    border-color: #6b4a12;
+}
+
+.btn-warning:hover {
+    background: #ad7a26;
+}
+
+.btn-info,
+.btn-info:hover {
+    background: var(--iron);
+    color: var(--wax-text);
+    border-color: #343c45;
+}
+
+.btn-info:hover {
+    background: #5d6a78;
+}
+
+.btn:disabled,
+.btn[disabled] {
+    opacity: 0.5;
+}
+
+.btn i {
+    color: inherit;
+}
+
+.attr-btn,
+.remove-item,
+.remove-disadvantage-btn,
+.power-level-nav-btn,
+.groups-icon-btn,
+.close,
+.feat-popup-close {
+    font-family: var(--font-display);
+}
+
+/* --------------------------------------------------------------------------
+   Forms: ink on paper
+   -------------------------------------------------------------------------- */
+
+label,
+.form-group label,
+.damage-controls label,
+.lethal-controls label,
+.damage-input-group label,
+.attack-test label,
+.movement-stat label,
+.feat-tier-selection label,
+.advantage-filter label,
+.universal-properties-section label,
+.item-power-level-section label,
+.wealth-level-controls label,
+.account-row-label,
+.groups-add-char label,
+.action-duration-filter label {
+    font-family: var(--font-caps);
+    font-weight: 400;
+    color: var(--ink-soft);
+    font-size: 0.95rem;
+}
+
+input[type="text"],
+input[type="number"],
+input[type="email"],
+input[type="password"],
+input[type="search"],
+input[type="tel"],
+input[type="url"],
+textarea,
+select,
+.form-group input,
+.form-group textarea,
+.form-group select,
+.touch-friendly-input,
+.attack-test input,
+.movement-input,
+.wealth-input,
+.perk-input,
+.flaw-input,
+.add-item input,
+.add-equipment select,
+.add-equipment textarea,
+.feat-tier-selection select,
+.armor-specific-fields input,
+.weapon-wealth-section input,
+.item-power-level-section select,
+.property-input input,
+.bane-selection select,
+#importData,
+.power-level-input textarea,
+.account-form .form-group input,
+.groups-rename input,
+.adm-search input,
+.groups-add-char select,
+.adm-role-select,
+.advantage-filter select,
+.substitution-dropdown select,
+.export-text-section textarea,
+.custom-health-input,
+.manual-override-input,
+.wealth-level-input,
+.groups-code-input {
+    font-family: var(--font-body);
+    font-size: 1rem;
+    color: var(--ink);
+    background: rgba(255, 255, 255, 0.35);
+    border: 1px solid var(--rule-light);
+    border-bottom: 1.5px solid var(--ink);
+    border-radius: 2px 2px 0 0;
+    box-shadow: none;
+    transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+select,
+.form-group select,
+.add-equipment select,
+.feat-tier-selection select,
+.item-power-level-section select,
+.bane-selection select,
+.groups-add-char select,
+.adm-role-select,
+.advantage-filter select,
+.substitution-dropdown select {
+    border: 1px solid var(--ink-soft);
+    border-radius: 2px;
+    background-color: rgba(255, 255, 255, 0.4);
+}
+
+input[type="text"]:focus,
+input[type="number"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+input[type="search"]:focus,
+input[type="tel"]:focus,
+input[type="url"]:focus,
+textarea:focus,
+select:focus,
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus,
+.touch-friendly-input:focus,
+.attack-test input:focus,
+.movement-input:focus,
+.wealth-input:focus,
+.perk-input:focus,
+.flaw-input:focus,
+.add-equipment select:focus,
+.add-equipment textarea:focus,
+.feat-tier-selection select:focus,
+.armor-specific-fields input:focus,
+.weapon-wealth-section input:focus,
+.item-power-level-section select:focus,
+.property-input input:focus,
+.bane-selection select:focus,
+#importData:focus,
+.account-form .form-group input:focus,
+.groups-rename input:focus,
+.adm-search input:focus,
+.groups-add-char select:focus,
+.adm-role-select:focus,
+.advantage-filter select:focus,
+.substitution-dropdown select:focus {
+    outline: none;
+    border-color: var(--rule);
+    border-bottom-color: var(--wax);
+    background: rgba(255, 255, 255, 0.6);
+    box-shadow: 0 1px 0 var(--wax);
+    transform: none;
+}
+
+input[type="text"]:hover,
+input[type="number"]:hover,
+input[type="email"]:hover,
+input[type="password"]:hover,
+input[type="search"]:hover,
+input[type="tel"]:hover,
+input[type="url"]:hover,
+textarea:hover,
+select:hover,
+.touch-friendly-input:hover {
+    transform: none;
+    border-color: var(--rule);
+    border-bottom-color: var(--ink);
+}
+
+input::placeholder,
+textarea::placeholder {
+    color: var(--ink-faint);
+    font-style: italic;
+}
+
+input[type="checkbox"],
+input[type="radio"] {
+    accent-color: var(--wax);
+}
+
+/* read-only fields in view mode: just the written value on a dashed rule */
+.view-mode .form-group input,
+.view-mode .form-group select {
+    background: transparent !important;
+    border: none !important;
+    border-bottom: 1px dashed var(--rule) !important;
+    border-radius: 0 !important;
+    color: var(--ink) !important;
+    box-shadow: none !important;
+}
+
+.view-mode .form-group textarea {
+    background: rgba(255, 255, 255, 0.2) !important;
+    border: 1px dashed var(--rule) !important;
+    color: var(--ink) !important;
+    box-shadow: none !important;
+}
+
+.form-group small,
+.field-help,
+.manual-settings-help,
+.account-hint,
+.upload-hint,
+.groups-add-char small,
+.adm-form .form-group small {
+    font-style: italic;
+    color: var(--ink-faint);
+}
+
+/* --------------------------------------------------------------------------
+   Overview page: welcome block and index cards
+   -------------------------------------------------------------------------- */
+
+.welcome-section {
+    background: transparent;
+    border: 0;
+    border-bottom: 1px solid var(--rule);
+    border-radius: 0;
+    text-align: left;
+    padding: 0 0 22px;
+    margin-bottom: 26px;
+    overflow: visible;
+}
+
+.welcome-section::before {
+    content: none;
+}
+
+.main-headline {
+    font-family: var(--font-display);
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--ink);
+    line-height: 1.15;
+    margin-bottom: 10px;
+}
+
+.welcome-section .warning-text,
+.welcome-section .warning-text.info-text {
+    display: block;
+    max-width: 66ch;
+    background: transparent;
+    border: 0;
+    padding: 0;
+    margin: 0 0 18px;
+    color: var(--ink-soft);
+    font-style: italic;
+    font-size: 1.15rem;
+    font-weight: 400;
+}
+
+.welcome-section .warning-text i {
+    color: var(--brass);
+    font-style: normal;
+    margin-right: 6px;
+}
+
+.main-actions {
+    justify-content: flex-start;
+    gap: 10px;
+}
+
+.character-grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 28px 26px;
+    padding: 14px 8px 8px;
+}
+
+.character-card {
+    background: var(--vellum-light);
+    border: 1px solid var(--rule-light);
+    border-radius: 2px;
+    padding: 22px 20px 14px;
+    box-shadow: 0 6px 14px -6px rgba(0, 0, 0, 0.5);
+    transform: rotate(-0.4deg);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    overflow: visible;
+    min-height: 0;
+    justify-content: flex-start;
+    gap: 2px;
+}
+
+.character-grid .character-card:nth-child(2n) {
+    transform: rotate(0.5deg);
+}
+
+/* brass tack */
+.character-card::before {
+    content: '';
+    position: absolute;
+    top: -9px;
+    left: 50%;
+    right: auto;
+    width: 14px;
+    height: 14px;
+    margin-left: -7px;
+    border-radius: 50%;
+    background: var(--brass-tack);
+    box-shadow: 0 2px 3px rgba(0, 0, 0, 0.5);
+    opacity: 1;
+    transition: none;
+}
+
+.character-card::after {
+    content: none;
+}
+
+.character-card:hover,
+.character-grid .character-card:nth-child(2n):hover {
+    transform: rotate(0deg) translateY(-3px);
+    box-shadow: 0 14px 22px -10px rgba(0, 0, 0, 0.6);
+    border-color: var(--brass);
+}
+
+.character-card h3 {
+    font-family: var(--font-display);
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--ink);
+    text-align: left;
+    letter-spacing: 0.01em;
+    margin-bottom: 2px;
+}
+
+.character-card h3 i {
+    color: var(--brass);
+    font-size: 0.8em;
+    margin-left: 4px;
+}
+
+.character-overview-archetype {
+    display: block;
+    align-self: flex-start;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    padding: 0;
+    margin-bottom: 6px;
+    font-size: 1rem;
+    font-style: italic;
+    font-weight: 400;
+    color: var(--ink-soft);
+    opacity: 1;
+    text-align: left;
+}
+
+.character-overview-owner {
+    font-family: var(--font-caps);
+    font-size: 0.95rem;
+    color: var(--iron);
+    order: -1;
+    margin-bottom: 2px;
+}
+
+.character-overview-owner i {
+    color: var(--iron);
+}
+
+.character-card .character-meta {
+    justify-content: flex-start;
+    gap: 16px;
+    margin: 6px 0 4px;
+    font-family: var(--font-caps);
+}
+
+.character-card .character-meta span,
+.character-card .character-meta span:hover {
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+    padding: 0;
+    color: var(--ink);
+    font-weight: 400;
+    font-size: 1rem;
+    transform: none;
+}
+
+.character-hp-line {
+    height: 8px;
+    border: 1px solid var(--ink-soft);
+    border-radius: 4px;
+    margin: 4px 0 12px;
+    background: #e3d4b3;
+    overflow: hidden;
+}
+
+.character-hp-line i {
+    display: block;
+    height: 100%;
+    background: var(--verdigris);
+    border-radius: 4px;
+}
+
+.character-hp-line.hurt i {
+    background: var(--wax);
+}
+
+.character-card .character-actions {
+    margin-top: auto;
+    gap: 6px;
+}
+
+.character-card .character-actions .btn {
+    flex: 0 0 auto;
+    font-size: 0.9rem;
+    padding: 2px 10px;
+    min-height: 30px;
+    border-radius: 2px;
+    box-shadow: 2px 2px 0 rgba(42, 33, 24, 0.25);
+}
+
+.character-card .character-actions .btn:hover {
+    transform: translate(-1px, -1px);
+    box-shadow: 3px 3px 0 rgba(42, 33, 24, 0.3);
+}
+
+.character-card .character-actions .btn-info,
+.character-card .character-actions .btn-info:hover,
+.character-card .character-actions .btn-primary,
+.character-card .character-actions .btn-primary:hover {
+    background: rgba(255, 255, 255, 0.3);
+    color: var(--ink);
+    border-color: var(--ink);
+}
+
+.character-card .character-actions .btn-primary:hover,
+.character-card .character-actions .btn-info:hover {
+    background: rgba(255, 255, 255, 0.55);
+}
+
+/* GM-visible characters carry a green spine */
+#gmCharacterSections {
+    margin-top: 34px;
+}
+
+#gmCharacterSections .character-card {
+    border-left: 5px solid var(--verdigris);
+}
+
+.gm-owner-section {
+    margin-bottom: 10px;
+}
+
+.gm-owner-title {
+    text-transform: none;
+    letter-spacing: 0.04em;
+    font-size: 1.05rem;
+}
+
+.gm-owner-group {
+    font-family: var(--font-body);
+    font-style: italic;
+    font-weight: 400;
+    font-size: 1rem;
+    color: var(--ink-faint);
+    text-transform: none;
+    letter-spacing: 0;
+}
+
+.empty-state {
+    border: 1px dashed var(--rule);
+    border-radius: 3px;
+    padding: 32px 20px;
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.empty-state i {
+    color: var(--rule);
+}
+
+.empty-state h3 {
+    font-family: var(--font-display);
+    color: var(--ink);
+}
+
+/* --------------------------------------------------------------------------
+   Character sheet: head, seals, ribbons
+   -------------------------------------------------------------------------- */
+
+.character-sheet-page .character-header,
+.view-mode .character-header {
+    background: transparent;
+    color: var(--ink);
+    border: 0;
+    border-bottom: 2px solid var(--ink);
+    padding: 0 0 14px;
+    margin-bottom: 18px;
+    align-items: flex-end;
+    gap: 18px 24px;
+}
+
+.view-mode .character-header::before {
+    content: 'in view · press Edit to write';
+    top: auto;
+    bottom: -1.7em;
+    right: 0;
+    background: transparent;
+    border: 0;
+    padding: 0;
+    font-family: var(--font-body);
+    font-style: italic;
+    font-weight: 400;
+    font-size: 0.9rem;
+    color: var(--brass);
+}
+
+div.character-title {
+    flex: 1 1 320px;
+    min-width: 0;
+    font-size: inherit;
+    font-weight: 400;
+    color: var(--ink);
+    opacity: 1;
+}
+
+h3.character-title {
+    font-family: var(--font-display);
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1.1;
+    color: var(--ink);
+    opacity: 1;
+    margin: 0 0 4px;
+    overflow-wrap: anywhere;
+}
+
+.character-archetype {
+    font-family: var(--font-body);
+    font-style: italic;
+    font-size: 1.2rem;
+    color: var(--ink-soft);
+    margin: 0 0 10px;
+}
+
+.character-header .character-meta {
+    gap: 16px;
+    margin: 0;
+    align-items: flex-end;
+}
+
+.level-display,
+.exp-display {
+    display: inline-flex;
+    flex-direction: column-reverse;
+    align-items: center;
+    gap: 4px;
+    background: transparent;
+    padding: 0;
+    border-radius: 0;
+    font-family: var(--font-caps);
+    font-size: 0.9rem;
+    font-weight: 400;
+    color: var(--ink-soft);
+    line-height: 1;
+}
+
+.level-display > span,
+.exp-display > span {
+    display: grid;
+    place-items: center;
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    border: 2px solid var(--ink);
+    background: rgba(255, 255, 255, 0.3);
+    font-family: var(--font-display);
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--ink);
+}
+
+.level-display > span {
+    background: var(--wax-seal);
+    color: var(--wax-text);
+    border-color: var(--wax-dark);
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.4);
+}
+
+.character-sheet-page .character-actions {
+    align-self: flex-end;
+}
+
+.view-mode-help {
+    font-style: italic;
+    color: var(--ink-faint) !important;
+    font-size: 0.95rem !important;
+}
+
+.view-mode-help strong {
+    font-family: var(--font-caps);
+    font-weight: 400;
+    color: var(--ink-soft);
+}
+
+/* tabs → ribbons */
+.character-navigation,
+.view-mode .character-navigation,
+.character-navigation:not(.view-mode) {
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    padding: 0;
+    margin: 0 0 22px;
+}
+
+.nav-tabs,
+.view-mode .nav-tabs {
+    gap: 2px 8px;
+    border-bottom: 1px solid var(--rule);
+    padding: 0 0 2px;
+}
+
+.nav-tab,
+.view-mode .nav-tab {
+    background: transparent;
+    border: 0;
+    border-bottom: 3px solid transparent;
+    border-radius: 0;
+    padding: 4px 12px;
+    min-height: 0;
+    font-family: var(--font-caps);
+    font-size: 1.05rem;
+    font-weight: 400;
+    color: var(--ink-soft);
+    box-shadow: none;
+    transform: none;
+    margin-bottom: -3px;
+}
+
+.nav-tab:hover,
+.view-mode .nav-tab:hover {
+    background: rgba(255, 255, 255, 0.35);
+    color: var(--ink);
+    transform: none;
+}
+
+.nav-tab.active,
+.view-mode .nav-tab.active {
+    background: transparent;
+    color: var(--ink);
+    border-bottom-color: var(--wax);
+    box-shadow: none;
+    transform: none;
+    font-weight: 400;
+}
+
+.nav-tab i {
+    font-size: 0.85em;
+    color: var(--brass);
+}
+
+/* --------------------------------------------------------------------------
+   Content sections: inset wells on the page
+   -------------------------------------------------------------------------- */
+
+.character-content,
+.view-mode .character-content,
+.character-content:not(.view-mode) {
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+    padding: 0 !important;
+}
+
+@media (min-width: 769px) {
+    .view-mode .character-content {
+        grid-template-columns: minmax(260px, 330px) 1fr !important;
+        gap: 18px !important;
+    }
+
+    .view-mode #statsSection {
+        width: auto !important;
+    }
+}
+
+.content-section,
+.character-content:not(.view-mode) .content-section,
+.view-mode .content-section {
+    background: rgba(255, 255, 255, 0.28);
+    border: 1px solid var(--rule-light);
+    border-radius: 3px;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.4);
+    padding: 16px 18px 18px;
+    margin-bottom: 18px;
+    overflow: visible;
+}
+
+.content-section::before {
+    content: none;
+}
+
+.content-section:hover {
+    transform: none;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.4);
+}
+
+.content-section:first-child,
+.content-section.active,
+.content-section.active:first-child {
+    border: 1px solid var(--rule-light);
+    border-radius: 3px;
+}
+
+.section-header,
+.character-content .content-section .section-header,
+.content-section:first-child .section-header,
+.view-mode .section-header {
+    background: transparent;
+    border: 0;
+    padding: 0 0 8px;
+    margin: 0 0 12px;
+    box-shadow: none;
+}
+
+.section-header::before {
+    content: none;
+}
+
+.section-header h3,
+.character-content:not(.view-mode) .section-header h3,
+.view-mode .section-header h3 {
+    flex: 1 1 auto;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-family: var(--font-display);
+    font-size: 0.95rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin: 0;
+}
+
+.section-header h3::after {
+    content: '';
+    flex: 1 1 40px;
+    height: 1px;
+    background: linear-gradient(90deg, var(--rule), transparent);
+}
+
+.section-header h3 i {
+    color: var(--brass);
+    font-size: 0.9em;
+}
+
+.collapsible-header:hover {
+    background: transparent;
+}
+
+.collapse-icon {
+    color: var(--brass);
+}
+
+.character-content h4,
+.character-content h5,
+.view-mode h4,
+.view-mode h5,
+.options-content h4,
+.modal-content h3,
+.modal-content h4,
+.account-card h3,
+.adm-card h3,
+.groups-action-card h3,
+.import-section h3,
+.export-section h3,
+.custom-subsection h4,
+.add-equipment-header,
+.boons-section h5,
+.banes-section h5,
+.view-mode .boons-section h5,
+.view-mode .banes-section h5,
+.view-mode .initiative-group h5,
+.view-mode .movement-group h5,
+.view-mode .legend-points-group h5,
+.view-mode .combat-subsection h4,
+.view-mode #combatSection h4:first-of-type,
+.view-mode #combatSection h4:nth-of-type(2),
+.wealth-level-section h4,
+.initiative-group h4,
+.movement-group h4,
+.legend-points-group h4,
+.advantage-group h4,
+.perks-section h4,
+.flaws-section h4,
+.equipment-inventory h4,
+.equipped-items h4,
+.equipped-section h5,
+.feat-prerequisites h5,
+.feat-effect h5,
+.feat-effect-description h5,
+.feat-base-effect-description h5,
+.detail-section h6,
+.option-details h6,
+.feat-description-content h4 {
+    font-family: var(--font-display);
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    background: transparent;
+    border: 0;
+    border-bottom: 1px solid var(--rule);
+    border-radius: 0;
+    box-shadow: none;
+    text-shadow: none;
+    text-align: left;
+    padding: 2px 0 4px;
+    margin: 0 0 8px;
+}
+
+.character-content h4 i,
+.character-content h5 i,
+.options-content h4 i,
+.modal-content h3 i,
+.account-card h3 i,
+.adm-card h3 i,
+.groups-action-card h3 i,
+.add-equipment-header i {
+    color: var(--brass);
+}
+
+.section-content {
+    background: transparent;
+}
+
+/* --------------------------------------------------------------------------
+   Attributes: inked circles
+   -------------------------------------------------------------------------- */
+
+.character-content .attribute-category h4,
+.view-mode .attribute-category h4 {
+    font-family: var(--font-display);
+    font-size: 0.85rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    background: transparent;
+    border: 0;
+    border-bottom: 1px solid var(--rule);
+    border-radius: 0;
+    box-shadow: none;
+    text-shadow: none;
+    text-align: left;
+    padding: 2px 0 4px;
+    margin: 6px 0 4px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.character-content .attribute-category h4 i,
+.view-mode .attribute-category h4 i {
+    color: var(--brass);
+    font-size: 0.9em;
+}
+
+.attributes-table,
+.view-mode .attributes-table,
+.character-content:not(.view-mode) .attributes-table {
+    background: transparent;
+    border-radius: 0;
+    box-shadow: none;
+    border-collapse: collapse;
+}
+
+.attributes-table .attribute-row,
+.character-content:not(.view-mode) .attributes-table .attribute-row,
+.character-content:not(.view-mode) .attributes-table .attribute-row:nth-child(even),
+.character-content:not(.view-mode) .attributes-table .attribute-row:hover,
+.character-content:not(.view-mode) .attributes-table .attribute-row:nth-child(even):hover,
+.view-mode .attributes-table .attribute-row,
+.view-mode .attributes-table .attribute-row:nth-child(even),
+.view-mode .attributes-table .attribute-row:hover,
+.view-mode .attributes-table .attribute-row:nth-child(even):hover {
+    background: transparent !important;
+    border-bottom: 1px dashed var(--rule-light);
+    height: auto;
+}
+
+.attributes-table .attribute-row:last-child,
+.view-mode .attributes-table .attribute-row:last-child {
+    border-bottom: 0;
+}
+
+.attributes-table td,
+.character-content:not(.view-mode) .attributes-table td,
+.view-mode .attributes-table td,
+.character-content:not(.view-mode) .attributes-table .attribute-row:last-child td {
+    border: 0;
+    padding: 5px 4px;
+    height: auto;
+    background: transparent;
+}
+
+.attributes-table .attribute-name,
+.character-content:not(.view-mode) .attributes-table .attribute-name,
+.view-mode .attributes-table .attribute-name {
+    font-family: var(--font-body);
+    font-size: 1.1rem;
+    font-weight: 400;
+    color: var(--ink);
+    text-transform: none;
+}
+
+.attribute-value {
+    display: inline-grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    border-radius: 50%;
+    border: 1.5px solid var(--ink);
+    background: rgba(255, 255, 255, 0.35);
+    font-family: var(--font-display);
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--ink);
+    line-height: 1;
+}
+
+.attribute-controls {
+    gap: 6px;
+}
+
+.attr-btn,
+.attr-btn:hover,
+.attr-btn:active {
+    width: 22px;
+    height: 22px;
+    border: 1px solid var(--ink-soft);
+    border-radius: 2px;
+    background: transparent;
+    color: var(--ink-soft);
+    font-family: var(--font-display);
+    font-size: 0.8rem;
+    font-weight: 700;
+    box-shadow: none;
+    transform: none;
+}
+
+.attr-btn:hover {
+    background: var(--ink);
+    color: var(--vellum);
+    border-color: var(--ink);
+}
+
+.attributes-table .attribute-info .attribute-cost,
+.attributes-table .attribute-info .attribute-dice,
+.attributes-table .attribute-info .attribute-max,
+.character-content:not(.view-mode) .attributes-table .attribute-max,
+.attribute-cost,
+.attribute-dice,
+.attribute-max {
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    padding: 0;
+    margin: 0;
+    font-family: var(--font-body);
+    font-style: italic;
+    font-size: 0.85rem;
+    font-weight: 400;
+    color: var(--ink-soft);
+    line-height: 1.3;
+}
+
+.attributes-table .attribute-info .attribute-dice,
+.attribute-dice {
+    font-style: normal;
+    color: var(--ink);
+}
+
+/* view mode: score circle + dice */
+.view-mode .attributes-table td.attribute-dice.view-mode-only {
+    padding: 4px;
+    white-space: nowrap;
+}
+
+.view-mode .attributes-table td.attribute-dice.view-mode-only .attribute-score,
+.attribute-score {
+    display: inline-grid;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    margin: 0 6px 0 0;
+    border-radius: 50%;
+    border: 1.5px solid var(--ink);
+    background: rgba(255, 255, 255, 0.35);
+    font-family: var(--font-display);
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--ink);
+    vertical-align: middle;
+}
+
+.view-mode .attributes-table td.attribute-dice.view-mode-only .attribute-dice-inline,
+.attribute-dice-inline {
+    display: inline-block;
+    width: auto;
+    min-width: 34px;
+    padding: 0;
+    background: transparent;
+    border: 0;
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    font-weight: 400;
+    color: var(--ink-soft);
+    vertical-align: middle;
+}
+
+.attribute-score.boosted-by-equipment,
+.view-mode .attributes-table td.attribute-dice.view-mode-only .attribute-score.boosted-by-equipment {
+    background: var(--verdigris);
+    color: var(--wax-text);
+    border-color: #2d4f45;
+    box-shadow: none;
+}
+
+.attribute-score.boosted-by-equipment::after {
+    background: var(--brass);
+    color: var(--ink);
+    font-size: 0.6rem;
+    width: 14px;
+    height: 14px;
+    top: -5px;
+    right: -6px;
+}
+
+.attribute-summary {
+    background: rgba(255, 255, 255, 0.3);
+    border: 1px solid var(--rule);
+    border-radius: 2px;
+    padding: 6px 14px;
+    font-family: var(--font-caps);
+    font-weight: 400;
+    color: var(--ink);
+    font-size: 0.95rem;
+    line-height: 1.3;
+}
+
+.attribute-summary #totalPointsSpent,
+.attribute-summary #availableAttributePoints {
+    font-family: var(--font-display);
+    font-weight: 700;
+}
+
+.manual-settings-section {
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px dashed var(--rule);
+    border-radius: 2px;
+}
+
+.feat-icon,
+.feat-indicator,
+.extraordinary-focus-indicator,
+.martial-focus-indicator,
+.skill-specialization-indicator {
+    background: var(--brass);
+    color: var(--ink);
+    border: 0;
+    box-shadow: none;
+}
+
+/* --------------------------------------------------------------------------
+   Vitality: paper box tracker, shields, damage controls
+   -------------------------------------------------------------------------- */
+
+.health-bar,
+.view-mode #combatSection .health-bar {
+    height: 20px;
+    background: transparent;
+    border: 1px solid var(--ink);
+    border-radius: 2px;
+    box-shadow: none;
+    position: relative;
+    overflow: hidden;
+}
+
+.health-bar:hover {
+    transform: none;
+    box-shadow: none;
+}
+
+.health-bar::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background: repeating-linear-gradient(90deg, transparent 0 15px, var(--vellum) 15px 18px);
+    pointer-events: none;
+}
+
+.health-bar-segment,
+.health-bar-segment.current-hp,
+.health-bar-segment.missing-hp,
+.health-bar-segment.reduced-max {
+    box-shadow: none;
+}
+
+.health-bar-segment.current-hp {
+    background: var(--verdigris);
+}
+
+.health-bar-segment.missing-hp {
+    background: rgba(255, 255, 255, 0.25);
+}
+
+.health-bar-segment.reduced-max {
+    background: var(--ink);
+}
+
+.health-bar-text,
+.view-mode #combatSection .health-bar-text,
+.view-mode .health-bar-text {
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--ink);
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+}
+
+.health-bar-text:hover,
+.view-mode #combatSection .health-bar-text:hover {
+    color: var(--verdigris);
+    background: transparent;
+}
+
+.damage-controls,
+.lethal-controls,
+.damage-controls:hover,
+.lethal-controls:hover,
+.view-mode .damage-controls,
+.view-mode .lethal-controls {
+    background: transparent;
+    border: 1px dashed var(--rule);
+    border-radius: 2px;
+    box-shadow: none;
+}
+
+.damage-controls::before,
+.lethal-controls::before {
+    content: none;
+}
+
+.reset-controls,
+.view-mode .reset-controls {
+    background: transparent;
+    border: 0;
+    padding: 6px 0 0;
+}
+
+.custom-health-buff {
+    font-style: italic;
+}
+
+.defense-grid {
+    gap: 12px;
+}
+
+.defense-card,
+.view-mode .defense-card,
+.character-content:not(.view-mode) #combatSection .defense-card {
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+    padding: 4px;
+    overflow: visible;
+}
+
+.defense-card::before {
+    content: none;
+}
+
+.defense-card:hover {
+    transform: none;
+    box-shadow: none;
+    border-color: transparent;
+}
+
+.defense-card h4,
+.character-content .defense-card h4 {
+    font-family: var(--font-caps);
+    font-size: 1rem;
+    font-weight: 400;
+    letter-spacing: 0.02em;
+    text-transform: none;
+    color: var(--ink-soft);
+    border: 0;
+    padding: 0;
+    margin: 0 0 6px;
+    text-align: center;
+}
+
+.defense-value,
+.view-mode .defense-value {
+    display: inline-block;
+    min-width: 72px;
+    padding: 6px 16px 12px;
+    margin-bottom: 6px;
+    background: rgba(255, 255, 255, 0.3);
+    border: 2px solid var(--iron);
+    border-radius: 6px 6px 50% 50%;
+    box-shadow: none;
+    font-family: var(--font-display);
+    font-size: 1.7rem;
+    font-weight: 700;
+    color: var(--iron);
+    overflow: visible;
+}
+
+.defense-value::before,
+.defense-value::after {
+    content: none;
+}
+
+.defense-value:hover,
+.view-mode .defense-value:hover {
+    transform: none;
+    box-shadow: none;
+    border-color: var(--ink);
+}
+
+.defense-breakdown span,
+.view-mode .defense-breakdown span {
+    background: transparent;
+    border: 0;
+    padding: 0;
+    font-style: italic;
+    font-size: 0.85rem;
+    color: var(--ink-soft);
+}
+
+.attack-test,
+.view-mode .attack-test {
+    background: transparent;
+    border: 0;
+    border-top: 1px dashed var(--rule);
+    border-radius: 0;
+    padding: 8px 0 0;
+}
+
+/* alternate form / companion switches */
+.alternate-form-switch,
+.companion-switch {
+    background: rgba(255, 255, 255, 0.25);
+    border: 1px solid var(--rule-light);
+    border-radius: 3px;
+}
+
+.switch-container h5,
+.companion-switch .switch-container h5 {
+    font-family: var(--font-display);
+    font-size: 0.85rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    border-bottom: 1px solid var(--rule);
+    padding: 0 0 4px;
+}
+
+.switch-button,
+.switch-button.primary-form,
+.switch-button.alternate-form,
+.switch-button.companion,
+.switch-button.parent {
+    background: rgba(255, 255, 255, 0.3);
+    color: var(--ink);
+    border: 1.5px solid var(--ink);
+    font-size: 0.95rem;
+    padding: 4px 12px;
+}
+
+.switch-button.alternate-form,
+.switch-button.companion {
+    border-color: var(--verdigris);
+    color: var(--verdigris);
+}
+
+/* initiative, movement, legend */
+.initiative-group,
+.movement-group,
+.legend-points-group,
+.view-mode .initiative-group,
+.view-mode .movement-group,
+.view-mode .legend-points-group,
+.character-content:not(.view-mode) #combatSection .legend-points-group {
+    background: rgba(255, 255, 255, 0.25);
+    border: 1px solid var(--rule-light);
+    border-radius: 3px;
+    box-shadow: none;
+}
+
+.initiative-group:hover,
+.movement-group:hover,
+.legend-points-group:hover {
+    transform: none;
+    box-shadow: none;
+}
+
+.initiative-value,
+.legend-points-value,
+.movement-value,
+.view-mode .movement-stat .movement-value,
+.initiative-display,
+.view-mode .initiative-display,
+.view-mode .legend-points-display {
+    font-family: var(--font-display);
+    font-weight: 700;
+    color: var(--ink);
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+}
+
+.initiative-dice,
+.movement-unit,
+.legend-points-max,
+.view-mode .movement-stat .movement-unit {
+    font-family: var(--font-body);
+    font-style: italic;
+    color: var(--ink-soft);
+    background: transparent;
+    border: 0;
+}
+
+.movement-stat,
+.view-mode .movement-stat {
+    background: transparent;
+    border: 0;
+    border-bottom: 1px dashed var(--rule-light);
+    border-radius: 0;
+    box-shadow: none;
+}
+
+.movement-stat:last-child,
+.view-mode .movement-stat:last-child {
+    border-bottom: 0;
+}
+
+/* --------------------------------------------------------------------------
+   Entries: equipment, feats, boons, banes, actions, options
+   -------------------------------------------------------------------------- */
+
+.equipment-item,
+.feat-item,
+.boon-item,
+.bane-item,
+.favorite-action-item,
+.option-item,
+.action-card,
+.checkbox-item,
+.custom-entry-card,
+.flaw-item,
+.perk-item,
+.equipped-item,
+.equipped-section,
+.feat-description-section,
+.advantage-group,
+.view-mode .equipment-item,
+.view-mode .feat-item,
+.view-mode .flaw-item,
+.view-mode .action-card,
+.view-mode .advantage-group,
+.view-mode .boons-section,
+.view-mode .banes-section,
+.view-mode .perks-section,
+.view-mode .flaws-section,
+.equipment-details,
+.feat-details,
+.bane-details,
+.flaw-details,
+.option-details,
+.detail-section,
+.feat-effect,
+.feat-base-effect-description,
+.feat-prerequisites,
+.feat-notes-section,
+.feat-note,
+.cumulative-effects,
+.tier-effect,
+.duration-section,
+.add-equipment-section,
+.add-equipment,
+.add-feat,
+.feat-points-display,
+.advantage-summary,
+.wealth-level-section,
+.image-upload-container,
+.manual-override-input,
+.universal-properties-section,
+.item-specific-fields,
+.weapon-specific-fields,
+.armor-specific-fields,
+.weapon-banes-section,
+.bane-selection,
+.item-power-level-section,
+.groups-action-card,
+.groups-card,
+.account-card,
+.adm-card,
+.adm-tile,
+.groups-char,
+.groups-invite,
+.feat-popup,
+.property-modal-content,
+.attribute-error-popup .popup-content,
+.high-damage-content,
+.mechanic-item,
+.file-upload-area,
+.custom-form,
+.perk-preview,
+.flaw-preview,
+.feat-preview,
+.auth-result,
+.adm-newcodes,
+.adm-codelist {
+    background: rgba(255, 255, 255, 0.3);
+    border: 1px solid var(--rule-light);
+    border-radius: 3px;
+    box-shadow: none;
+    color: var(--ink);
+}
+
+.equipment-item:hover,
+.feat-item:hover,
+.boon-item:hover,
+.bane-item:hover,
+.favorite-action-item:hover,
+.option-item:hover,
+.action-card:hover,
+.checkbox-item:hover,
+.custom-entry-card:hover,
+.flaw-item:hover,
+.view-mode .flaw-item:hover,
+.view-mode .action-card:hover,
+.groups-card:hover,
+.mechanic-item:hover {
+    background: rgba(255, 255, 255, 0.5);
+    border-color: var(--rule);
+    transform: none;
+    box-shadow: none;
+}
+
+.option-item::before {
+    content: none;
+}
+
+.feat-item.expanded,
+.bane-item.expanded,
+.boon-item.expanded,
+.option-item.expanded,
+.flaw-item.expanded,
+.view-mode .flaw-item.expanded {
+    background: rgba(255, 255, 255, 0.55);
+    border-color: var(--rule);
+    box-shadow: none;
+}
+
+/* category spines */
+.feat-item,
+.feat-item.expanded,
+.view-mode .feat-item { border-left: 4px solid var(--brass); }
+.boon-item,
+.boon-item.expanded { border-left: 4px solid var(--verdigris); }
+.bane-item,
+.bane-item.expanded { border-left: 4px solid var(--wax); }
+.equipment-item,
+.view-mode .equipment-item { border-left: 4px solid var(--iron); }
+.equipment-item.equipped { border-left-color: var(--verdigris); background: rgba(63, 107, 94, 0.08); }
+.favorite-action-item { border-left: 4px solid var(--brass); }
+.perk-item { border-left: 4px solid var(--plum); }
+.flaw-item,
+.flaw-item.expanded,
+.view-mode .flaw-item { border-left: 4px solid var(--umber); }
+.action-card { border-left: 4px solid var(--iron); }
+
+.equipment-name,
+.feat-name,
+.boon-name,
+.bane-name,
+.flaw-name,
+.option-name,
+.action-name,
+.favorite-action-name,
+.custom-entry-title,
+.groups-card-name,
+.feat-overview .feat-name,
+.view-mode .bane-item .bane-name,
+.checkbox-item label,
+.equipment-info strong {
+    font-family: var(--font-body);
+    font-size: 1.1rem;
+    font-weight: 400;
+    color: var(--ink);
+    letter-spacing: 0;
+}
+
+.equipment-type,
+.feat-description,
+.feat-overview .feat-description,
+.option-description,
+.action-description,
+.equipment-details,
+.detail-section p,
+.feat-effect-description p,
+.feat-base-effect-description p,
+.option-details p,
+.view-mode .bane-item .bane-description,
+.bane-description,
+.boon-description,
+.custom-entry-description,
+.category-description,
+.favorite-action-stats,
+.feat-custom-summary,
+.feat-custom-details-overview,
+.groups-card-meta,
+.account-row-value,
+.feat-html-content {
+    color: var(--ink-soft);
+    font-size: 0.98rem;
+}
+
+.feat-item::after {
+    font-family: var(--font-body);
+    font-style: italic;
+    font-size: 0.85rem;
+    color: var(--ink-faint);
+}
+
+.equipment-details,
+.feat-details,
+.bane-details,
+.flaw-details,
+.option-details,
+.detail-section,
+.feat-effect,
+.feat-base-effect-description,
+.feat-prerequisites {
+    background: rgba(255, 255, 255, 0.2);
+    border-left: 0;
+    border-top: 1px dashed var(--rule-light);
+    border-right: 0;
+    border-bottom: 0;
+    border-radius: 0;
+}
+
+/* badges → ink tags */
+.feat-tier,
+.feat-cost,
+.feat-overview .feat-tier,
+.feat-overview .feat-cost,
+.boon-power-level,
+.bane-power-level,
+.option-badge,
+.favorite-action-badge,
+.action-duration-badge,
+.custom-badge,
+.groups-badge,
+.adm-badge,
+.account-badge,
+.account-role,
+.advantage-attribute,
+.equipment-type,
+.character-overview-alternate,
+.boon-duration,
+.bane-duration,
+.power-level-badge,
+.detail-tag,
+.weapon-detail,
+.favorite-action-dice,
+.favorite-action-advantage,
+.cursed-indicator,
+.persistent-indicator,
+.bane-source,
+.groups-kind,
+.groups-count,
+.adm-count,
+.equipment-bonus,
+.feat-points-value,
+.feat-cost-value,
+.advantage-count,
+.current-power-level,
+.view-mode .equipment-details-full .weapon-detail {
+    display: inline-block;
+    font-family: var(--font-caps);
+    font-size: 0.85rem;
+    font-weight: 400;
+    line-height: 1.5;
+    padding: 0 8px;
+    margin: 0 2px 0 0;
+    background: transparent;
+    color: var(--ink-soft);
+    border: 1px solid currentColor;
+    border-radius: 10px;
+    box-shadow: none;
+    text-shadow: none;
+    text-transform: none;
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+}
+
+.feat-tier,
+.feat-overview .feat-tier,
+.custom-badge,
+.feat-points-value { color: var(--brass-dark); }
+.feat-cost,
+.feat-overview .feat-cost,
+.bane-power-level,
+.bane-duration,
+.cursed-indicator,
+.favorite-action-advantage.negative,
+.action-duration-badge.major-action,
+.groups-badge-gm,
+.adm-badge-warn,
+.adm-badge-expired,
+.account-badge.unverified { color: var(--wax); }
+.boon-power-level,
+.boon-duration,
+.advantage-attribute,
+.favorite-action-advantage.positive,
+.action-duration-badge.free-action,
+.account-badge.verified,
+.adm-badge-ok,
+.equipment-bonus { color: var(--verdigris); }
+.action-duration-badge.minor-action,
+.groups-badge-player,
+.equipment-type,
+.weapon-detail,
+.detail-tag,
+.adm-badge-used,
+.adm-badge-role-user { color: var(--iron); }
+.action-duration-badge.movement-action,
+.character-overview-alternate,
+.adm-badge-role-admin { color: var(--brass-dark); }
+.action-duration-badge.focus-action,
+.favorite-action-badge,
+.favorite-action-dice { color: var(--plum); }
+.action-duration-badge.interrupt-action,
+.persistent-indicator { color: var(--umber); }
+
+.favorite-action-advantage.positive,
+.favorite-action-advantage.negative,
+.favorite-action-dice {
+    background: transparent;
+}
+
+.power-level-badge.active,
+.current-power-level {
+    background: var(--ink);
+    color: var(--vellum);
+    border-color: var(--ink);
+}
+
+.remove-item,
+.remove-disadvantage-btn,
+.favorite-action-remove button,
+.view-mode .favorite-action-remove button {
+    background: transparent;
+    color: var(--ink-soft);
+    border: 1px solid var(--ink-soft);
+    width: 24px;
+    height: 24px;
+    font-size: 1rem;
+}
+
+.remove-item:hover,
+.remove-disadvantage-btn:hover,
+.favorite-action-remove button:hover {
+    background: var(--wax);
+    color: var(--wax-text);
+    border-color: var(--wax-dark);
+}
+
+.add-item,
+.view-mode .boons-banes-row .add-item {
+    background: transparent;
+}
+
+.sustain-checkbox,
+.bane-resist-checkboxes label,
+.bane-checkboxes label,
+.wealth-checkbox,
+.initiative-checkbox,
+.manual-settings-checkbox,
+.universal-property,
+.weapon-property,
+.speed-reduction-checkbox,
+.attributes-checkboxes label,
+.adm-toggle {
+    font-family: var(--font-caps);
+    color: var(--ink-soft);
+    background: transparent;
+    border-color: var(--rule-light);
+}
+
+.image-preview,
+.view-mode .image-preview {
+    background: rgba(255, 255, 255, 0.25);
+    border: 1px dashed var(--rule);
+    border-radius: 2px;
+    color: var(--ink-faint);
+}
+
+.image-preview:hover {
+    border-color: var(--brass);
+    background: rgba(255, 255, 255, 0.4);
+}
+
+/* options list page */
+.option-category {
+    border: 0;
+    background: transparent;
+}
+
+.category-header,
+.boon-category,
+.bane-category,
+.feat-category,
+.perk-category,
+.flaw-category,
+.custom-category,
+.category-header:hover,
+.boon-category:hover,
+.bane-category:hover,
+.feat-category:hover,
+.perk-category:hover,
+.flaw-category:hover,
+.custom-category:hover {
+    background: rgba(255, 255, 255, 0.3);
+    border: 1px solid var(--rule-light);
+    border-left-width: 5px;
+    border-radius: 3px;
+    box-shadow: none;
+    color: var(--ink);
+    transform: none;
+}
+
+.boon-category { border-left-color: var(--verdigris); }
+.bane-category { border-left-color: var(--wax); }
+.feat-category { border-left-color: var(--brass); }
+.perk-category { border-left-color: var(--plum); }
+.flaw-category { border-left-color: var(--umber); }
+.custom-category { border-left-color: var(--iron); }
+
+.category-header h3,
+.boon-category h3,
+.bane-category h3,
+.feat-category h3,
+.perk-category h3,
+.flaw-category h3,
+.custom-category h3 {
+    font-family: var(--font-display);
+    font-size: 1rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink);
+    text-shadow: none;
+}
+
+.category-header i,
+.boon-category i,
+.bane-category i,
+.feat-category i,
+.perk-category i,
+.flaw-category i,
+.custom-category i {
+    color: var(--brass);
+}
+
+.boon-category i { color: var(--verdigris); }
+.bane-category i { color: var(--wax); }
+.perk-category i { color: var(--plum); }
+.flaw-category i { color: var(--umber); }
+.custom-category i { color: var(--iron); }
+
+.expand-icon {
+    color: var(--ink-soft);
+}
+
+.options-grid {
+    gap: 14px;
+}
+
+/* --------------------------------------------------------------------------
+   Modals, popups, notifications
+   -------------------------------------------------------------------------- */
+
+.modal {
+    background-color: rgba(29, 21, 18, 0.72);
+    backdrop-filter: blur(3px);
+}
+
+.modal-content {
+    padding: 36px 40px;
+    max-width: 560px;
+}
+
+.modal-content.modal-large {
+    max-width: 960px;
+}
+
+.modal-content h2,
+.modal-content h3:first-child,
+.high-damage-header h2,
+.feat-popup-title,
+.property-modal .modal-header h3 {
+    font-family: var(--font-display);
+    color: var(--ink);
+}
+
+.close,
+.feat-popup-close,
+.high-damage-header .close,
+.property-modal .close {
+    color: var(--ink-soft);
+    background: transparent;
+}
+
+.close:hover,
+.feat-popup-close:hover,
+.high-damage-header .close:hover,
+.property-modal .close:hover {
+    color: var(--wax);
+}
+
+.import-divider span,
+.export-divider span,
+.auth-divider span {
+    background: var(--vellum);
+    font-family: var(--font-caps);
+    color: var(--ink-faint);
+}
+
+.import-divider::before,
+.export-divider::before,
+.auth-divider::after {
+    background: var(--rule);
+}
+
+.file-upload-area:hover,
+.file-upload-area.dragover {
+    border-color: var(--brass);
+    background: rgba(255, 255, 255, 0.5);
+}
+
+.upload-placeholder i,
+.file-info i {
+    color: var(--brass);
+}
+
+.feat-popup-overlay {
+    background: rgba(29, 21, 18, 0.72);
+}
+
+.feat-popup,
+.property-modal-content,
+.attribute-error-popup .popup-content,
+.high-damage-content {
+    background: var(--vellum);
+    background-image: var(--paper-texture);
+    box-shadow: 0 30px 40px -20px rgba(0, 0, 0, 0.8), 0 0 0 1px var(--rule-light);
+}
+
+.feat-popup-header,
+.high-damage-header,
+.property-modal .modal-header {
+    background: transparent;
+    border-bottom: 2px solid var(--ink);
+    color: var(--ink);
+}
+
+.damage-number {
+    font-family: var(--font-display);
+    color: var(--wax);
+}
+
+.notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 10000;
+    max-width: 320px;
+    padding: 12px 18px 12px 16px;
+    background: var(--vellum);
+    background-image: var(--paper-texture);
+    color: var(--ink);
+    border: 1px solid var(--rule-light);
+    border-left: 6px solid var(--iron);
+    border-radius: 2px;
+    box-shadow: 0 16px 30px -10px rgba(0, 0, 0, 0.7);
+    font-family: var(--font-body);
+    font-size: 1rem;
+    line-height: 1.4;
+    transform: translateX(120%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.notification.is-visible {
+    transform: translateX(0);
+}
+
+.notification-success { border-left-color: var(--verdigris); }
+.notification-error { border-left-color: var(--wax); }
+.notification-warning { border-left-color: var(--brass); }
+
+.app-error-banner {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10000;
+    max-width: 80%;
+    padding: 12px 20px;
+    background: var(--wax);
+    color: var(--wax-text);
+    border: 1px solid var(--wax-dark);
+    border-radius: 2px;
+    box-shadow: 0 16px 30px -10px rgba(0, 0, 0, 0.7);
+    font-family: var(--font-body);
+    text-align: center;
+}
+
+/* --------------------------------------------------------------------------
+   Cloud pages: login, account, groups, admin
+   -------------------------------------------------------------------------- */
+
+.auth-panel {
+    padding: 40px 40px 36px;
+}
+
+.auth-brand-icon {
+    width: 56px;
+    height: 56px;
+    background: var(--wax-seal);
+    color: var(--wax-text);
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.4), inset 0 0 0 3px rgba(255, 255, 255, 0.08);
+}
+
+.auth-brand h2 {
+    font-family: var(--font-display);
+    color: var(--ink);
+}
+
+.auth-brand p,
+.auth-text {
+    font-style: italic;
+    color: var(--ink-soft);
+}
+
+.auth-tabs,
+.adm-tabs {
+    background: transparent;
+    border: 0;
+    border-bottom: 1px solid var(--rule);
+    border-radius: 0;
+    padding: 0;
+    gap: 8px;
+}
+
+.auth-tab,
+.adm-tab {
+    background: transparent;
+    border: 0;
+    border-bottom: 3px solid transparent;
+    border-radius: 0;
+    margin-bottom: -1px;
+    font-family: var(--font-caps);
+    font-size: 1.05rem;
+    font-weight: 400;
+    color: var(--ink-soft);
+    box-shadow: none;
+}
+
+.auth-tab:hover,
+.adm-tab:hover {
+    background: rgba(255, 255, 255, 0.35);
+    color: var(--ink);
+}
+
+.auth-tab.active,
+.adm-tab.active {
+    background: transparent;
+    color: var(--ink);
+    border-bottom-color: var(--wax);
+    box-shadow: none;
+}
+
+.auth-error,
+.groups-error,
+.adm-alert-error {
+    background: rgba(138, 28, 43, 0.08);
+    border: 1px solid var(--wax);
+    border-radius: 2px;
+    color: var(--wax);
+}
+
+.auth-links a,
+.adm-link,
+.footer-link,
+a {
+    color: var(--brass-dark);
+}
+
+.btn-discord,
+.auth-discord .btn-discord {
+    background: var(--iron);
+    color: var(--wax-text);
+    border-color: #343c45;
+}
+
+.btn-discord:hover:not(:disabled) {
+    background: #5d6a78;
+}
+
+.auth-invite,
+.groups-join-hint,
+.adm-hint,
+.account-hint {
+    background: rgba(255, 255, 255, 0.25);
+    border: 1px dashed var(--rule);
+    border-radius: 2px;
+}
+
+.account-card-danger,
+.groups-danger-zone {
+    border-color: var(--wax);
+}
+
+.account-card-danger h3 i,
+.groups-danger-zone .groups-section-title i {
+    color: var(--wax);
+}
+
+.groups-invite-code,
+.adm-code {
+    font-family: var(--font-display);
+    letter-spacing: 0.12em;
+    background: rgba(255, 255, 255, 0.4);
+    border: 1px solid var(--ink);
+    border-radius: 2px;
+    color: var(--ink);
+}
+
+.groups-card {
+    border-left: 5px solid var(--iron);
+}
+
+.groups-card.groups-card-gm {
+    border-left-color: var(--verdigris);
+}
+
+.groups-member-gm {
+    background: rgba(63, 107, 94, 0.1);
+}
+
+.adm-tile-value {
+    font-family: var(--font-display);
+    color: var(--ink);
+}
+
+.adm-tile > i {
+    color: var(--brass);
+}
+
+.adm-tr {
+    background: transparent;
+    border-bottom: 1px dashed var(--rule-light);
+}
+
+.adm-tr:hover {
+    background: rgba(255, 255, 255, 0.35);
+}
+
+.adm-thead {
+    font-family: var(--font-caps);
+    color: var(--ink-soft);
+    border-bottom: 1px solid var(--rule);
+}
+
+.adm-user-name,
+.groups-char-name,
+.groups-owner-name {
+    font-family: var(--font-body);
+    color: var(--ink);
+}
+
+.adm-user-email,
+.groups-char-owner,
+.account-email {
+    color: var(--ink-faint);
+}
+
+/* --------------------------------------------------------------------------
+   Footer
+   -------------------------------------------------------------------------- */
+
+.footer-section {
+    background: transparent;
+    backdrop-filter: none;
+    border-top: 1px solid rgba(233, 220, 192, 0.15);
+    color: #b7c3b2;
+}
+
+.footer-link,
+.footer-link:hover {
+    background: transparent;
+    border: 1px solid var(--brass);
+    color: var(--vellum);
+    box-shadow: none;
+    opacity: 1;
+}
+
+.footer-link:hover {
+    background: rgba(168, 131, 47, 0.2);
+    border-color: var(--brass-light);
+    transform: none;
+}
+
+.footer-link:focus {
+    outline-color: var(--brass);
+}
+
+.footer-text,
+.footer-text p {
+    color: #a08f70;
+    opacity: 1;
+    font-style: italic;
+}
+
+/* --------------------------------------------------------------------------
+   Small screens
+   -------------------------------------------------------------------------- */
+
+@media (max-width: 768px) {
+    :root {
+        --font-size-base: 0.95rem;
+    }
+
+    .app-container {
+        padding: 10px 8px 32px;
+    }
+
+    .app-header {
+        padding: 10px 14px;
+        margin-bottom: 14px;
+    }
+
+    .main-page,
+    .character-sheet-page,
+    .options-list-page,
+    .groups-page,
+    .admin-page {
+        padding: 26px 16px 28px;
+    }
+
+    .auth-panel,
+    .modal-content {
+        padding: 28px 18px 24px;
+    }
+
+    .main-page::before,
+    .character-sheet-page::before,
+    .options-list-page::before,
+    .auth-panel::before,
+    .groups-page::before,
+    .admin-page::before,
+    .modal-content::before {
+        top: 7px;
+        right: 7px;
+        bottom: 7px;
+        left: 7px;
+    }
+
+    .main-page::after,
+    .character-sheet-page::after,
+    .options-list-page::after,
+    .auth-panel::after,
+    .groups-page::after,
+    .admin-page::after,
+    .modal-content::after {
+        top: 10px;
+        right: 10px;
+        bottom: 10px;
+        left: 10px;
+    }
+
+    .main-headline {
+        font-size: 1.6rem;
+    }
+
+    .character-grid {
+        grid-template-columns: 1fr;
+        gap: 22px;
+        padding: 12px 2px 4px;
+    }
+
+    .character-card,
+    .character-grid .character-card:nth-child(2n) {
+        transform: none;
+    }
+
+    .character-sheet-page .character-header,
+    .view-mode .character-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+
+    .character-sheet-page .character-actions {
+        align-self: stretch;
+        justify-content: flex-start;
+    }
+
+    .view-mode .character-header::before {
+        position: static;
+        display: block;
+        order: 10;
+        text-align: right;
+    }
+
+    h3.character-title {
+        font-size: 1.6rem;
+    }
+
+    .level-display > span,
+    .exp-display > span {
+        width: 46px;
+        height: 46px;
+        font-size: 1.1rem;
+    }
+
+    .nav-tab,
+    .view-mode .nav-tab {
+        font-size: 0.95rem;
+        padding: 3px 8px;
+    }
+
+    .content-section,
+    .character-content:not(.view-mode) .content-section,
+    .view-mode .content-section {
+        padding: 12px 12px 14px;
+        margin-bottom: 12px;
+    }
+
+    .defense-value,
+    .view-mode .defense-value {
+        min-width: 58px;
+        font-size: 1.4rem;
+        padding: 4px 10px 10px;
+    }
+
+    .notification {
+        left: 12px;
+        right: 12px;
+        max-width: none;
+        transform: translateY(-140%);
+    }
+
+    .notification.is-visible {
+        transform: translateY(0);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .character-card,
+    .btn,
+    .notification {
+        transition: none;
+    }
+}
+
+/* --------------------------------------------------------------------------
+   Overrides for base rules that use ids or !important
+   -------------------------------------------------------------------------- */
+
+/* sheet head: name and archetype left, seals right */
+div.character-title {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+        "name seals"
+        "arch seals";
+    column-gap: 24px;
+    align-items: center;
+    text-align: left;
+}
+
+div.character-title > h3.character-title { grid-area: name; align-self: end; }
+div.character-title > .character-archetype { grid-area: arch; align-self: start; text-align: left; margin-bottom: 0; }
+div.character-title > .character-meta { grid-area: seals; }
+
+/* HP line under the tracker */
+.view-mode #combatSection .health-bar-text,
+.view-mode #combatSection .health-bar-text:hover {
+    background: transparent !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+    color: var(--ink) !important;
+    font-family: var(--font-display);
+    font-size: 1.2rem !important;
+    padding: 4px 0 !important;
+    transform: none !important;
+}
+
+/* attack-roll and add buttons that the base styles colour by id */
+#testGuardBtn,
+#testToughnessBtn,
+#testResolveBtn,
+#addAdvantageBtn,
+#addDisadvantageBtn,
+#addBoonBtn,
+#addBaneBtn,
+#addPerkBtn,
+#addFlawBtn,
+#addFeatBtn,
+.add-equipment #addEquipmentBtn,
+#testGuardBtn:hover,
+#testToughnessBtn:hover,
+#testResolveBtn:hover,
+#addAdvantageBtn:hover,
+#addDisadvantageBtn:hover,
+#addBoonBtn:hover,
+#addBaneBtn:hover,
+#addPerkBtn:hover,
+#addFlawBtn:hover,
+#addFeatBtn:hover,
+.add-equipment #addEquipmentBtn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    color: var(--ink);
+    border: 1.5px solid var(--ink);
+    box-shadow: 2px 2px 0 rgba(42, 33, 24, 0.25);
+    font-weight: 400;
+    transform: none;
+}
+
+#testGuardBtn:hover,
+#testToughnessBtn:hover,
+#testResolveBtn:hover,
+#addAdvantageBtn:hover,
+#addDisadvantageBtn:hover,
+#addBoonBtn:hover,
+#addBaneBtn:hover,
+#addPerkBtn:hover,
+#addFlawBtn:hover,
+#addFeatBtn:hover,
+.add-equipment #addEquipmentBtn:hover {
+    background: rgba(255, 255, 255, 0.55);
+}
+
+.damage-buttons .btn {
+    max-width: none;
+    font-size: 0.85rem;
+    padding: 2px 8px;
+}
+
+/* legend points: readable counter with its two stamps */
+.legend-points-display,
+.view-mode .legend-points-display {
+    gap: 10px;
+    align-items: center;
+}
+
+.legend-points-display .btn,
+.view-mode .legend-points-display .btn {
+    min-height: 28px;
+    min-width: 28px;
+    padding: 0 8px;
+    font-size: 1rem;
+}
+
+.legend-points-value {
+    font-size: 2rem;
+}
+
+.initiative-label {
+    font-family: var(--font-caps);
+    font-weight: 400;
+    color: var(--ink-soft);
+}
+
+/* lists of available boons/banes */
+.boons-list .boon-item,
+.banes-list .bane-item,
+.view-mode .boon-item,
+.view-mode .bane-item,
+.view-mode .boon-item.expanded,
+.view-mode .bane-item.expanded,
+.bane-item.expanded,
+.boon-item.expanded {
+    background: rgba(255, 255, 255, 0.3);
+    border: 1px solid var(--rule-light);
+    border-left-width: 4px;
+    box-shadow: none;
+}
+
+.boons-list .boon-item,
+.view-mode .boon-item,
+.view-mode .boon-item.expanded { border-left-color: var(--verdigris); }
+.banes-list .bane-item,
+.view-mode .bane-item,
+.view-mode .bane-item.expanded { border-left-color: var(--wax); }
+
+.boon-item span,
+.bane-item span {
+    font-weight: 400;
+    color: var(--ink);
+}
+
+.boon-attributes,
+.bane-attributes {
+    font-style: italic;
+    color: var(--ink-soft);
+}
+
+.attribute-range {
+    font-family: var(--font-caps);
+    font-size: 0.8rem;
+    font-weight: 400;
+    color: var(--iron);
+    background: transparent;
+    border: 1px solid currentColor;
+    border-radius: 10px;
+    padding: 0 6px;
+}
+
+/* dropdown wells and inputs the base styles paint white */
+.feat-tier-dropdown,
+.substitution-dropdown select,
+.bane-focus-dropdown select,
+.battlefield-punisher-dropdown select,
+.boon-access-dropdown select,
+.boon-focus-dropdown select,
+.extraordinary-focus-dropdown select,
+.multi-bane-specialist-dropdown select,
+.potent-bane-dropdown select,
+.skill-specialization-dropdown select,
+.defense-target-input,
+.equipment-effects-edit,
+.equipment-requirement-edit,
+.description-section,
+.custom-subsection,
+.feats-section,
+.boons-banes-section,
+.view-mode .combat-subsection {
+    background: rgba(255, 255, 255, 0.3);
+    border-color: var(--rule-light);
+    color: var(--ink);
+}
+
+.view-mode .combat-subsection h4 {
+    background: transparent;
+}
+
+h3.character-title {
+    text-align: left;
+}
+
+.defense-value,
+.view-mode .defense-value {
+    max-width: 160px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.character-card .character-actions {
+    justify-content: flex-start;
+}
+
+/* cloud page titles sit centred on their own line */
+.groups-header h2,
+.account-page .page-header h2,
+.admin-page .adm-header h2 {
+    display: block;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.account-page .page-header h2::after,
+.groups-header h2::after,
+.admin-page .adm-header h2::after {
+    content: none;
+}
+
+.attribute-value {
+    min-width: 34px;
+    flex: 0 0 34px;
+}
+
+@media (max-width: 768px) {
+    div.character-title {
+        flex-basis: auto;
+    }
+}
+
+.boon-item .option-badge,
+.bane-item .option-badge,
+.feat-item .option-badge,
+.perk-item .option-badge,
+.flaw-item .option-badge {
+    background: transparent;
+    color: var(--ink-soft);
+    border: 1px solid currentColor;
+    box-shadow: none;
+}
+
+.boon-item .option-badge { color: var(--verdigris); }
+.bane-item .option-badge { color: var(--wax); }
+.feat-item .option-badge { color: var(--brass-dark); }
+.perk-item .option-badge { color: var(--plum); }
+.flaw-item .option-badge { color: var(--umber); }
+
+.damage-buttons {
+    flex-wrap: wrap;
+}
