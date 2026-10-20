@@ -8247,16 +8247,22 @@ input[type="range"]::-moz-range-thumb:hover {
     width: 100% !important;
 }
 
-/* Sections outside the grid use full width */
-.view-mode .content-section:not(#statsSection):not(#combatSection) {
-    grid-column: 1 / -1 !important;
-    width: 100% !important;
-    max-width: none !important;
+/* Sections outside the grid use full width (two-column layout below 1440px;
+   the wide layout further down assigns every section its own grid area) */
+@media (max-width: 1439px) {
+    .view-mode .content-section:not(#statsSection):not(#combatSection) {
+        grid-column: 1 / -1 !important;
+        width: 100% !important;
+        max-width: none !important;
+    }
+
+    .view-mode #initiativeMovementSection {
+        grid-column: 1 / -1 !important;
+    }
 }
 
 /* Initiative & Movement section styling */
 .view-mode #initiativeMovementSection {
-    grid-column: 1 / -1 !important;
     width: 100% !important;
     max-width: 100% !important;
     box-sizing: border-box !important;
@@ -8302,6 +8308,53 @@ input[type="range"]::-moz-range-thumb:hover {
 }
 
 /* Sections after combat now use full width - no grid areas needed */
+
+/* === WIDE SCREENS (>= 1440px) ===
+   The page grows to 1800px and the one-page view mode becomes a three-column
+   spread so desktop monitors are not left with empty margins. The first row
+   holds what matters during play (stats, combat, effects); the rest is
+   arranged so the columns end at roughly the same height. Edit mode keeps a
+   narrower page (body.sheet-edit-mode) so form inputs do not stretch across
+   the whole screen. */
+@media (min-width: 1440px) {
+    .app-container {
+        max-width: 1800px;
+        width: 100%;
+    }
+
+    body.sheet-edit-mode .app-container {
+        max-width: 1280px;
+    }
+
+    .view-mode .character-content {
+        grid-template-columns: minmax(300px, 0.85fr) 1.1fr 1.05fr !important;
+        grid-template-rows: auto !important;
+        grid-auto-rows: auto;
+        align-items: start;
+        gap: 18px !important;
+        grid-template-areas:
+            "stats       combat      effects"
+            "initiative  initiative  feats"
+            "boons       boons       equipment"
+            "baseactions baseactions character" !important;
+    }
+
+    .view-mode .content-section {
+        margin-bottom: 0;
+    }
+
+    .view-mode #statsSection {
+        width: auto !important;
+    }
+
+    .view-mode #effectsSection { grid-area: effects !important; }
+    .view-mode #initiativeMovementSection { grid-area: initiative !important; }
+    .view-mode #featsSection { grid-area: feats !important; }
+    .view-mode #availableBoonsBanesSection { grid-area: boons !important; }
+    .view-mode #equipmentSection { grid-area: equipment !important; }
+    .view-mode #characterSection { grid-area: character !important; }
+    .view-mode #baseActionsSection { grid-area: baseactions !important; }
+}
 
 
 
