@@ -10933,8 +10933,8 @@ class CharacterSheetApp {
         for (const entry of [...(list.characters || []), ...(list.gmCharacters || [])]) {
             this.ingestServerCharacter(entry);
         }
-        this.customBoons = Array.isArray(data.customBoons) ? data.customBoons : [];
-        this.customBanes = Array.isArray(data.customBanes) ? data.customBanes : [];
+        this.customBoons = this.normalizeCustomEntries(data.customBoons);
+        this.customBanes = this.normalizeCustomEntries(data.customBanes);
         this.userSettings = data.settings || {};
     }
 
@@ -11402,6 +11402,8 @@ class CharacterSheetApp {
             let changed = false;
             for (const b of boons) if (b && b.name && !this.customBoons.some(x => x.name === b.name)) { this.customBoons.push(b); changed = true; }
             for (const b of banes) if (b && b.name && !this.customBanes.some(x => x.name === b.name)) { this.customBanes.push(b); changed = true; }
+            this.customBoons = this.normalizeCustomEntries(this.customBoons);
+            this.customBanes = this.normalizeCustomEntries(this.customBanes);
             if (changed) { this.saveCustomBoons(); this.saveCustomBanes(); }
             localStorage.removeItem('openLegendCustomBoons');
             localStorage.removeItem('openLegendCustomBanes');
@@ -11766,6 +11768,8 @@ class CharacterSheetApp {
                 });
             }
             
+            this.customBoons = this.normalizeCustomEntries(this.customBoons);
+            this.customBanes = this.normalizeCustomEntries(this.customBanes);
             this.saveCustomBoons();
             this.saveCustomBanes();
             this.populateCustomBoonsGrid();
@@ -14026,6 +14030,34 @@ class CharacterSheetApp {
     }
 
     // Populate available boons and banes based on character attributes
+    // Custom boons/banes come from user data, old offline exports and the
+    // legacy localStorage import, so their shape is not guaranteed. The rest of
+    // the app expects a name plus `powerLevels` (numbers) and `attributes`
+    // (strings) arrays; entries without a name are dropped.
+    normalizeCustomEntries(list) {
+        if (!Array.isArray(list)) return [];
+        const toArray = value => {
+            if (Array.isArray(value)) return value;
+            if (typeof value === 'string') return value.split(',');
+            if (typeof value === 'number') return [value];
+            return [];
+        };
+        return list
+            .filter(entry => entry && typeof entry.name === 'string' && entry.name.trim() !== '')
+            .map(entry => {
+                const powerLevels = toArray(entry.powerLevels)
+                    .map(level => Number(level))
+                    .filter(level => Number.isFinite(level));
+                const attributes = toArray(entry.attributes)
+                    .filter(attribute => typeof attribute === 'string' && attribute.trim() !== '')
+                    .map(attribute => attribute.trim());
+                if (!Array.isArray(entry.powerLevels) || !Array.isArray(entry.attributes)) {
+                    console.warn('Repaired custom boon/bane with missing powerLevels/attributes:', entry.name);
+                }
+                return { ...entry, powerLevels, attributes };
+            });
+    }
+
     populateAvailableBoonsAndBanes() {
         if (!this.currentCharacter || !window.GAME_DATABASE) return;
         
@@ -14053,8 +14085,11 @@ class CharacterSheetApp {
         const sortedAvailableBoons = this.sortItemsAlphabetically(availableBoons);
         
         sortedAvailableBoons.forEach(boon => {
-            const boonElement = this.createBoonElement(boon);
-            boonsList.appendChild(boonElement);
+            try {
+                boonsList.appendChild(this.createBoonElement(boon));
+            } catch (error) {
+                console.error('Skipping boon that could not be rendered:', boon && boon.name, error);
+            }
         });
     }
 
@@ -14078,8 +14113,11 @@ class CharacterSheetApp {
         const sortedAvailableBanes = this.sortItemsAlphabetically(availableBanes);
         
         sortedAvailableBanes.forEach(bane => {
-            const baneElement = this.createBaneElement(bane);
-            banesList.appendChild(baneElement);
+            try {
+                banesList.appendChild(this.createBaneElement(bane));
+            } catch (error) {
+                console.error('Skipping bane that could not be rendered:', bane && bane.name, error);
+            }
         });
     }
 
@@ -14101,11 +14139,13 @@ class CharacterSheetApp {
             const usableAttributes = [];
             
             // Check if character has any of the required attributes at sufficient level
-            const hasRequiredAttribute = (boon.attributes || []).some(attributeName => {
+            const attributes = Array.isArray(boon.attributes) ? boon.attributes : [];
+            const powerLevels = Array.isArray(boon.powerLevels) ? boon.powerLevels : [];
+            const hasRequiredAttribute = attributes.some(attributeName => {
                 const attributeScore = this.getEffectiveAttributeScore(attributeName);
                 
                 // Check if any power level is accessible (including equipment bonuses)
-                const hasAccessiblePowerLevel = boon.powerLevels.some(powerLevel => {
+                const hasAccessiblePowerLevel = powerLevels.some(powerLevel => {
                     return attributeScore >= powerLevel;
                 });
                 
@@ -14190,11 +14230,13 @@ class CharacterSheetApp {
             const usableAttributes = [];
             
             // Check if character has any of the required attributes at sufficient level
-            const hasRequiredAttribute = (bane.attributes || []).some(attributeName => {
+            const attributes = Array.isArray(bane.attributes) ? bane.attributes : [];
+            const powerLevels = Array.isArray(bane.powerLevels) ? bane.powerLevels : [];
+            const hasRequiredAttribute = attributes.some(attributeName => {
                 const attributeScore = this.getEffectiveAttributeScore(attributeName);
                 
                 // Check if any power level is accessible (including equipment bonuses)
-                const hasAccessiblePowerLevel = bane.powerLevels.some(powerLevel => {
+                const hasAccessiblePowerLevel = powerLevels.some(powerLevel => {
                     return attributeScore >= powerLevel;
                 });
                 
@@ -14233,7 +14275,7 @@ class CharacterSheetApp {
             if (item.type === 'weapon' && item.equipped && item.banes && item.banes.length > 0) {
                 
                 item.banes.forEach(baneName => {
-                    if (baneName && baneName.trim() !== '') {
+                    if (typeof baneName === 'string' && baneName.trim() !== '') {
                         // Find the bane in database or custom banes
                         let foundBane = window.GAME_DATABASE.banes.find(b => b.name === baneName);
                         if (!foundBane && this.customBanes) {
@@ -14888,7 +14930,7 @@ class CharacterSheetApp {
         boonElement.innerHTML = `
             <div class="boon-header">
                 <span class="boon-name">${boon.name}${featIndicators}</span>
-                <span class="boon-attributes">(${boon.attributes.join(', ')})</span>
+                <span class="boon-attributes">(${(boon.attributes || []).join(', ')})</span>
                 <div class="power-levels">
                     ${availablePowerLevels.length > 0 ? availablePowerLevels.map(level => 
                         `<span class="power-level-badge ${level === maxPowerLevel ? 'active' : ''}">${level}</span>`
@@ -14989,7 +15031,7 @@ class CharacterSheetApp {
         // Check if character has Multi-Bane Specialist feat for this specific bane
         const hasMultiBaneSpecialist = this.currentCharacter && this.currentCharacter.feats && 
             this.currentCharacter.feats.some(feat => feat.name === 'Multi-Bane Specialist' && 
-                feat.customDetails && (feat.customDetails.split('|')[0] === bane.name || feat.customDetails.split('|')[1] === bane.name));
+                typeof feat.customDetails === 'string' && feat.customDetails.split('|').slice(0, 2).includes(bane.name));
         
         // Check if character has Potent Bane feat for this specific bane
         const hasPotentBane = this.currentCharacter && this.currentCharacter.feats && 
@@ -15021,7 +15063,7 @@ class CharacterSheetApp {
         baneElement.innerHTML = `
             <div class="bane-header">
                 <span class="bane-name">${bane.name}${featIndicator}</span>
-                <span class="bane-attributes">(${bane.attributes.join(', ')})</span>
+                <span class="bane-attributes">(${(bane.attributes || []).join(', ')})</span>
                 <div class="power-levels">
                     ${availablePowerLevels.length > 0 ? availablePowerLevels.map(level => 
                         `<span class="power-level-badge ${level === maxPowerLevel ? 'active' : ''}">${level}</span>`
