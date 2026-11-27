@@ -7332,7 +7332,6 @@ input[type="range"]::-moz-range-thumb:hover {
 * {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    text-rendering: optimizeLegibility;
 }
 
 /* Ensure proper stacking context for modals and overlays */

@@ -114,10 +114,19 @@
     --font-size-3xl: 1.9rem;
     --font-size-4xl: 2.3rem;
 
+    /* Background layers of a vellum sheet; use as
+       `background: var(--paper-texture) var(--vellum);` (the colour joins the
+       last layer). Built to stay cheap on very tall pages, which matters for
+       scrolling on iPads: the two stains are capped at 900px instead of
+       spanning the whole sheet, and the ruling is a small repeated tile
+       rather than a repeating-linear-gradient over the full height. */
     --paper-texture:
-        radial-gradient(ellipse at 10% 0%, rgba(120, 90, 40, 0.10), transparent 50%),
-        radial-gradient(ellipse at 100% 100%, rgba(120, 90, 40, 0.12), transparent 45%),
-        repeating-linear-gradient(0deg, transparent 0 27px, rgba(185, 162, 124, 0.28) 27px 28px);
+        radial-gradient(ellipse at 10% 0%, rgba(120, 90, 40, 0.10), transparent 50%)
+            0 0 / 100% min(100%, 900px) no-repeat,
+        radial-gradient(ellipse at 100% 100%, rgba(120, 90, 40, 0.12), transparent 45%)
+            0 100% / 100% min(100%, 900px) no-repeat,
+        linear-gradient(180deg, rgba(185, 162, 124, 0.28) 1px, transparent 1px)
+            0 100% / 100% 28px;
     --wax-seal: radial-gradient(circle at 35% 35%, #b63a4a, var(--wax) 60%, var(--wax-dark));
     --brass-tack: radial-gradient(circle at 35% 35%, var(--brass-light), var(--brass) 60%, #5e4717);
 }
@@ -135,11 +144,21 @@ body {
     font-size: var(--font-size-base);
     line-height: 1.45;
     color: var(--ink);
-    background: var(--table);
-    background-image:
-        repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.18) 0 2px, transparent 2px 140px),
+    /* The table itself is painted by body::before; the colour comes from html */
+    background: transparent;
+}
+
+/* Fixed table background on its own layer. `background-attachment: fixed` on
+   body made Safari repaint the whole background on every scroll frame. */
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background:
+        linear-gradient(90deg, rgba(0, 0, 0, 0.18) 2px, transparent 2px) 0 0 / 140px 100%,
         linear-gradient(180deg, #221915, #17110e);
-    background-attachment: fixed;
 }
 
 .app-container {
@@ -259,8 +278,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .user-menu-dropdown {
-    background: var(--vellum);
-    background-image: var(--paper-texture);
+    background: var(--paper-texture) var(--vellum);
     border: 1px solid var(--rule-light);
     border-radius: 3px;
     box-shadow: 0 24px 40px -16px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(0, 0, 0, 0.2);
@@ -322,8 +340,7 @@ h1, h2, h3, h4, h5, h6 {
 .groups-page,
 .admin-page,
 .modal-content {
-    background: var(--vellum);
-    background-image: var(--paper-texture);
+    background: var(--paper-texture) var(--vellum);
     border: 0;
     border-radius: 3px;
     box-shadow: 0 1px 0 #f3eadb inset, 0 30px 40px -20px rgba(0, 0, 0, 0.8), 0 0 0 1px var(--rule-light);
@@ -2471,8 +2488,7 @@ h3.character-title {
 .property-modal-content,
 .attribute-error-popup .popup-content,
 .high-damage-content {
-    background: var(--vellum);
-    background-image: var(--paper-texture);
+    background: var(--paper-texture) var(--vellum);
     box-shadow: 0 30px 40px -20px rgba(0, 0, 0, 0.8), 0 0 0 1px var(--rule-light);
 }
 
@@ -2496,8 +2512,7 @@ h3.character-title {
     z-index: 10000;
     max-width: 320px;
     padding: 12px 18px 12px 16px;
-    background: var(--vellum);
-    background-image: var(--paper-texture);
+    background: var(--paper-texture) var(--vellum);
     color: var(--ink);
     border: 1px solid var(--rule-light);
     border-left: 6px solid var(--iron);
