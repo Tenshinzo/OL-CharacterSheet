@@ -1,0 +1,268 @@
+/* ==========================================================================
+   pages.css – layout of the overview page, the options list and the dialogs
+
+   Only arranges parts from theme.css.
+     1. Character overview (#mainPage)
+     2. List of options (#optionsListPage)
+     3. Dialogs: import / export, custom boons & banes
+   ========================================================================== */
+
+/* 1. Character overview ---------------------------------------------------- */
+
+.main-page,
+.options-list-page {
+    max-width: 78rem;
+}
+
+.page-note {
+    margin: var(--s3) 0 var(--s5);
+    font-size: var(--text-sm);
+    font-style: italic;
+    color: var(--ink-soft);
+}
+
+.page-note i {
+    color: var(--brass);
+}
+
+.character-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 17rem), 1fr));
+    gap: var(--s4);
+}
+
+/* A character: an index card pinned to the sheet. */
+.character-card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s1);
+    padding: var(--s3) var(--s4);
+    background: var(--surface);
+    border: var(--border);
+    border-top: 3px solid var(--ink);
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: background-color 0.12s, box-shadow 0.12s, transform 0.12s;
+}
+
+.character-card:hover {
+    background: var(--surface-strong);
+    box-shadow: var(--shadow-md);
+    transform: translateY(-1px);
+}
+
+.character-card h3 {
+    font-size: 1.1rem;
+    letter-spacing: 0.03em;
+    text-transform: none;
+    overflow-wrap: anywhere;
+}
+
+.character-card h3 i {
+    margin: 0 0 0 0.3em;
+}
+
+.character-overview-archetype,
+.character-overview-alternate,
+.character-overview-owner {
+    font-size: var(--text-sm);
+    color: var(--ink-soft);
+}
+
+.character-overview-archetype {
+    font-size: var(--text-base);
+    font-style: italic;
+}
+
+.character-card .character-meta {
+    display: flex;
+    gap: var(--s3);
+    font-size: var(--text-xs);
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+}
+
+/* Thin HP line like a paper tracker: green while healthy, wax red once hurt. */
+.character-hp-line {
+    height: 4px;
+    overflow: hidden;
+    background: var(--shade);
+    border-radius: 2px;
+}
+
+.character-hp-line i {
+    display: block;
+    height: 100%;
+    background: var(--verdigris);
+}
+
+.character-hp-line.hurt i {
+    background: var(--wax);
+}
+
+.character-card .character-actions {
+    margin-top: auto;
+    padding-top: var(--s3);
+}
+
+/* Characters a GM can see, grouped by player. */
+.gm-section-header {
+    margin-top: var(--s6);
+}
+
+.gm-owner-section {
+    margin-bottom: var(--s5);
+}
+
+.gm-owner-title {
+    display: flex;
+    align-items: center;
+    gap: var(--s2);
+    margin-bottom: var(--s3);
+}
+
+/* 2. List of options -------------------------------------------------------- */
+
+.option-category {
+    border-bottom: 1px solid var(--rule);
+}
+
+.category-header {
+    --accent: var(--ink-soft);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--s3);
+    padding: var(--s3);
+    border-left: 3px solid var(--accent);
+    transition: background-color 0.12s;
+}
+
+.category-header:hover,
+.category-header.expanded {
+    background: var(--surface);
+}
+
+.category-header h3 > i {
+    color: var(--accent);
+}
+
+.boon-category { --accent: var(--boon-color); }
+.bane-category { --accent: var(--bane-color); }
+.feat-category { --accent: var(--feat-color); }
+.perk-category { --accent: var(--perk-color); }
+.flaw-category { --accent: var(--flaw-color); }
+
+.category-content {
+    padding: var(--s3) 0 var(--s5);
+}
+
+.options-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 20rem), 1fr));
+    gap: var(--s2);
+    align-items: start;
+}
+
+.options-grid > .empty-note {
+    grid-column: 1 / -1;
+}
+
+/* Option cards reuse .feat-item etc. for their accent only. */
+.option-item {
+    display: block;
+}
+
+.option-item.expanded {
+    grid-column: 1 / -1;
+}
+
+.option-description {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+}
+
+.option-item.expanded .option-description {
+    display: block;
+}
+
+.custom-actions-header {
+    margin-bottom: var(--s4);
+}
+
+.custom-subsection {
+    margin-bottom: var(--s5);
+}
+
+.custom-entry-meta {
+    margin: 2px 0;
+    font-size: var(--text-sm);
+    color: var(--ink-soft);
+}
+
+/* 3. Dialogs ----------------------------------------------------------------- */
+
+.import-section > .btn,
+.export-section > .btn,
+.export-section > .button-row {
+    margin-top: var(--s3);
+}
+
+.export-section textarea {
+    margin-top: var(--s2);
+}
+
+.hierarchy-info {
+    margin-bottom: var(--s4);
+}
+
+.file-upload-area {
+    padding: var(--s5) var(--s4);
+    text-align: center;
+    background: var(--surface);
+    border: 2px dashed var(--rule);
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: background-color 0.12s, border-color 0.12s;
+}
+
+.file-upload-area:hover,
+.file-upload-area.dragover {
+    background: var(--surface-strong);
+    border-color: var(--brass);
+}
+
+.upload-placeholder i {
+    font-size: 1.8rem;
+    color: var(--brass);
+}
+
+.upload-placeholder p {
+    margin: var(--s1) 0 0;
+}
+
+.upload-hint {
+    font-size: var(--text-sm);
+    font-style: italic;
+    color: var(--ink-faint);
+}
+
+.file-info {
+    align-items: center;
+    justify-content: center;
+    gap: var(--s2);
+}
+
+/* Generated rows in the custom boon / bane dialog. */
+.power-level-input,
+.defense-target-input {
+    margin-bottom: var(--s3);
+}
+
+.property-description {
+    line-height: 1.5;
+}

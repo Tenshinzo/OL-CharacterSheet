@@ -163,22 +163,22 @@
   // ---- rendering: shared ----------------------------------------------------
   function renderHeader(title, backHash, backLabel, subtitle, extraHtml) {
     return `
-      <div class="page-header groups-header">
-        <button type="button" class="btn btn-secondary groups-back" data-action="back" data-hash="${esc(backHash)}">
+      <div class="page-header">
+        <button type="button" class="btn btn-secondary" data-action="back" data-hash="${esc(backHash)}">
           <i class="fas fa-arrow-left"></i> ${esc(backLabel)}
         </button>
         ${extraHtml || `<h2>${esc(title)}</h2>`}
-        ${subtitle ? `<p class="text-secondary">${esc(subtitle)}</p>` : ''}
+        ${subtitle ? `<p>${esc(subtitle)}</p>` : ''}
       </div>`;
   }
 
   function renderLoading(text) {
-    return `<div class="groups-loading"><i class="fas fa-spinner fa-spin"></i> ${esc(text || 'Loading...')}</div>`;
+    return `<div class="empty-note"><i class="fas fa-spinner fa-spin"></i> ${esc(text || 'Loading...')}</div>`;
   }
 
   function renderError(message, retryAction) {
     return `
-      <div class="groups-error" role="alert">
+      <div class="alert alert--error" role="alert">
         <i class="fas fa-exclamation-triangle"></i>
         <span>${esc(message)}</span>
         ${retryAction ? `<button type="button" class="btn btn-secondary btn-small" data-action="${esc(retryAction)}"><i class="fas fa-rotate-right"></i> Retry</button>` : ''}
@@ -195,30 +195,30 @@
       listHtml = renderError(listError, 'reload-list');
     } else if (!groups.length) {
       listHtml = `
-        <div class="empty-state groups-empty">
-          <i class="fas fa-people-group"></i>
-          <h3 class="mb-sm">No Groups Yet</h3>
-          <p class="text-secondary">Create a group to run a campaign as GM, or join one with an invite code from your GM.</p>
+        <div class="empty-state">
+          <h3 class="mb-sm"><i class="fas fa-people-group"></i> No Groups Yet</h3>
+          <p>Create a group to run a campaign as GM, or join one with an invite code from your GM.</p>
         </div>`;
     } else {
-      listHtml = `<div class="groups-grid">${groups.map(renderGroupCard).join('')}</div>`;
+      listHtml = `<div class="entry-list">${groups.map(renderGroupCard).join('')}</div>`;
     }
 
     return `
       ${renderHeader('Groups', '#/', 'Back to Overview', 'Share your characters with your GM, or run a campaign for your players')}
-      <div class="groups-actions">
-        <form class="groups-action-card" data-form="create" novalidate>
-          <h3><i class="fas fa-crown"></i> Create a group</h3>
-          <p class="text-secondary">You become the GM and can open every character your players assign.</p>
+      <div class="cloud-stack">
+      <div class="cloud-grid">
+        <form class="panel" data-form="create" novalidate>
+          <div class="section-header"><h3><i class="fas fa-crown"></i> Create a group</h3></div>
+          <p class="field-help">You become the GM and can open every character your players assign.</p>
           <div class="form-group">
             <label for="groupsCreateName">Group name</label>
             <input type="text" id="groupsCreateName" name="name" maxlength="100" minlength="2" autocomplete="off" placeholder="e.g. Thursday Night Heroes" required ${busy ? 'disabled' : ''}>
           </div>
           <button type="submit" class="btn btn-primary" ${busy ? 'disabled' : ''}><i class="fas fa-plus"></i> Create group</button>
         </form>
-        <form class="groups-action-card" data-form="join" novalidate>
-          <h3><i class="fas fa-right-to-bracket"></i> Join a group</h3>
-          <p class="text-secondary">Enter the 8-character invite code your GM shared with you.</p>
+        <form class="panel" data-form="join" novalidate>
+          <div class="section-header"><h3><i class="fas fa-right-to-bracket"></i> Join a group</h3></div>
+          <p class="field-help">Enter the 8-character invite code your GM shared with you.</p>
           <div class="form-group">
             <label for="groupsJoinCode">Invite code</label>
             <input type="text" id="groupsJoinCode" name="code" class="groups-code-input" maxlength="8" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="ABCD1234" required ${busy ? 'disabled' : ''}>
@@ -226,10 +226,11 @@
           <button type="submit" class="btn btn-primary" ${busy ? 'disabled' : ''}><i class="fas fa-user-plus"></i> Join group</button>
         </form>
       </div>
-      <div class="groups-list-section">
-        <h3 class="groups-section-title"><i class="fas fa-layer-group"></i> Your groups ${listLoading && groups.length ? '<i class="fas fa-spinner fa-spin groups-inline-spinner"></i>' : ''}</h3>
+      <section>
+        <div class="section-header"><h3><i class="fas fa-layer-group"></i> Your groups</h3>${listLoading && groups.length ? '<i class="fas fa-spinner fa-spin"></i>' : ''}</div>
         ${listError && groups.length ? renderError(listError, 'reload-list') : ''}
         ${listHtml}
+      </section>
       </div>`;
   }
 
@@ -238,12 +239,12 @@
     const members = Array.isArray(g.members) ? g.members.length : 0;
     const chars = Array.isArray(g.characters) ? g.characters.length : 0;
     return `
-      <a class="groups-card" href="#/group?id=${encodeURIComponent(g.id)}" data-action="open-group" data-id="${esc(g.id)}">
-        <div class="groups-card-top">
-          <h3 class="groups-card-name">${esc(g.name)}</h3>
-          <span class="groups-badge ${isGm ? 'groups-badge-gm' : 'groups-badge-player'}">${isGm ? 'GM' : 'Player'}</span>
+      <a class="entry groups-card" href="#/group?id=${encodeURIComponent(g.id)}" data-action="open-group" data-id="${esc(g.id)}">
+        <div class="entry-head">
+          <span class="entry-title">${esc(g.name)}</span>
+          <span class="tag${isGm ? ' tag--good' : ''}">${isGm ? 'GM' : 'Player'}</span>
         </div>
-        <div class="groups-card-meta">
+        <div class="entry-sub cloud-meta">
           <span title="Game Master"><i class="fas fa-crown"></i> ${esc(g.gmName || 'Unknown GM')}</span>
           <span title="Members"><i class="fas fa-users"></i> ${members} ${members === 1 ? 'member' : 'members'}</span>
           <span title="Characters"><i class="fas fa-scroll"></i> ${chars} ${chars === 1 ? 'character' : 'characters'}</span>
@@ -264,61 +265,63 @@
     const isGm = g.role === 'gm';
 
     const titleHtml = renaming && isGm
-      ? `<form class="groups-rename" data-form="rename" novalidate>
+      ? `<form class="form-inline groups-rename" data-form="rename" novalidate>
            <input type="text" name="name" value="${esc(g.name)}" maxlength="100" minlength="2" required aria-label="Group name" ${busy ? 'disabled' : ''}>
-           <button type="submit" class="btn btn-primary btn-small" ${busy ? 'disabled' : ''}><i class="fas fa-check"></i> Save</button>
-           <button type="button" class="btn btn-secondary btn-small" data-action="rename-cancel" ${busy ? 'disabled' : ''}>Cancel</button>
+           <button type="submit" class="btn btn-primary" ${busy ? 'disabled' : ''}><i class="fas fa-check"></i> Save</button>
+           <button type="button" class="btn btn-secondary" data-action="rename-cancel" ${busy ? 'disabled' : ''}>Cancel</button>
          </form>`
-      : `<h2 class="groups-title">
-           <span>${esc(g.name)}</span>
-           <span class="groups-badge ${isGm ? 'groups-badge-gm' : 'groups-badge-player'}">${isGm ? 'GM' : 'Player'}</span>
-           ${isGm ? `<button type="button" class="groups-icon-btn" data-action="rename-start" title="Rename group" aria-label="Rename group"><i class="fas fa-pen"></i></button>` : ''}
-         </h2>`;
+      : `<h2>${esc(g.name)}</h2>
+         <span class="tag${isGm ? ' tag--good' : ''}">${isGm ? 'GM' : 'Player'}</span>
+         ${isGm ? `<button type="button" class="btn btn-secondary btn-small" data-action="rename-start" title="Rename group" aria-label="Rename group"><i class="fas fa-pen"></i></button>` : ''}`;
 
     const subtitle = `GM: ${g.gmName || 'Unknown'}${g.createdAt ? ' · created ' + formatDate(g.createdAt) : ''}`;
 
     return `
       ${renderHeader(g.name, '#/groups', 'Back to Groups', subtitle, titleHtml)}
       ${detailError ? renderError(detailError, 'reload-detail') : ''}
+      <div class="cloud-stack">
       ${isGm ? renderInviteSection(g) : ''}
       ${renderMembersSection(g, me, isGm)}
       ${renderCharactersSection(g, me, isGm)}
       ${isGm ? `
-        <div class="groups-section groups-danger-zone">
-          <h3 class="groups-section-title"><i class="fas fa-triangle-exclamation"></i> Danger zone</h3>
-          <p class="text-secondary">Deleting the group removes all members and character assignments. Characters themselves are not deleted.</p>
+        <section class="panel">
+          <div class="section-header"><h3><i class="fas fa-triangle-exclamation"></i> Danger zone</h3></div>
+          <p class="field-help">Deleting the group removes all members and character assignments. Characters themselves are not deleted.</p>
           <button type="button" class="btn btn-danger" data-action="delete-group" ${busy ? 'disabled' : ''}><i class="fas fa-trash"></i> Delete group</button>
-        </div>` : ''}`;
+        </section>` : ''}
+      </div>`;
   }
 
   function renderInviteSection(g) {
     const code = g.inviteCode || '';
     return `
-      <div class="groups-section groups-invite">
-        <h3 class="groups-section-title"><i class="fas fa-ticket"></i> Invite code</h3>
-        <p class="text-secondary">Players enter this code under "Join a group" to become members.</p>
-        <div class="groups-invite-row">
-          <code class="groups-invite-code" aria-label="Invite code">${esc(code || '--------')}</code>
-          <div class="groups-invite-buttons">
-            <button type="button" class="btn btn-primary btn-small" data-action="copy-code" ${code ? '' : 'disabled'}><i class="fas fa-copy"></i> Copy</button>
-            <button type="button" class="btn btn-secondary btn-small" data-action="regenerate-code" ${busy ? 'disabled' : ''}><i class="fas fa-rotate"></i> New code</button>
-          </div>
+      <section class="panel">
+        <div class="section-header"><h3><i class="fas fa-ticket"></i> Invite code</h3></div>
+        <p class="field-help">Players enter this code under "Join a group" to become members.</p>
+        <div class="form-inline mb-lg">
+          <code class="cloud-code cloud-code--large" aria-label="Invite code">${esc(code || '--------')}</code>
+          <button type="button" class="btn btn-primary" data-action="copy-code" ${code ? '' : 'disabled'}><i class="fas fa-copy"></i> Copy</button>
+          <button type="button" class="btn btn-secondary" data-action="regenerate-code" ${busy ? 'disabled' : ''}><i class="fas fa-rotate"></i> New code</button>
         </div>
-        <div class="groups-join-hint">
-          <textarea readonly rows="2" class="groups-join-hint-text" aria-label="Join hint">${esc(joinHint(g))}</textarea>
-          <button type="button" class="btn btn-secondary btn-small" data-action="copy-hint"><i class="fas fa-copy"></i> Copy hint</button>
+        <div class="form-group">
+          <textarea readonly rows="2" aria-label="Join hint">${esc(joinHint(g))}</textarea>
         </div>
-      </div>`;
+        <div class="button-row">
+          <button type="button" class="btn btn-secondary" data-action="copy-hint"><i class="fas fa-copy"></i> Copy hint</button>
+        </div>
+      </section>`;
   }
 
   function renderMembersSection(g, me, isGm) {
     const members = Array.isArray(g.members) ? g.members : [];
     const rows = [];
     rows.push(`
-      <li class="groups-member groups-member-gm">
-        <span class="groups-member-name"><i class="fas fa-crown"></i> ${esc(g.gmName || 'Unknown')}${me && me.id === g.gmId ? ' <span class="groups-you">(you)</span>' : ''}</span>
-        <span class="groups-badge groups-badge-gm">GM</span>
-      </li>`);
+      <div class="entry" role="listitem">
+        <div class="entry-head">
+          <span class="entry-title"><i class="fas fa-crown"></i> ${esc(g.gmName || 'Unknown')}${me && me.id === g.gmId ? ' <span class="text-secondary">(you)</span>' : ''}</span>
+          <span class="tag tag--good">GM</span>
+        </div>
+      </div>`);
     for (const m of members) {
       const isMe = me && me.id === m.id;
       let actions = '';
@@ -328,18 +331,22 @@
         actions = `<button type="button" class="btn btn-danger btn-small" data-action="leave-group" ${busy ? 'disabled' : ''}><i class="fas fa-right-from-bracket"></i> Leave group</button>`;
       }
       rows.push(`
-        <li class="groups-member">
-          <span class="groups-member-name"><i class="fas fa-user"></i> ${esc(m.displayName || 'Unnamed player')}${isMe ? ' <span class="groups-you">(you)</span>' : ''}
-            ${m.joinedAt ? `<small class="groups-member-joined">joined ${esc(formatDate(m.joinedAt))}</small>` : ''}</span>
-          <span class="groups-member-actions">${actions}</span>
-        </li>`);
+        <div class="entry" role="listitem">
+          <div class="entry-head">
+            <div>
+              <div class="entry-title"><i class="fas fa-user"></i> ${esc(m.displayName || 'Unnamed player')}${isMe ? ' <span class="text-secondary">(you)</span>' : ''}</div>
+              ${m.joinedAt ? `<div class="entry-sub">joined ${esc(formatDate(m.joinedAt))}</div>` : ''}
+            </div>
+            <div class="button-row">${actions}</div>
+          </div>
+        </div>`);
     }
     return `
-      <div class="groups-section">
-        <h3 class="groups-section-title"><i class="fas fa-users"></i> Members <span class="groups-count">${members.length + 1}</span></h3>
-        ${members.length ? '' : '<p class="text-secondary">No players have joined yet.' + (isGm ? ' Share the invite code above.' : '') + '</p>'}
-        <ul class="groups-member-list">${rows.join('')}</ul>
-      </div>`;
+      <section>
+        <div class="section-header"><h3><i class="fas fa-users"></i> Members</h3><span class="tag">${members.length + 1}</span></div>
+        ${members.length ? '' : '<p class="field-help">No players have joined yet.' + (isGm ? ' Share the invite code above.' : '') + '</p>'}
+        <div class="entry-list" role="list">${rows.join('')}</div>
+      </section>`;
   }
 
   function renderCharactersSection(g, me, isGm) {
@@ -354,28 +361,26 @@
 
     let listHtml;
     if (!chars.length) {
-      listHtml = `<p class="text-secondary groups-chars-empty">No characters have been added yet.</p>`;
+      listHtml = `<p class="empty-note mb-lg">No characters have been added yet.</p>`;
     } else {
       listHtml = [...byOwner.values()].map((owner) => {
         const isMine = me && me.id === owner.ownerId;
         const ownerIsGm = owner.ownerId === g.gmId;
         return `
-          <div class="groups-owner-block">
-            <h4 class="groups-owner-name">
-              <i class="fas ${ownerIsGm ? 'fa-crown' : 'fa-user'}"></i> ${esc(owner.ownerName || 'Unknown')}${isMine ? ' <span class="groups-you">(you)</span>' : ''}
-            </h4>
-            <ul class="groups-char-list">
-              ${owner.items.map((c) => renderCharacterRow(c, isMine, isGm)).join('')}
-            </ul>
+          <h4 class="subheading">
+            <i class="fas ${ownerIsGm ? 'fa-crown' : 'fa-user'}"></i> ${esc(owner.ownerName || 'Unknown')}${isMine ? ' <span class="text-secondary">(you)</span>' : ''}
+          </h4>
+          <div class="entry-list mb-lg" role="list">
+            ${owner.items.map((c) => renderCharacterRow(c, isMine, isGm)).join('')}
           </div>`;
       }).join('');
     }
 
     const options = assignableCharacters(g);
     const addHtml = `
-      <form class="groups-add-char" data-form="assign" novalidate>
+      <form data-form="assign" novalidate>
         <label for="groupsAssignSelect"><i class="fas fa-plus"></i> Add one of your characters</label>
-        <div class="groups-add-char-row">
+        <div class="form-inline mb-sm">
           <select id="groupsAssignSelect" name="characterId" ${options.length && !busy ? '' : 'disabled'}>
             ${options.length
               ? options.map((c) => `<option value="${esc(c.id)}">${esc(c.name || 'Unnamed character')}</option>`).join('')
@@ -383,15 +388,15 @@
           </select>
           <button type="submit" class="btn btn-primary" ${options.length && !busy ? '' : 'disabled'}><i class="fas fa-plus"></i> Add</button>
         </div>
-        <small class="text-secondary">Only primary characters can be added; their alternate forms and companions follow automatically.</small>
+        <p class="field-help">Only primary characters can be added; their alternate forms and companions follow automatically.</p>
       </form>`;
 
     return `
-      <div class="groups-section">
-        <h3 class="groups-section-title"><i class="fas fa-scroll"></i> Characters <span class="groups-count">${chars.length}</span></h3>
+      <section>
+        <div class="section-header"><h3><i class="fas fa-scroll"></i> Characters</h3><span class="tag">${chars.length}</span></div>
         ${listHtml}
         ${addHtml}
-      </div>`;
+      </section>`;
   }
 
   function renderCharacterRow(c, isMine, isGm) {
@@ -405,13 +410,17 @@
     if (isGm || isMine) {
       buttons.push(`<button type="button" class="btn btn-danger btn-small" data-action="unassign-char" data-id="${esc(c.id)}" data-name="${esc(c.name || '')}" ${busy ? 'disabled' : ''}><i class="fas fa-xmark"></i> Remove from group</button>`);
     }
-    const kind = c.kind && c.kind !== 'primary' ? `<span class="groups-kind">${esc(c.kind)}</span>` : '';
+    const kind = c.kind && c.kind !== 'primary' ? `<span class="tag">${esc(c.kind)}</span>` : '';
     return `
-      <li class="groups-char">
-        <span class="groups-char-name"><i class="fas fa-user-shield"></i> ${esc(c.name || 'Unnamed character')} ${kind}
-          <small class="groups-char-owner">${esc(c.ownerName || '')}</small></span>
-        <span class="groups-char-actions">${buttons.join('')}</span>
-      </li>`;
+      <div class="entry" role="listitem">
+        <div class="entry-head">
+          <div>
+            <div class="entry-title"><i class="fas fa-user-shield"></i> ${esc(c.name || 'Unnamed character')} ${kind}</div>
+            <div class="entry-sub">${esc(c.ownerName || '')}</div>
+          </div>
+          <div class="button-row">${buttons.join('')}</div>
+        </div>
+      </div>`;
   }
 
   // ---- render dispatcher ----------------------------------------------------
@@ -774,7 +783,7 @@
     if (!page) {
       page = document.createElement('div');
       page.id = PAGE_ID;
-      page.className = 'cloud-page groups-page';
+      page.className = 'cloud-page page-sheet groups-page';
       page.style.display = 'none';
       container.appendChild(page);
     }

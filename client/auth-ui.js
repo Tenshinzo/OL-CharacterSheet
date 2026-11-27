@@ -178,7 +178,7 @@
     if (!document.getElementById(LOGIN_PAGE_ID)) {
       const login = document.createElement('div');
       login.id = LOGIN_PAGE_ID;
-      login.className = 'cloud-page auth-page';
+      login.className = 'cloud-page page-sheet auth-page';
       login.style.display = 'none';
       container.appendChild(login);
       login.addEventListener('click', onLoginPageClick);
@@ -186,7 +186,7 @@
     if (!document.getElementById(ACCOUNT_PAGE_ID)) {
       const account = document.createElement('div');
       account.id = ACCOUNT_PAGE_ID;
-      account.className = 'cloud-page account-page main-page';
+      account.className = 'cloud-page page-sheet account-page';
       account.style.display = 'none';
       container.appendChild(account);
     }
@@ -260,32 +260,32 @@
 
   function brandHtml(subtitle) {
     return '<div class="auth-brand">' +
-      '<div class="auth-brand-icon"><i class="fas fa-dice-d20"></i></div>' +
+      '<div class="cloud-seal cloud-seal--brand"><i class="fas fa-dice-d20"></i></div>' +
       '<h2>Open Legend Character Sheet</h2>' +
-      (subtitle ? '<p>' + esc(subtitle) + '</p>' : '') +
+      (subtitle ? '<p class="field-help">' + esc(subtitle) + '</p>' : '') +
       '</div>';
   }
 
   function tabsHtml(active) {
     const tab = (view, label) =>
       '<a href="#/' + (view === 'login' ? 'login' : view === 'register' ? 'register' : 'forgot-password') + '" ' +
-      'class="auth-tab' + (active === view ? ' active' : '') + '" data-auth-view="' + view + '" role="tab" ' +
+      'class="cloud-tab' + (active === view ? ' active' : '') + '" data-auth-view="' + view + '" role="tab" ' +
       'aria-selected="' + (active === view ? 'true' : 'false') + '">' + label + '</a>';
-    return '<div class="auth-tabs" role="tablist">' + tab('login', 'Sign in') + tab('register', 'Create account') + '</div>';
+    return '<div class="cloud-tabs" role="tablist">' + tab('login', 'Sign in') + tab('register', 'Create account') + '</div>';
   }
 
   function discordButtonHtml(label, extraClass) {
-    return '<button type="button" class="btn btn-discord ' + (extraClass || '') + '" data-auth-discord>' +
+    return '<button type="button" class="btn btn-discord btn-block' + (extraClass ? ' ' + extraClass : '') + '" data-auth-discord>' +
       '<i class="fab fa-discord"></i> ' + esc(label) + '</button>';
   }
 
   function discordSectionHtml(label) {
     if (!state.featuresLoaded) {
-      return '<div class="auth-discord" data-auth-discord-slot data-label="' + esc(label) + '"></div>';
+      return '<div data-auth-discord-slot data-label="' + esc(label) + '"></div>';
     }
     if (!features.discord) return '';
-    return '<div class="auth-discord" data-auth-discord-slot data-label="' + esc(label) + '">' +
-      '<div class="auth-divider"><span>or</span></div>' +
+    return '<div data-auth-discord-slot data-label="' + esc(label) + '">' +
+      '<div class="import-divider">or</div>' +
       discordButtonHtml(label) +
       '</div>';
   }
@@ -295,7 +295,7 @@
       const label = slot.getAttribute('data-label') || 'Continue with Discord';
       if (!features.discord) { slot.innerHTML = ''; return; }
       if (slot.querySelector('[data-auth-discord]')) return;
-      slot.innerHTML = '<div class="auth-divider"><span>or</span></div>' + discordButtonHtml(label);
+      slot.innerHTML = '<div class="import-divider">or</div>' + discordButtonHtml(label);
     });
     wireDiscordButtons(page);
   }
@@ -326,8 +326,8 @@
   function loginViewHtml() {
     return brandHtml('Sign in to sync your characters across devices') +
       tabsHtml('login') +
-      '<form class="auth-form" data-auth-form="login" novalidate>' +
-        '<div class="auth-error" role="alert" style="display:none"></div>' +
+      '<form data-auth-form="login" novalidate>' +
+        '<div class="alert alert--error auth-error" role="alert" style="display:none"></div>' +
         '<div class="form-group">' +
           '<label for="authLoginEmail">Email</label>' +
           '<input id="authLoginEmail" name="email" type="email" autocomplete="username" required placeholder="you@example.com">' +
@@ -346,8 +346,8 @@
     const invite = String(state.params.invite || '').toUpperCase();
     return brandHtml('Create your account with an invite code') +
       tabsHtml('register') +
-      '<form class="auth-form" data-auth-form="register" novalidate>' +
-        '<div class="auth-error" role="alert" style="display:none"></div>' +
+      '<form data-auth-form="register" novalidate>' +
+        '<div class="alert alert--error auth-error" role="alert" style="display:none"></div>' +
         '<div class="form-group">' +
           '<label for="authRegName">Display name</label>' +
           '<input id="authRegName" name="displayName" type="text" autocomplete="nickname" required minlength="2" maxlength="100" placeholder="How others will see you">' +
@@ -359,12 +359,12 @@
         '<div class="form-group">' +
           '<label for="authRegPassword">Password</label>' +
           '<input id="authRegPassword" name="password" type="password" autocomplete="new-password" required minlength="8" placeholder="At least 8 characters">' +
-          '<small>Minimum 8 characters.</small>' +
+          '<p class="field-help">Minimum 8 characters.</p>' +
         '</div>' +
         '<div class="form-group">' +
           '<label for="authRegInvite">Account invite code</label>' +
-          '<input id="authRegInvite" name="inviteCode" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" required class="auth-invite" value="' + esc(invite) + '" placeholder="XXXXXXXX">' +
-          '<small>Registration is invite-only. An administrator creates account invite codes (10 characters). Group codes from the Groups page are something else: they join an existing account to a party.</small>' +
+          '<input id="authRegInvite" name="inviteCode" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" required value="' + esc(invite) + '" placeholder="XXXXXXXX">' +
+          '<p class="field-help">Registration is invite-only. An administrator creates account invite codes (10 characters). Group codes from the Groups page are something else: they join an existing account to a party.</p>' +
         '</div>' +
         '<button type="submit" class="btn btn-primary btn-block"><i class="fas fa-user-plus"></i> Create account</button>' +
         discordSectionHtml('Sign up with Discord') +
@@ -373,10 +373,10 @@
 
   function forgotViewHtml() {
     return brandHtml('Reset your password') +
-      '<form class="auth-form" data-auth-form="forgot" novalidate>' +
-        '<h3 class="auth-heading">Forgot password</h3>' +
-        '<p class="auth-text">Enter your email address and we will send you a link to set a new password.</p>' +
-        '<div class="auth-error" role="alert" style="display:none"></div>' +
+      '<form data-auth-form="forgot" novalidate>' +
+        '<div class="section-header"><h3>Forgot password</h3></div>' +
+        '<p>Enter your email address and we will send you a link to set a new password.</p>' +
+        '<div class="alert alert--error auth-error" role="alert" style="display:none"></div>' +
         '<div class="form-group">' +
           '<label for="authForgotEmail">Email</label>' +
           '<input id="authForgotEmail" name="email" type="email" autocomplete="email" required placeholder="you@example.com">' +
@@ -388,10 +388,10 @@
 
   function forgotDoneHtml() {
     return brandHtml('Reset your password') +
-      '<div class="auth-result">' +
-        '<div class="auth-result-icon success"><i class="fas fa-envelope-open-text"></i></div>' +
-        '<h3 class="auth-heading">Check your inbox</h3>' +
-        '<p class="auth-text">If an account exists for that address, we sent a link to reset your password. The link is valid for one hour.</p>' +
+      '<div class="cloud-result">' +
+        '<div class="cloud-seal cloud-seal--good"><i class="fas fa-envelope-open-text"></i></div>' +
+        '<h3 class="mb-sm">Check your inbox</h3>' +
+        '<p>If an account exists for that address, we sent a link to reset your password. The link is valid for one hour.</p>' +
         '<div class="auth-links"><a href="#/login" data-auth-view="login"><i class="fas fa-arrow-left"></i> Back to sign in</a></div>' +
       '</div>';
   }
@@ -399,10 +399,10 @@
   function resetViewHtml() {
     const hasToken = !!state.params.token;
     return brandHtml('Set a new password') +
-      '<form class="auth-form" data-auth-form="reset" novalidate>' +
-        '<h3 class="auth-heading">Set new password</h3>' +
-        (hasToken ? '' : '<div class="auth-error" role="alert"><i class="fas fa-exclamation-circle"></i> This link is missing its token. Please use the link from your email or request a new one.</div>') +
-        (hasToken ? '<div class="auth-error" role="alert" style="display:none"></div>' : '') +
+      '<form data-auth-form="reset" novalidate>' +
+        '<div class="section-header"><h3>Set new password</h3></div>' +
+        (hasToken ? '' : '<div class="alert alert--error auth-error" role="alert"><i class="fas fa-exclamation-circle"></i> This link is missing its token. Please use the link from your email or request a new one.</div>') +
+        (hasToken ? '<div class="alert alert--error auth-error" role="alert" style="display:none"></div>' : '') +
         '<div class="form-group">' +
           '<label for="authResetPassword">New password</label>' +
           '<input id="authResetPassword" name="password" type="password" autocomplete="new-password" required minlength="8" placeholder="At least 8 characters"' + (hasToken ? '' : ' disabled') + '>' +
@@ -417,17 +417,17 @@
   }
 
   function verifyViewHtml(stage, message) {
-    let icon = '<div class="auth-result-icon"><i class="fas fa-spinner fa-spin"></i></div>';
+    let icon = '<div class="cloud-seal"><i class="fas fa-spinner fa-spin"></i></div>';
     let heading = 'Verifying your email…';
     let text = 'One moment please.';
     let links = '';
     if (stage === 'success') {
-      icon = '<div class="auth-result-icon success"><i class="fas fa-check"></i></div>';
+      icon = '<div class="cloud-seal cloud-seal--good"><i class="fas fa-check"></i></div>';
       heading = 'Email confirmed';
       text = message || 'Thank you! Your email address has been verified.';
       links = '<div class="auth-links"><a href="#/" class="btn btn-primary btn-block" data-auth-continue><i class="fas fa-arrow-right"></i> Continue</a></div>';
     } else if (stage === 'error') {
-      icon = '<div class="auth-result-icon error"><i class="fas fa-times"></i></div>';
+      icon = '<div class="cloud-seal cloud-seal--bad"><i class="fas fa-times"></i></div>';
       heading = 'Verification failed';
       text = message || 'This link is invalid or has expired.';
       links = '<div class="auth-links">' +
@@ -435,21 +435,21 @@
         '<a href="#/login" data-auth-view="login">Go to sign in</a></div>';
     }
     return brandHtml('Email verification') +
-      '<div class="auth-result">' + icon +
-        '<h3 class="auth-heading">' + esc(heading) + '</h3>' +
-        '<p class="auth-text">' + esc(text) + '</p>' + links +
+      '<div class="cloud-result">' + icon +
+        '<h3 class="mb-sm">' + esc(heading) + '</h3>' +
+        '<p>' + esc(text) + '</p>' + links +
       '</div>';
   }
 
   function noticeViewHtml(user) {
     return brandHtml('One more step') +
-      '<div class="auth-result" data-auth-notice>' +
-        '<div class="auth-result-icon warning"><i class="fas fa-envelope"></i></div>' +
-        '<h3 class="auth-heading">Confirm your email</h3>' +
-        '<p class="auth-text">We sent a confirmation link to <strong>' + esc(user && user.email) + '</strong>. ' +
+      '<div class="cloud-result" data-auth-notice>' +
+        '<div class="cloud-seal cloud-seal--warn"><i class="fas fa-envelope"></i></div>' +
+        '<h3 class="mb-sm">Confirm your email</h3>' +
+        '<p>We sent a confirmation link to <strong>' + esc(user && user.email) + '</strong>. ' +
           'Please open it to activate your account. Check your spam folder if it does not arrive within a few minutes.</p>' +
-        '<div class="auth-error" role="alert" style="display:none"></div>' +
-        '<div class="auth-actions">' +
+        '<div class="alert alert--error auth-error" role="alert" style="display:none"></div>' +
+        '<div class="button-row">' +
           '<button type="button" class="btn btn-primary" data-auth-resend><i class="fas fa-redo"></i> Resend email</button>' +
           '<button type="button" class="btn btn-secondary" data-auth-signout><i class="fas fa-sign-out-alt"></i> Sign out</button>' +
         '</div>' +
@@ -469,7 +469,7 @@
       case 'notice': body = noticeViewHtml(state.noticeUser || currentUser()); break;
       default: body = loginViewHtml();
     }
-    page.innerHTML = '<div class="auth-panel">' + body + '</div>';
+    page.innerHTML = body;
     wireLoginPage(page);
 
     if ((state.view === 'login' || state.view === 'register') && !state.featuresLoaded) {
@@ -636,7 +636,7 @@
     if (!page) return;
     const render = (stage, msg) => {
       if (state.view !== 'verify') return;
-      page.innerHTML = '<div class="auth-panel">' + verifyViewHtml(stage, msg) + '</div>';
+      page.innerHTML = verifyViewHtml(stage, msg);
       wireLoginPage(page);
     };
     if (!token) { render('error', 'This link is missing its token. Please use the link from your email.'); return; }
@@ -695,28 +695,26 @@
           '<button type="button" class="btn btn-secondary" data-account-back><i class="fas fa-arrow-left"></i> Back to Overview</button>' +
           '<h2>My account</h2>' +
         '</div>' +
-        '<div class="empty-state"><i class="fas fa-user-lock"></i><h3 class="mb-sm">You are not signed in</h3>' +
-        '<p class="text-secondary mb-lg">Sign in to manage your account.</p>' +
+        '<div class="empty-state"><h3 class="mb-sm"><i class="fas fa-user-lock"></i> You are not signed in</h3>' +
+        '<p class="mb-lg">Sign in to manage your account.</p>' +
         '<a href="#/login" class="btn btn-primary">Sign in</a></div>';
       wireAccountPage(page);
       return;
     }
 
     const verifiedBadge = user.emailVerified
-      ? '<span class="account-badge verified"><i class="fas fa-check-circle"></i> Verified</span>'
-      : '<span class="account-badge unverified"><i class="fas fa-exclamation-circle"></i> Not verified</span>';
+      ? '<span class="tag tag--good"><i class="fas fa-check-circle"></i> Verified</span>'
+      : '<span class="tag tag--bad"><i class="fas fa-exclamation-circle"></i> Not verified</span>';
 
     const discordBlock = user.discordLinked
-      ? '<div class="account-row">' +
-          '<div class="account-row-main"><span class="account-discord-icon"><i class="fab fa-discord"></i></span>' +
-          '<div><div class="account-row-label">Linked as</div><div class="account-row-value">' + esc(user.discordUsername || 'Discord user') + '</div></div></div>' +
-          '<span class="account-badge verified"><i class="fas fa-link"></i> Linked</span>' +
+      ? '<div class="entry-head mb-sm">' +
+          '<div><div class="field-label">Linked as</div><div>' + esc(user.discordUsername || 'Discord user') + '</div></div>' +
+          '<span class="tag tag--good"><i class="fas fa-link"></i> Linked</span>' +
         '</div>'
-      : '<div class="account-row">' +
-          '<div class="account-row-main"><span class="account-discord-icon muted"><i class="fab fa-discord"></i></span>' +
-          '<div><div class="account-row-label">Discord</div><div class="account-row-value text-secondary">Not linked</div></div></div>' +
+      : '<div class="entry-head mb-sm">' +
+          '<div><div class="field-label">Discord</div><div class="text-secondary">Not linked</div></div>' +
           (features.discord || !state.featuresLoaded
-            ? '<button type="button" class="btn btn-discord btn-small" data-account-link-discord><i class="fab fa-discord"></i> Link Discord</button>'
+            ? '<button type="button" class="btn btn-discord" data-account-link-discord><i class="fab fa-discord"></i> Link Discord</button>'
             : '<span class="text-secondary">Not available</span>') +
         '</div>';
 
@@ -724,48 +722,48 @@
       '<div class="page-header">' +
         '<button type="button" class="btn btn-secondary" data-account-back><i class="fas fa-arrow-left"></i> Back to Overview</button>' +
         '<h2>My account</h2>' +
-        '<p class="text-secondary">Manage your profile, email, Discord link and password</p>' +
+        '<p>Manage your profile, email, Discord link and password</p>' +
       '</div>' +
-      '<div class="account-grid">' +
+      '<div class="cloud-grid">' +
 
-        '<section class="account-card">' +
-          '<div class="account-card-header"><div class="account-avatar large">' + esc(initials(user.displayName || user.email)) + '</div>' +
-            '<div><h3>' + esc(user.displayName || 'Unnamed') + '</h3>' +
-            '<div class="account-role">' + (user.role === 'admin' ? '<i class="fas fa-shield-alt"></i> Administrator' : '<i class="fas fa-user"></i> Player') + '</div></div>' +
+        '<section class="panel">' +
+          '<div class="account-identity"><div class="cloud-avatar cloud-avatar--large">' + esc(initials(user.displayName || user.email)) + '</div>' +
+            '<div><div class="entry-title">' + esc(user.displayName || 'Unnamed') + '</div>' +
+            '<div class="entry-sub">' + (user.role === 'admin' ? '<i class="fas fa-shield-alt"></i> Administrator' : '<i class="fas fa-user"></i> Player') + '</div></div>' +
           '</div>' +
-          '<form class="account-form" data-account-form="profile" novalidate>' +
-            '<div class="auth-error" role="alert" style="display:none"></div>' +
+          '<form data-account-form="profile" novalidate>' +
+            '<div class="alert alert--error auth-error" role="alert" style="display:none"></div>' +
             '<div class="form-group">' +
               '<label for="accountDisplayName">Display name</label>' +
               '<input id="accountDisplayName" name="displayName" type="text" minlength="2" maxlength="100" required value="' + esc(user.displayName || '') + '">' +
-              '<small>Shown to other members of your groups. 2-100 characters.</small>' +
+              '<p class="field-help">Shown to other members of your groups. 2-100 characters.</p>' +
             '</div>' +
-            '<div class="account-actions"><button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save name</button></div>' +
+            '<div class="button-row"><button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save name</button></div>' +
           '</form>' +
         '</section>' +
 
-        '<section class="account-card">' +
-          '<h3><i class="fas fa-envelope"></i> Email</h3>' +
-          '<div class="account-row">' +
-            '<div class="account-row-main"><div><div class="account-row-label">Address</div><div class="account-row-value account-email">' + esc(user.email) + '</div></div></div>' +
+        '<section class="panel">' +
+          '<div class="section-header"><h3><i class="fas fa-envelope"></i> Email</h3></div>' +
+          '<div class="entry-head mb-sm">' +
+            '<div><div class="field-label">Address</div><div>' + esc(user.email) + '</div></div>' +
             verifiedBadge +
           '</div>' +
           (user.emailVerified ? '' :
-            '<p class="account-hint">Your email address is not confirmed yet. Check your inbox for the confirmation link.</p>' +
-            '<div class="account-actions"><button type="button" class="btn btn-secondary btn-small" data-account-resend><i class="fas fa-redo"></i> Resend confirmation email</button></div>') +
+            '<p class="field-help">Your email address is not confirmed yet. Check your inbox for the confirmation link.</p>' +
+            '<div class="button-row"><button type="button" class="btn btn-secondary" data-account-resend><i class="fas fa-redo"></i> Resend confirmation email</button></div>') +
         '</section>' +
 
-        '<section class="account-card">' +
-          '<h3><i class="fab fa-discord"></i> Discord</h3>' +
+        '<section class="panel">' +
+          '<div class="section-header"><h3><i class="fab fa-discord"></i> Discord</h3></div>' +
           discordBlock +
-          (user.discordLinked ? '' : '<p class="account-hint">Link your Discord account to sign in with one click.</p>') +
+          (user.discordLinked ? '' : '<p class="field-help">Link your Discord account to sign in with one click.</p>') +
         '</section>' +
 
-        '<section class="account-card">' +
-          '<h3><i class="fas fa-key"></i> ' + (user.hasPassword ? 'Change password' : 'Set a password') + '</h3>' +
-          (user.hasPassword ? '' : '<p class="account-hint">You signed up with Discord. Set a password to also sign in with your email address.</p>') +
-          '<form class="account-form" data-account-form="password" novalidate>' +
-            '<div class="auth-error" role="alert" style="display:none"></div>' +
+        '<section class="panel">' +
+          '<div class="section-header"><h3><i class="fas fa-key"></i> ' + (user.hasPassword ? 'Change password' : 'Set a password') + '</h3></div>' +
+          (user.hasPassword ? '' : '<p class="field-help">You signed up with Discord. Set a password to also sign in with your email address.</p>') +
+          '<form data-account-form="password" novalidate>' +
+            '<div class="alert alert--error auth-error" role="alert" style="display:none"></div>' +
             (user.hasPassword ?
               '<div class="form-group">' +
                 '<label for="accountCurrentPassword">Current password</label>' +
@@ -779,14 +777,14 @@
               '<label for="accountConfirmPassword">Confirm new password</label>' +
               '<input id="accountConfirmPassword" name="confirm" type="password" autocomplete="new-password" required minlength="8">' +
             '</div>' +
-            '<div class="account-actions"><button type="submit" class="btn btn-primary"><i class="fas fa-key"></i> ' + (user.hasPassword ? 'Change password' : 'Set password') + '</button></div>' +
+            '<div class="button-row"><button type="submit" class="btn btn-primary"><i class="fas fa-key"></i> ' + (user.hasPassword ? 'Change password' : 'Set password') + '</button></div>' +
           '</form>' +
         '</section>' +
 
-        '<section class="account-card account-card-danger">' +
-          '<h3><i class="fas fa-sign-out-alt"></i> Session</h3>' +
-          '<p class="account-hint">Sign out of this device. Your characters stay safely stored on the server.</p>' +
-          '<div class="account-actions"><button type="button" class="btn btn-danger" data-account-signout><i class="fas fa-sign-out-alt"></i> Sign out</button></div>' +
+        '<section class="panel">' +
+          '<div class="section-header"><h3><i class="fas fa-sign-out-alt"></i> Session</h3></div>' +
+          '<p class="field-help">Sign out of this device. Your characters stay safely stored on the server.</p>' +
+          '<div class="button-row"><button type="button" class="btn btn-danger" data-account-signout><i class="fas fa-sign-out-alt"></i> Sign out</button></div>' +
         '</section>' +
 
       '</div>';
@@ -967,7 +965,7 @@
     host.innerHTML =
       '<div class="user-menu">' +
         '<button type="button" class="user-menu-toggle" aria-haspopup="true" aria-expanded="false" title="' + esc(name) + '">' +
-          '<span class="user-menu-avatar" data-sync="saved">' + esc(initials(name)) + '</span>' +
+          '<span class="cloud-avatar user-menu-avatar" data-sync="saved">' + esc(initials(name)) + '</span>' +
           '<span class="user-menu-name">' + esc(name) + '</span>' +
           '<i class="fas fa-chevron-down user-menu-caret"></i>' +
         '</button>' +
@@ -1020,8 +1018,8 @@
     }, 0);
   }
 
-  // The header / app container may clip overflow (styles.css does so on
-  // mobile), so the dropdown is positioned fixed relative to the toggle.
+  // An ancestor may clip overflow, so the dropdown is positioned fixed
+  // relative to the toggle.
   function positionMenu() {
     const host = document.getElementById('userMenu');
     const dd = host ? host.querySelector('.user-menu-dropdown') : null;

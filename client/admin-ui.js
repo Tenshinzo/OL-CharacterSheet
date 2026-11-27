@@ -109,7 +109,7 @@
   /** <time> element with relative text and full date in the title. */
   function timeHtml(value, emptyText) {
     const d = toDate(value);
-    if (!d) return '<span class="adm-muted">' + esc(emptyText || '—') + '</span>';
+    if (!d) return '<span class="text-secondary">' + esc(emptyText || '—') + '</span>';
     return '<time datetime="' + esc(d.toISOString()) + '" title="' + esc(fullDate(d)) + '">' + esc(relativeTime(d)) + '</time>';
   }
 
@@ -168,15 +168,15 @@
     }
     const page = document.createElement('div');
     page.id = PAGE_ID;
-    page.className = 'cloud-page admin-page';
+    page.className = 'cloud-page page-sheet admin-page';
     page.style.display = 'none';
     page.innerHTML =
-      '<div class="page-header adm-header">' +
-        '<button type="button" class="btn btn-secondary adm-back" data-action="back">' +
+      '<div class="page-header">' +
+        '<button type="button" class="btn btn-secondary" data-action="back">' +
           '<i class="fas fa-arrow-left"></i> Back to Overview' +
         '</button>' +
         '<h2><i class="fas fa-shield-halved"></i> Administration</h2>' +
-        '<p class="text-secondary">Manage invites, users and see what is going on</p>' +
+        '<p>Manage invites, users and see what is going on</p>' +
       '</div>' +
       '<div class="adm-body"></div>';
     container.appendChild(page);
@@ -254,16 +254,15 @@
     if (!body) return;
     if (!isAdmin()) {
       body.innerHTML =
-        '<div class="empty-state adm-denied">' +
-          '<i class="fas fa-lock"></i>' +
-          '<h3 class="mb-sm">Admins only</h3>' +
-          '<p class="text-secondary mb-lg">This area is restricted to administrators.</p>' +
+        '<div class="empty-state">' +
+          '<h3 class="mb-sm"><i class="fas fa-lock"></i> Admins only</h3>' +
+          '<p class="mb-lg">This area is restricted to administrators.</p>' +
           '<a href="#/" class="btn btn-primary"><i class="fas fa-arrow-left"></i> Back to Overview</a>' +
         '</div>';
       return;
     }
     let html = renderTabs();
-    html += '<div class="adm-panel" role="tabpanel">';
+    html += '<div class="cloud-stack" role="tabpanel">';
     if (state.tab === 'overview') html += renderOverview();
     else if (state.tab === 'invites') html += renderInvites();
     else html += renderUsers();
@@ -283,13 +282,13 @@
   }
 
   function renderTabs() {
-    return '<div class="adm-tabs" role="tablist">' +
+    return '<div class="cloud-tabs" role="tablist">' +
       TABS.map((t) =>
-        '<button type="button" role="tab" class="adm-tab' + (state.tab === t.id ? ' active' : '') + '" ' +
+        '<button type="button" role="tab" class="cloud-tab' + (state.tab === t.id ? ' active' : '') + '" ' +
           'aria-selected="' + (state.tab === t.id) + '" data-action="tab" data-tab="' + t.id + '">' +
           '<i class="fas ' + t.icon + '"></i> <span>' + t.label + '</span>' +
         '</button>').join('') +
-      '<button type="button" class="adm-tab adm-tab-refresh" data-action="refresh" title="Reload"' +
+      '<button type="button" class="btn btn-secondary btn-small" data-action="refresh" title="Reload" aria-label="Reload"' +
         (state.loading[state.tab] ? ' disabled' : '') + '>' +
         '<i class="fas fa-rotate' + (state.loading[state.tab] ? ' fa-spin' : '') + '"></i>' +
       '</button>' +
@@ -298,11 +297,11 @@
 
   function renderStatus(tab) {
     if (state.error[tab]) {
-      return '<div class="adm-alert adm-alert-error"><i class="fas fa-triangle-exclamation"></i> ' + esc(state.error[tab]) +
+      return '<div class="alert alert--error" role="alert"><i class="fas fa-triangle-exclamation"></i> ' + esc(state.error[tab]) +
         ' <button type="button" class="btn btn-small btn-secondary" data-action="refresh">Retry</button></div>';
     }
     if (state.loading[tab]) {
-      return '<div class="adm-loading"><i class="fas fa-spinner fa-spin"></i> Loading…</div>';
+      return '<div class="empty-note"><i class="fas fa-spinner fa-spin"></i> Loading…</div>';
     }
     return '';
   }
@@ -312,7 +311,7 @@
   function renderOverview() {
     const o = state.overview;
     let html = renderStatus('overview');
-    if (!o && !state.loading.overview) return html || '<div class="empty-state"><i class="fas fa-gauge"></i><p>No data</p></div>';
+    if (!o && !state.loading.overview) return html || '<div class="empty-note"><i class="fas fa-gauge"></i> No data</div>';
     const tiles = [
       { label: 'Users', value: o?.users, icon: 'fa-users', tab: 'users' },
       { label: 'Characters', value: o?.characters, icon: 'fa-scroll' },
@@ -320,14 +319,14 @@
       { label: 'Open invites', value: o?.openInvites, icon: 'fa-ticket', tab: 'invites' },
       { label: 'Live connections', value: o?.live?.sockets, sub: o?.live?.users != null ? o.live.users + ' user' + (o.live.users === 1 ? '' : 's') + ' online' : null, icon: 'fa-tower-broadcast', live: true },
     ];
-    html += '<div class="adm-tiles">' + tiles.map((t) => {
+    html += '<div class="cloud-grid adm-tiles">' + tiles.map((t) => {
       const tag = t.tab ? 'button' : 'div';
       const attrs = t.tab ? ' type="button" data-action="tab" data-tab="' + t.tab + '"' : '';
-      return '<' + tag + ' class="adm-tile' + (t.tab ? ' adm-tile-link' : '') + (t.live ? ' adm-tile-live' : '') + '"' + attrs + '>' +
+      return '<' + tag + ' class="panel stat' + (t.tab ? ' adm-tile-link' : '') + (t.live ? ' adm-tile-live' : '') + '"' + attrs + '>' +
         '<i class="fas ' + t.icon + '"></i>' +
-        '<div class="adm-tile-value">' + (t.value == null ? '<span class="adm-muted">–</span>' : esc(t.value)) + '</div>' +
-        '<div class="adm-tile-label">' + esc(t.label) + '</div>' +
-        (t.sub ? '<div class="adm-tile-sub">' + esc(t.sub) + '</div>' : '') +
+        '<div class="stat-value">' + (t.value == null ? '<span class="text-secondary">–</span>' : esc(t.value)) + '</div>' +
+        '<div class="stat-label">' + esc(t.label) + '</div>' +
+        (t.sub ? '<div class="entry-sub">' + esc(t.sub) + '</div>' : '') +
       '</' + tag + '>';
     }).join('') + '</div>';
     return html;
@@ -339,18 +338,18 @@
     let html = renderStatus('invites');
     const busy = state.busy.has(busyKey('createInvites'));
     html +=
-      '<form class="adm-card adm-form" id="admInviteForm" autocomplete="off">' +
-        '<h3><i class="fas fa-plus"></i> Generate invite codes</h3>' +
-        '<div class="adm-form-row">' +
-          '<div class="form-group adm-field-sm"><label for="admInviteCount">Count</label>' +
+      '<form class="panel" id="admInviteForm" autocomplete="off">' +
+        '<div class="section-header"><h3><i class="fas fa-plus"></i> Generate invite codes</h3></div>' +
+        '<div class="form-row">' +
+          '<div class="form-group form-group--narrow"><label for="admInviteCount">Count</label>' +
             '<input type="number" id="admInviteCount" name="count" min="1" max="20" value="1" required></div>' +
-          '<div class="form-group"><label for="admInviteNote">Note <span class="adm-muted">(optional)</span></label>' +
+          '<div class="form-group"><label for="admInviteNote">Note (optional)</label>' +
             '<input type="text" id="admInviteNote" name="note" maxlength="255" placeholder="e.g. Tuesday group"></div>' +
-          '<div class="form-group adm-field-sm"><label for="admInviteDays">Expires in days</label>' +
+          '<div class="form-group"><label for="admInviteDays">Expires in days</label>' +
             '<input type="number" id="admInviteDays" name="expiresInDays" min="0" max="3650" value="14" required>' +
-            '<small>0 = never</small></div>' +
+            '<p class="field-help">0 = never</p></div>' +
         '</div>' +
-        '<div class="adm-form-actions">' +
+        '<div class="button-row">' +
           '<button type="submit" class="btn btn-primary"' + (busy ? ' disabled' : '') + '>' +
             '<i class="fas ' + (busy ? 'fa-spinner fa-spin' : 'fa-wand-magic-sparkles') + '"></i> Generate</button>' +
         '</div>' +
@@ -359,25 +358,23 @@
     if (state.newCodes && state.newCodes.codes.length) {
       const base = state.newCodes.registerUrl || '';
       html +=
-        '<div class="adm-card adm-newcodes">' +
-          '<div class="adm-card-head">' +
+        '<div class="panel">' +
+          '<div class="section-header">' +
             '<h3><i class="fas fa-check-circle"></i> New invite links</h3>' +
-            '<div class="adm-inline-actions">' +
+            '<div class="button-row">' +
               '<button type="button" class="btn btn-small btn-secondary" data-action="copy-all"><i class="fas fa-copy"></i> Copy all</button>' +
               '<button type="button" class="btn btn-small btn-secondary" data-action="dismiss-codes" title="Hide"><i class="fas fa-xmark"></i></button>' +
             '</div>' +
           '</div>' +
-          '<p class="text-secondary">Share one link per person. Codes stay listed below until used.</p>' +
-          '<ul class="adm-codelist">' +
+          '<p class="field-help">Share one link per person. Codes stay listed below until used.</p>' +
           state.newCodes.codes.map((code) => {
             const link = base + encodeURIComponent(code);
-            return '<li>' +
-              '<code class="adm-code">' + esc(code) + '</code>' +
-              '<input type="text" class="adm-link" readonly value="' + esc(link) + '" aria-label="Invite link">' +
-              '<button type="button" class="btn btn-small btn-primary" data-action="copy" data-text="' + esc(link) + '"><i class="fas fa-link"></i> Copy link</button>' +
-            '</li>';
+            return '<div class="form-inline mb-sm">' +
+              '<code class="cloud-code">' + esc(code) + '</code>' +
+              '<input type="text" readonly value="' + esc(link) + '" aria-label="Invite link">' +
+              '<button type="button" class="btn btn-primary" data-action="copy" data-text="' + esc(link) + '"><i class="fas fa-link"></i> Copy link</button>' +
+            '</div>';
           }).join('') +
-          '</ul>' +
         '</div>';
     }
 
@@ -385,16 +382,16 @@
     const openCount = invites.filter((i) => !i.usedAt).length;
     const shown = state.showUsed ? invites : invites.filter((i) => !i.usedAt);
     html +=
-      '<div class="adm-card">' +
-        '<div class="adm-card-head">' +
-          '<h3><i class="fas fa-ticket"></i> Invites <span class="adm-count">' + esc(openCount) + ' open</span></h3>' +
-          '<label class="adm-toggle"><input type="checkbox" id="admShowUsed"' + (state.showUsed ? ' checked' : '') + '> Show used</label>' +
+      '<section>' +
+        '<div class="section-header">' +
+          '<h3><i class="fas fa-ticket"></i> Invites</h3><span class="tag">' + esc(openCount) + ' open</span>' +
+          '<label><input type="checkbox" id="admShowUsed"' + (state.showUsed ? ' checked' : '') + '> Show used</label>' +
         '</div>';
     if (!state.invites && state.loading.invites) {
       html += '';
     } else if (!shown.length) {
-      html += '<div class="empty-state"><i class="fas fa-ticket"></i><p>' +
-        (invites.length ? 'No open invites. Enable "Show used" to see redeemed ones.' : 'No invites yet. Generate some above.') + '</p></div>';
+      html += '<div class="empty-note"><i class="fas fa-ticket"></i> ' +
+        (invites.length ? 'No open invites. Enable "Show used" to see redeemed ones.' : 'No invites yet. Generate some above.') + '</div>';
     } else {
       html += '<div class="adm-table adm-table-invites" role="table">' +
         '<div class="adm-tr adm-thead" role="row">' +
@@ -404,17 +401,17 @@
         shown.map(renderInviteRow).join('') +
       '</div>';
     }
-    html += '</div>';
+    html += '</section>';
     return html;
   }
 
   function inviteStatus(inv) {
     if (inv.usedAt) {
-      return { cls: 'used', html: 'Used by <strong>' + esc(inv.usedBy || 'unknown') + '</strong> ' + timeHtml(inv.usedAt) };
+      return { cls: 'used', tag: 'detail-tag', html: 'Used by <strong>' + esc(inv.usedBy || 'unknown') + '</strong> ' + timeHtml(inv.usedAt) };
     }
     const exp = toDate(inv.expiresAt);
-    if (exp && exp.getTime() < Date.now()) return { cls: 'expired', html: 'Expired' };
-    return { cls: 'open', html: 'Open' };
+    if (exp && exp.getTime() < Date.now()) return { cls: 'expired', tag: 'tag tag--bad', html: 'Expired' };
+    return { cls: 'open', tag: 'tag tag--good', html: 'Open' };
   }
 
   function renderInviteRow(inv) {
@@ -422,12 +419,12 @@
     const link = (state.newCodes?.registerUrl || defaultRegisterUrl()) + encodeURIComponent(inv.code);
     const deleting = state.busy.has(busyKey('deleteInvite', inv.code));
     return '<div class="adm-tr adm-status-' + status.cls + '" role="row">' +
-      '<div class="adm-td" data-label="Code"><code class="adm-code">' + esc(inv.code) + '</code></div>' +
-      '<div class="adm-td" data-label="Note">' + (inv.note ? esc(inv.note) : '<span class="adm-muted">—</span>') + '</div>' +
+      '<div class="adm-td" data-label="Code"><code class="cloud-code">' + esc(inv.code) + '</code></div>' +
+      '<div class="adm-td" data-label="Note">' + (inv.note ? esc(inv.note) : '<span class="text-secondary">—</span>') + '</div>' +
       '<div class="adm-td" data-label="Created by">' + esc(inv.createdBy || '—') + '</div>' +
       '<div class="adm-td" data-label="Created">' + timeHtml(inv.createdAt) + '</div>' +
       '<div class="adm-td" data-label="Expires">' + timeHtml(inv.expiresAt, 'never') + '</div>' +
-      '<div class="adm-td" data-label="Status"><span class="adm-badge adm-badge-' + status.cls + '">' + status.html + '</span></div>' +
+      '<div class="adm-td" data-label="Status"><span class="' + status.tag + '">' + status.html + '</span></div>' +
       '<div class="adm-td adm-td-actions">' +
         (!inv.usedAt
           ? '<button type="button" class="btn btn-small btn-secondary" data-action="copy" data-text="' + esc(link) + '" title="Copy invite link"><i class="fas fa-link"></i></button>' +
@@ -455,17 +452,17 @@
 
     const creating = state.busy.has(busyKey('createUser'));
     html +=
-      '<form class="adm-card adm-form" id="admCreateUserForm" autocomplete="off">' +
-        '<h3><i class="fas fa-user-plus"></i> Create user</h3>' +
-        '<div class="adm-form-row">' +
+      '<form class="panel" id="admCreateUserForm" autocomplete="off">' +
+        '<div class="section-header"><h3><i class="fas fa-user-plus"></i> Create user</h3></div>' +
+        '<div class="form-row">' +
           '<div class="form-group"><label for="admNewEmail">Email</label>' +
             '<input type="email" id="admNewEmail" name="email" required maxlength="255" placeholder="player@example.com"></div>' +
           '<div class="form-group"><label for="admNewName">Display name</label>' +
             '<input type="text" id="admNewName" name="displayName" maxlength="100" placeholder="defaults to the email name"></div>' +
         '</div>' +
-        '<p class="adm-hint"><i class="fas fa-circle-info"></i> The account is created pre-verified without a password. ' +
+        '<p class="field-help"><i class="fas fa-circle-info"></i> The account is created pre-verified without a password. ' +
           'The user sets one via <strong>Forgot password</strong> on the login page, or you click <em>Send password reset</em> below.</p>' +
-        '<div class="adm-form-actions">' +
+        '<div class="button-row">' +
           '<button type="submit" class="btn btn-primary"' + (creating ? ' disabled' : '') + '>' +
             '<i class="fas ' + (creating ? 'fa-spinner fa-spin' : 'fa-user-plus') + '"></i> Create user</button>' +
         '</div>' +
@@ -474,32 +471,31 @@
     if (state.resetLink) {
       const u = users.find((x) => x.id === state.resetLink.userId);
       html +=
-        '<div class="adm-card adm-newcodes">' +
-          '<div class="adm-card-head">' +
+        '<div class="panel">' +
+          '<div class="section-header">' +
             '<h3><i class="fas fa-key"></i> Password reset link' + (u ? ' for ' + esc(u.email) : '') + '</h3>' +
             '<button type="button" class="btn btn-small btn-secondary" data-action="dismiss-reset" title="Hide"><i class="fas fa-xmark"></i></button>' +
           '</div>' +
-          '<p class="text-secondary">Mail is not configured on the server, so the link was not sent. Pass it on manually; it is valid for 24 hours.</p>' +
-          '<div class="adm-codelist"><div class="adm-codelist-row">' +
-            '<input type="text" class="adm-link" readonly value="' + esc(state.resetLink.url) + '" aria-label="Reset link">' +
-            '<button type="button" class="btn btn-small btn-primary" data-action="copy" data-text="' + esc(state.resetLink.url) + '"><i class="fas fa-link"></i> Copy link</button>' +
-          '</div></div>' +
+          '<p class="field-help">Mail is not configured on the server, so the link was not sent. Pass it on manually; it is valid for 24 hours.</p>' +
+          '<div class="form-inline">' +
+            '<input type="text" readonly value="' + esc(state.resetLink.url) + '" aria-label="Reset link">' +
+            '<button type="button" class="btn btn-primary" data-action="copy" data-text="' + esc(state.resetLink.url) + '"><i class="fas fa-link"></i> Copy link</button>' +
+          '</div>' +
         '</div>';
     }
 
     html +=
-      '<div class="adm-card">' +
-        '<div class="adm-card-head">' +
-          '<h3><i class="fas fa-users"></i> Users <span class="adm-count">' + esc(shown.length) + (q ? ' / ' + esc(users.length) : '') + '</span></h3>' +
+      '<section>' +
+        '<div class="section-header">' +
+          '<h3><i class="fas fa-users"></i> Users</h3><span class="tag">' + esc(shown.length) + (q ? ' / ' + esc(users.length) : '') + '</span>' +
           '<div class="adm-search">' +
-            '<i class="fas fa-magnifying-glass"></i>' +
             '<input type="search" id="admUserSearch" placeholder="Search email or name" value="' + esc(state.search) + '" aria-label="Search users">' +
           '</div>' +
         '</div>';
     if (!state.users && state.loading.users) {
       html += '';
     } else if (!shown.length) {
-      html += '<div class="empty-state"><i class="fas fa-user-slash"></i><p>' + (q ? 'No users match your search.' : 'No users yet.') + '</p></div>';
+      html += '<div class="empty-note"><i class="fas fa-user-slash"></i> ' + (q ? 'No users match your search.' : 'No users yet.') + '</div>';
     } else {
       html += '<div class="adm-table adm-table-users" role="table">' +
         '<div class="adm-tr adm-thead" role="row">' +
@@ -510,7 +506,7 @@
         shown.map((u) => renderUserRow(u, me)).join('') +
       '</div>';
     }
-    html += '</div>';
+    html += '</section>';
     return html;
   }
 
@@ -522,30 +518,30 @@
     const spin = (action, icon) => '<i class="fas ' + (b(action) ? 'fa-spinner fa-spin' : icon) + '"></i>';
 
     return '<div class="adm-tr adm-user' + (u.disabled ? ' adm-user-disabled' : '') + (self ? ' adm-user-self' : '') + '" role="row" data-user-id="' + esc(u.id) + '">' +
-      '<div class="adm-td adm-td-user" data-label="User">' +
-        '<div class="adm-user-name">' + esc(u.displayName || '(no name)') + (self ? ' <span class="adm-badge adm-badge-self">you</span>' : '') + '</div>' +
-        '<div class="adm-user-email">' + esc(u.email) + ' ' +
+      '<div class="adm-td adm-td-user">' +
+        '<div class="entry-title">' + esc(u.displayName || '(no name)') + (self ? ' <span class="tag">you</span>' : '') + '</div>' +
+        '<div class="entry-sub cloud-meta"><span>' + esc(u.email) + '</span> ' +
           (u.emailVerified
-            ? '<span class="adm-badge adm-badge-ok" title="Email verified"><i class="fas fa-circle-check"></i> verified</span>'
-            : '<span class="adm-badge adm-badge-warn" title="Email not verified">unverified</span> ' +
-              '<button type="button" class="btn btn-small btn-secondary adm-btn-inline" data-action="verify-user" data-id="' + esc(u.id) + '"' + dis(anyBusy) + '>' +
+            ? '<span class="tag tag--good" title="Email verified"><i class="fas fa-circle-check"></i> verified</span>'
+            : '<span class="tag tag--bad" title="Email not verified">unverified</span> ' +
+              '<button type="button" class="btn btn-small btn-secondary" data-action="verify-user" data-id="' + esc(u.id) + '"' + dis(anyBusy) + '>' +
                 spin('updateUser', 'fa-check') + ' Mark verified</button>') +
         '</div>' +
       '</div>' +
       '<div class="adm-td" data-label="Role">' +
         (self
-          ? '<span class="adm-badge adm-badge-role-' + esc(u.role) + '">' + esc(u.role) + '</span>'
-          : '<select class="adm-role-select" data-action="role" data-id="' + esc(u.id) + '" aria-label="Role"' + dis(anyBusy) + '>' +
+          ? '<span class="tag">' + esc(u.role) + '</span>'
+          : '<select data-action="role" data-id="' + esc(u.id) + '" aria-label="Role"' + dis(anyBusy) + '>' +
               '<option value="user"' + (u.role === 'user' ? ' selected' : '') + '>user</option>' +
               '<option value="admin"' + (u.role === 'admin' ? ' selected' : '') + '>admin</option>' +
             '</select>') +
       '</div>' +
-      '<div class="adm-td" data-label="Discord">' + (u.discordUsername ? '<i class="fab fa-discord"></i> ' + esc(u.discordUsername) : '<span class="adm-muted">—</span>') + '</div>' +
+      '<div class="adm-td" data-label="Discord">' + (u.discordUsername ? '<span><i class="fab fa-discord"></i> ' + esc(u.discordUsername) + '</span>' : '<span class="text-secondary">—</span>') + '</div>' +
       '<div class="adm-td adm-num" data-label="Characters">' + esc(u.characterCount ?? 0) + '</div>' +
       '<div class="adm-td" data-label="Created">' + timeHtml(u.createdAt) + '</div>' +
       '<div class="adm-td" data-label="Last seen">' + timeHtml(u.lastSeenAt, 'never') + '</div>' +
-      '<div class="adm-td" data-label="Status"><span class="adm-badge ' + (u.disabled ? 'adm-badge-expired' : 'adm-badge-open') + '">' + (u.disabled ? 'disabled' : 'active') + '</span></div>' +
-      '<div class="adm-td adm-td-actions" data-label="Actions">' +
+      '<div class="adm-td" data-label="Status"><span class="tag ' + (u.disabled ? 'tag--bad' : 'tag--good') + '">' + (u.disabled ? 'disabled' : 'active') + '</span></div>' +
+      '<div class="adm-td adm-td-actions">' +
         (!self
           ? '<button type="button" class="btn btn-small ' + (u.disabled ? 'btn-success' : 'btn-warning') + '" data-action="toggle-disabled" data-id="' + esc(u.id) + '" data-disabled="' + (u.disabled ? '1' : '0') + '" title="' + (u.disabled ? 'Enable account' : 'Disable account and end all sessions') + '"' + dis(anyBusy) + '>' +
               spin('updateUser', u.disabled ? 'fa-user-check' : 'fa-user-slash') + ' ' + (u.disabled ? 'Enable' : 'Disable') + '</button>'

@@ -39,19 +39,19 @@
   function render(presetType) {
     close();
     const modal = document.createElement('div');
-    modal.className = 'modal feedback-modal';
+    modal.className = 'modal';
     modal.id = 'feedbackModal';
     modal.style.display = 'block';
     modal.setAttribute('role', 'dialog');
     modal.setAttribute('aria-labelledby', 'feedbackTitle');
     const type = presetType === 'feature' ? 'feature' : 'bug';
     modal.innerHTML =
-      '<div class="modal-content feedback-content">' +
+      '<div class="modal-content">' +
         '<span class="close" data-fb-close aria-label="Close">&times;</span>' +
         '<h2 id="feedbackTitle"><i class="fas fa-bug"></i> Bug report / feature request</h2>' +
-        '<p class="text-secondary feedback-intro">Your report is filed as a public issue on GitHub' + (state.repo ? ' (' + esc(state.repo) + ')' : '') + '. Please do not include passwords or private data.</p>' +
+        '<p class="field-help">Your report is filed as a public issue on GitHub' + (state.repo ? ' (' + esc(state.repo) + ')' : '') + '. Please do not include passwords or private data.</p>' +
         '<form id="feedbackForm" novalidate>' +
-          '<div class="feedback-type" role="radiogroup" aria-label="Type">' +
+          '<div class="form-inline mb-lg" role="radiogroup" aria-label="Type">' +
             '<label class="feedback-type-option' + (type === 'bug' ? ' is-selected' : '') + '"><input type="radio" name="type" value="bug"' + (type === 'bug' ? ' checked' : '') + '><i class="fas fa-bug"></i> Bug report</label>' +
             '<label class="feedback-type-option' + (type === 'feature' ? ' is-selected' : '') + '"><input type="radio" name="type" value="feature"' + (type === 'feature' ? ' checked' : '') + '><i class="fas fa-lightbulb"></i> Feature request</label>' +
           '</div>' +
@@ -63,14 +63,14 @@
             '<label for="feedbackDescription">Description</label>' +
             '<textarea id="feedbackDescription" name="description" rows="6" maxlength="5000" required placeholder="What happened, what did you expect? For bugs: steps to reproduce."></textarea>' +
           '</div>' +
-          '<label class="feedback-context"><input type="checkbox" name="includeContext" checked> Include technical context (current page, open character, browser)</label>' +
-          '<div class="feedback-error" data-fb-error hidden></div>' +
-          '<div class="modal-actions feedback-actions">' +
+          '<div class="form-group"><label><input type="checkbox" name="includeContext" checked> Include technical context (current page, open character, browser)</label></div>' +
+          '<div class="alert alert--error" role="alert" data-fb-error hidden></div>' +
+          '<div class="modal-actions">' +
             '<button type="button" class="btn btn-secondary" data-fb-close>Cancel</button>' +
             '<button type="submit" class="btn btn-primary" data-fb-submit><i class="fas fa-paper-plane"></i> Submit</button>' +
           '</div>' +
         '</form>' +
-        '<div class="feedback-success" data-fb-success hidden></div>' +
+        '<div class="cloud-result" data-fb-success hidden></div>' +
       '</div>';
     document.body.appendChild(modal);
     state.modal = modal;
@@ -118,11 +118,11 @@
       const ok = state.modal.querySelector('[data-fb-success]');
       ok.hidden = false;
       ok.innerHTML =
-        '<div class="feedback-success-icon"><i class="fas fa-check-circle"></i></div>' +
-        '<h3>Thank you!</h3>' +
+        '<div class="cloud-seal cloud-seal--good"><i class="fas fa-check"></i></div>' +
+        '<h4 class="mb-sm">Thank you!</h4>' +
         '<p>Your ' + (type === 'bug' ? 'bug report' : 'feature request') + ' was filed as issue #' + esc(res.number) + '.</p>' +
-        '<p><a href="' + esc(res.url) + '" target="_blank" rel="noopener" class="btn btn-primary btn-small"><i class="fab fa-github"></i> View on GitHub</a> ' +
-        '<button type="button" class="btn btn-secondary btn-small" data-fb-close>Close</button></p>';
+        '<div class="button-row"><a href="' + esc(res.url) + '" target="_blank" rel="noopener" class="btn btn-primary"><i class="fab fa-github"></i> View on GitHub</a>' +
+        '<button type="button" class="btn btn-secondary" data-fb-close>Close</button></div>';
       ok.querySelectorAll('[data-fb-close]').forEach((el) => el.addEventListener('click', close));
       notify('Thanks, your report was submitted.', 'success');
     } catch (err) {

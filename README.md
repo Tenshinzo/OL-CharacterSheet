@@ -64,7 +64,7 @@ A comprehensive web-based character sheet application for the Open Legend RPG sy
 ## Technical Details
 
 ### File Structure
-- `client/` - Frontend (`index.html`, `script.js`, `styles.css`, `gameDatabase.js`, `api.js`, `auth-ui.js`, `groups-ui.js`, `admin-ui.js`, `cloud.css`)
+- `client/` - Frontend (`index.html`, `script.js`, `gameDatabase.js`, `api.js`, `auth-ui.js`, `groups-ui.js`, `admin-ui.js`, and the stylesheets `theme.css`, `sheet.css`, `pages.css`, `cloud.css`)
 - `server/` - Fastify API, SQL migrations, tests
 - `deploy/`, `Dockerfile`, `docker-compose.prod.yml` - Production stack
 - `docker-compose.dev.yml` - Local MySQL for development
@@ -140,7 +140,7 @@ A comprehensive web-based character sheet application for the Open Legend RPG sy
 - **Attributes**: Specify which attributes can invoke abilities
 
 ### Styling Changes
-- **Edit `styles.css`**: Modify colors, layouts, and animations
+- **Edit `theme.css`**: Colors, typography and all reusable components (design system); `sheet.css` / `pages.css` / `cloud.css` only hold layout
 - **CSS Variables**: Use consistent color schemes throughout
 - **Responsive Design**: Maintain mobile-friendly layouts
 - **Animations**: Add smooth transitions and hover effects

@@ -15,7 +15,7 @@ import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-// href="styles.css" / src="script.js" with a relative path and no query string.
+// href="theme.css" / src="script.js" with a relative path and no query string.
 const LOCAL_ASSET_RE = /\b(href|src)="([^"':?#]+\.(?:css|js))"/g;
 
 export function buildIndexHtml(clientDir) {
