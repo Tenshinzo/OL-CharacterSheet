@@ -301,7 +301,7 @@
                 <div class="section-header">
                     <h3><i class="fas fa-star"></i> Attributes</h3>
                     <div class="attribute-summary">
-                        <span>Total Attribute Points Spent:<br><span id="totalPointsSpent">0</span> / <span id="availableAttributePoints">40</span></span>
+                        <span>Points spent: <span id="totalPointsSpent">0</span>/<span id="availableAttributePoints">40</span></span>
                     </div>
                 </div>
                 
@@ -495,7 +495,7 @@
                     <h4><i class="fas fa-magic"></i> Extraordinary</h4>
                     <table class="attributes-table">
                         <tr class="attribute-row">
-                            <td class="attribute-name">Alteration</td>
+                            <td class="attribute-name">Alteration <span class="attribute-range" id="alterationRange" hidden>-</span></td>
                             <td class="attribute-controls editable-only">
                                 <button class="attr-btn minus-btn" onclick="window.app.decreaseAttribute('alteration')">−</button>
                                 <span class="attribute-value" id="alteration">0</span>
@@ -503,7 +503,6 @@
                             </td>
                             <td class="attribute-dice view-mode-only">
                                 <span class="attribute-score" id="alterationScore">0</span> <span class="attribute-dice-inline" id="alterationDice">1d4</span>
-                                <span class="attribute-range" id="alterationRange">-</span>
                             </td>
                             <td class="attribute-info">
                                 <div class="attribute-cost editable-only">Cost: <span id="alterationCost">0</span></div>
@@ -512,7 +511,7 @@
                             </td>
                         </tr>
                         <tr class="attribute-row">
-                            <td class="attribute-name">Creation</td>
+                            <td class="attribute-name">Creation <span class="attribute-range" id="creationRange" hidden>-</span></td>
                             <td class="attribute-controls editable-only">
                                 <button class="attr-btn minus-btn" onclick="window.app.decreaseAttribute('creation')">−</button>
                                 <span class="attribute-value" id="creation">0</span>
@@ -520,7 +519,6 @@
                             </td>
                             <td class="attribute-dice view-mode-only">
                                 <span class="attribute-score" id="creationScore">0</span> <span class="attribute-dice-inline" id="creationDice">1d4</span>
-                                <span class="attribute-range" id="creationRange">-</span>
                             </td>
                             <td class="attribute-info">
                                 <div class="attribute-cost editable-only">Cost: <span id="creationCost">0</span></div>
@@ -529,7 +527,7 @@
                             </td>
                         </tr>
                         <tr class="attribute-row">
-                            <td class="attribute-name">Energy</td>
+                            <td class="attribute-name">Energy <span class="attribute-range" id="energyRange" hidden>-</span></td>
                             <td class="attribute-controls editable-only">
                                 <button class="attr-btn minus-btn" onclick="window.app.decreaseAttribute('energy')">−</button>
                                 <span class="attribute-value" id="energy">0</span>
@@ -537,7 +535,6 @@
                             </td>
                             <td class="attribute-dice view-mode-only">
                                 <span class="attribute-score" id="energyScore">0</span> <span class="attribute-dice-inline" id="energyDice">1d4</span>
-                                <span class="attribute-range" id="energyRange">-</span>
                             </td>
                             <td class="attribute-info">
                                 <div class="attribute-cost editable-only">Cost: <span id="energyCost">0</span></div>
@@ -546,7 +543,7 @@
                             </td>
                         </tr>
                         <tr class="attribute-row">
-                            <td class="attribute-name">Entropy</td>
+                            <td class="attribute-name">Entropy <span class="attribute-range" id="entropyRange" hidden>-</span></td>
                             <td class="attribute-controls editable-only">
                                 <button class="attr-btn minus-btn" onclick="window.app.decreaseAttribute('entropy')">−</button>
                                 <span class="attribute-value" id="entropy">0</span>
@@ -554,7 +551,6 @@
                             </td>
                             <td class="attribute-dice view-mode-only">
                                 <span class="attribute-score" id="entropyScore">0</span> <span class="attribute-dice-inline" id="entropyDice">1d4</span>
-                                <span class="attribute-range" id="entropyRange">-</span>
                             </td>
                             <td class="attribute-info">
                                 <div class="attribute-cost editable-only">Cost: <span id="entropyCost">0</span></div>
@@ -563,7 +559,7 @@
                             </td>
                         </tr>
                         <tr class="attribute-row">
-                            <td class="attribute-name">Influence</td>
+                            <td class="attribute-name">Influence <span class="attribute-range" id="influenceRange" hidden>-</span></td>
                             <td class="attribute-controls editable-only">
                                 <button class="attr-btn minus-btn" onclick="window.app.decreaseAttribute('influence')">−</button>
                                 <span class="attribute-value" id="influence">0</span>
@@ -571,7 +567,6 @@
                             </td>
                             <td class="attribute-dice view-mode-only">
                                 <span class="attribute-score" id="influenceScore">0</span> <span class="attribute-dice-inline" id="influenceDice">1d4</span>
-                                <span class="attribute-range" id="influenceRange">-</span>
                             </td>
                             <td class="attribute-info">
                                 <div class="attribute-cost editable-only">Cost: <span id="influenceCost">0</span></div>
@@ -580,7 +575,7 @@
                             </td>
                         </tr>
                         <tr class="attribute-row">
-                            <td class="attribute-name">Movement</td>
+                            <td class="attribute-name">Movement <span class="attribute-range" id="movementRange" hidden>-</span></td>
                             <td class="attribute-controls editable-only">
                                 <button class="attr-btn minus-btn" onclick="window.app.decreaseAttribute('movement')">−</button>
                                 <span class="attribute-value" id="movement">0</span>
@@ -588,7 +583,6 @@
                             </td>
                             <td class="attribute-dice view-mode-only">
                                 <span class="attribute-score" id="movementScore">0</span> <span class="attribute-dice-inline" id="movementDice">1d4</span>
-                                <span class="attribute-range" id="movementRange">-</span>
                             </td>
                             <td class="attribute-info">
                                 <div class="attribute-cost editable-only">Cost: <span id="movementCost">0</span></div>
@@ -597,7 +591,7 @@
                             </td>
                         </tr>
                         <tr class="attribute-row">
-                            <td class="attribute-name">Prescience</td>
+                            <td class="attribute-name">Prescience <span class="attribute-range" id="prescienceRange" hidden>-</span></td>
                             <td class="attribute-controls editable-only">
                                 <button class="attr-btn minus-btn" onclick="window.app.decreaseAttribute('prescience')">−</button>
                                 <span class="attribute-value" id="prescience">0</span>
@@ -605,7 +599,6 @@
                             </td>
                             <td class="attribute-dice view-mode-only">
                                 <span class="attribute-score" id="prescienceScore">0</span> <span class="attribute-dice-inline" id="prescienceDice">1d4</span>
-                                <span class="attribute-range" id="prescienceRange">-</span>
                             </td>
                             <td class="attribute-info">
                                 <div class="attribute-cost editable-only">Cost: <span id="prescienceCost">0</span></div>
@@ -614,7 +607,7 @@
                             </td>
                         </tr>
                         <tr class="attribute-row">
-                            <td class="attribute-name">Protection</td>
+                            <td class="attribute-name">Protection <span class="attribute-range" id="protectionRange" hidden>-</span></td>
                             <td class="attribute-controls editable-only">
                                 <button class="attr-btn minus-btn" onclick="window.app.decreaseAttribute('protection')">−</button>
                                 <span class="attribute-value" id="protection">0</span>
@@ -622,7 +615,6 @@
                             </td>
                             <td class="attribute-dice view-mode-only">
                                 <span class="attribute-score" id="protectionScore">0</span> <span class="attribute-dice-inline" id="protectionDice">1d4</span>
-                                <span class="attribute-range" id="protectionRange">-</span>
                             </td>
                             <td class="attribute-info">
                                 <div class="attribute-cost editable-only">Cost: <span id="protectionCost">0</span></div>

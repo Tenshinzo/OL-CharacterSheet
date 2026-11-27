@@ -2906,6 +2906,8 @@ class CharacterSheetApp {
             if (rangeElement) {
                 const range = this.calculateAttributeRange(effectiveScore);
                 rangeElement.textContent = range;
+                // No badge at all for attributes without a range
+                rangeElement.hidden = range === '-';
             }
             
             // Update Extraordinary Focus indicator
@@ -3040,8 +3042,10 @@ class CharacterSheetApp {
         let attributeNameElement = null;
         
         for (const element of attributeNameElements) {
-            // Check if the element contains the capitalized attribute name
-            if (element.textContent.trim() === capitalizedName) {
+            // Compare only the leading text node: the cell also holds the range
+            // badge and feat indicators
+            const ownText = element.firstChild ? element.firstChild.textContent.trim() : '';
+            if (ownText === capitalizedName) {
                 attributeNameElement = element;
                 break;
             }
@@ -3348,7 +3352,8 @@ class CharacterSheetApp {
         // Update the display to show remaining points
         const pointsDisplay = document.getElementById('totalPointsSpent').parentElement;
         if (pointsDisplay) {
-            pointsDisplay.innerHTML = `<span>Total Attribute Points Spent: <span id="totalPointsSpent">${totalSpent}</span> / <span id="availableAttributePoints">${availableAttributePoints}</span> (Remaining: <span style="color: ${remainingPoints >= 0 ? '#51cf66' : '#ff6b6b'}">${remainingPoints}</span>)</span>`;
+            // Spent points turn red when the budget is exceeded
+            pointsDisplay.innerHTML = `<span>Points spent: <span id="totalPointsSpent"${remainingPoints < 0 ? ' style="color: #ff6b6b"' : ''}>${totalSpent}</span>/<span id="availableAttributePoints">${availableAttributePoints}</span></span>`;
         }
     }
 
