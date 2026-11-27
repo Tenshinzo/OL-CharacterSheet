@@ -1856,7 +1856,8 @@ body {
     padding-top: 0;
 }
 
-.character-content > .content-section:first-child {
+.character-content > .content-section:first-child,
+.sheet-sidebar > .content-section:first-child {
     margin-top: 0;
     padding-top: 0;
 }
@@ -4213,7 +4214,10 @@ input[type="range"]::-moz-range-thumb:hover {
     padding: var(--spacing-sm) var(--spacing-md);
     font-size: var(--font-size-sm);
     color: var(--text-secondary);
-    white-space: nowrap;
+    /* Long values (e.g. item descriptions) must wrap instead of widening
+       the surrounding column */
+    max-width: 100%;
+    overflow-wrap: anywhere;
     box-shadow: var(--shadow-sm);
     margin: var(--spacing-xs);
 }
@@ -8247,8 +8251,8 @@ input[type="range"]::-moz-range-thumb:hover {
     width: 100% !important;
 }
 
-/* Sections outside the grid use full width (two-column layout below 1440px;
-   the wide layout further down assigns every section its own grid area) */
+/* Below 1440px the sections after combat span the full width; the wide
+   layout further down stacks them in the right column instead */
 @media (max-width: 1439px) {
     .view-mode .content-section:not(#statsSection):not(#combatSection) {
         grid-column: 1 / -1 !important;
@@ -8309,54 +8313,76 @@ input[type="range"]::-moz-range-thumb:hover {
 
 /* Sections after combat now use full width - no grid areas needed */
 
+/* Stats and initiative share a wrapper so they can form the left column on
+   wide screens. Everywhere else the wrapper dissolves (display: contents)
+   and `order` keeps initiative at its usual place after effects. */
+.sheet-sidebar {
+    display: contents;
+}
+
+.view-mode #initiativeMovementSection {
+    order: 1;
+}
+
+.view-mode #equipmentSection,
+.view-mode #featsSection,
+.view-mode #characterSection,
+.view-mode #baseActionsSection {
+    order: 2;
+}
+
 /* === WIDE SCREENS (>= 1440px) ===
-   The page grows to 1800px and the one-page view mode becomes a three-column
-   spread so desktop monitors are not left with empty margins. The first row
-   holds what matters during play (stats, combat, effects); the rest is
-   arranged so the columns end at roughly the same height. Edit mode keeps a
-   narrower page (body.sheet-edit-mode) so form inputs do not stretch across
-   the whole screen. */
+   The page grows to 1800px. View mode stays two-column: base stats and
+   initiative on the left, every other section stacked in the right column.
+   Edit mode uses the same page width. */
 @media (min-width: 1440px) {
     .app-container {
         max-width: 1800px;
         width: 100%;
     }
 
-    body.sheet-edit-mode .app-container {
-        max-width: 1280px;
-    }
-
     .view-mode .character-content {
-        grid-template-columns: minmax(300px, 0.85fr) 1.1fr 1.05fr !important;
+        /* minmax(0, 1fr): a bare fr track never shrinks below its content's
+           min-content width and would push the column out of the page */
+        grid-template-columns: 380px minmax(0, 1fr) !important;
         grid-template-rows: auto !important;
+        grid-template-areas: none !important;
         grid-auto-rows: auto;
         align-items: start;
         gap: 18px !important;
-        grid-template-areas:
-            "stats       combat      effects"
-            "initiative  initiative  feats"
-            "boons       boons       equipment"
-            "baseactions baseactions character" !important;
     }
 
     .view-mode .content-section {
         margin-bottom: 0;
+        min-width: 0;
+    }
+
+    /* Left column: stats with initiative/movement/legend points below.
+       It spans the rows of the seven sections stacked beside it. */
+    .view-mode .sheet-sidebar {
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+        grid-column: 1;
+        grid-row: 1 / span 7;
+        min-width: 0;
     }
 
     .view-mode #statsSection {
         width: auto !important;
     }
 
-    .view-mode #effectsSection { grid-area: effects !important; }
-    .view-mode #initiativeMovementSection { grid-area: initiative !important; }
-    .view-mode #featsSection { grid-area: feats !important; }
-    .view-mode #availableBoonsBanesSection { grid-area: boons !important; }
-    .view-mode #equipmentSection { grid-area: equipment !important; }
-    .view-mode #characterSection { grid-area: character !important; }
-    .view-mode #baseActionsSection { grid-area: baseactions !important; }
+    .view-mode .initiative-movement-section {
+        flex-direction: column !important;
+    }
+
+    /* :not(#statsSection) only lifts specificity above the base
+       `.view-mode #combatSection { grid-area: combat !important }` */
+    .view-mode .character-content > .content-section:not(#statsSection) {
+        grid-area: auto !important;
+        grid-column: 2 !important;
+    }
 }
-
-
 
 /* Ensure combat section uses proper width in edit mode */
 .character-content:not(.view-mode) #combatSection {
@@ -8693,7 +8719,9 @@ input[type="range"]::-moz-range-thumb:hover {
     display: flex !important;
     flex-direction: column !important;
     gap: 6px !important;
-    width: 100% !important;
+    /* auto, not 100%: the block has side margins, 100% would push it past
+       the section's right edge */
+    width: auto !important;
     grid-template-columns: none !important;
     grid-template-areas: none !important;
     grid-template-rows: none !important;
@@ -9042,10 +9070,13 @@ input[type="range"]::-moz-range-thumb:hover {
 
 @media (max-width: 768px) {
     .view-mode .character-content {
-        display: block !important;
+        /* flex column instead of block so `order` keeps initiative after
+           effects (see .sheet-sidebar) */
+        display: flex !important;
+        flex-direction: column;
         grid-template-columns: none !important;
         grid-template-areas: none !important;
-        gap: 0;
+        gap: 0 !important;
         padding: 2px;
         box-sizing: border-box;
         width: 100%;

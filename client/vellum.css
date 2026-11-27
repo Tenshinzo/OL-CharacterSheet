@@ -2208,6 +2208,12 @@ h3.character-title {
     white-space: nowrap;
 }
 
+/* Detail tags can carry free text (item descriptions): let them wrap so a
+   long value cannot widen the sheet column. */
+.detail-tag {
+    white-space: normal;
+}
+
 .feat-tier,
 .feat-overview .feat-tier,
 .custom-badge,
