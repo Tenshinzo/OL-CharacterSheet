@@ -8334,16 +8334,11 @@ input[type="range"]::-moz-range-thumb:hover {
 /* === WIDE SCREENS (>= 1440px) ===
    The page grows to 1800px. View mode stays two-column: base stats and
    initiative on the left, every other section stacked in the right column.
-   Edit mode keeps a narrower page (body.sheet-edit-mode) so form inputs do
-   not stretch across the whole screen. */
+   Edit mode uses the same page width. */
 @media (min-width: 1440px) {
     .app-container {
         max-width: 1800px;
         width: 100%;
-    }
-
-    body.sheet-edit-mode .app-container {
-        max-width: 1280px;
     }
 
     .view-mode .character-content {
