@@ -428,7 +428,7 @@ h1, h2, h3, h4, h5, h6 {
     gap: 14px;
     margin: 0 0 8px;
     font-family: var(--font-display);
-    font-size: 0.95rem;
+    font-size: 1.1rem;
     font-weight: 700;
     letter-spacing: 0.14em;
     text-transform: uppercase;
@@ -656,7 +656,7 @@ label,
     font-family: var(--font-caps);
     font-weight: 400;
     color: var(--ink-soft);
-    font-size: 0.95rem;
+    font-size: 1.1rem;
 }
 
 input[type="text"],
@@ -812,6 +812,22 @@ input[type="radio"] {
     box-shadow: none !important;
 }
 
+/* ...except the favorite action form, which stays editable in view mode and
+   therefore looks like any other editable field */
+.view-mode #favoriteActionName,
+.view-mode #favoriteActionTime {
+    background: rgba(255, 255, 255, 0.35) !important;
+    border: 1px solid var(--rule-light) !important;
+    border-bottom: 1.5px solid var(--ink) !important;
+    border-radius: 2px 2px 0 0 !important;
+}
+
+.view-mode #favoriteActionAttribute {
+    background-color: rgba(255, 255, 255, 0.4) !important;
+    border: 1px solid var(--ink-soft) !important;
+    border-radius: 2px !important;
+}
+
 .form-group small,
 .field-help,
 .manual-settings-help,
@@ -962,7 +978,7 @@ input[type="radio"] {
 
 .character-overview-owner {
     font-family: var(--font-caps);
-    font-size: 0.95rem;
+    font-size: 1.1rem;
     color: var(--iron);
     order: -1;
     margin-bottom: 2px;
@@ -1105,19 +1121,9 @@ input[type="radio"] {
     gap: 18px 24px;
 }
 
+/* No view-mode hint in the header (the base stylesheet adds a badge) */
 .view-mode .character-header::before {
-    content: 'in view · press Edit to write';
-    top: auto;
-    bottom: -1.7em;
-    right: 0;
-    background: transparent;
-    border: 0;
-    padding: 0;
-    font-family: var(--font-body);
-    font-style: italic;
-    font-weight: 400;
-    font-size: 0.9rem;
-    color: var(--brass);
+    content: none;
 }
 
 div.character-title {
@@ -1199,7 +1205,7 @@ h3.character-title {
 .view-mode-help {
     font-style: italic;
     color: var(--ink-faint) !important;
-    font-size: 0.95rem !important;
+    font-size: 1.1rem !important;
 }
 
 .view-mode-help strong {
@@ -1343,7 +1349,7 @@ h3.character-title {
     align-items: center;
     gap: 12px;
     font-family: var(--font-display);
-    font-size: 0.95rem;
+    font-size: 1.1rem;
     font-weight: 700;
     letter-spacing: 0.14em;
     text-transform: uppercase;
@@ -1609,7 +1615,7 @@ h3.character-title {
     border: 1.5px solid var(--ink);
     background: rgba(255, 255, 255, 0.35);
     font-family: var(--font-display);
-    font-size: 0.95rem;
+    font-size: 1.1rem;
     font-weight: 700;
     color: var(--ink);
     vertical-align: middle;
@@ -1624,7 +1630,7 @@ h3.character-title {
     background: transparent;
     border: 0;
     font-family: var(--font-body);
-    font-size: 0.95rem;
+    font-size: 1.1rem;
     font-weight: 400;
     color: var(--ink-soft);
     vertical-align: middle;
@@ -1656,7 +1662,7 @@ h3.character-title {
     font-family: var(--font-caps);
     font-weight: 400;
     color: var(--ink);
-    font-size: 0.95rem;
+    font-size: 1.1rem;
     line-height: 1.3;
 }
 
@@ -1797,12 +1803,6 @@ h3.character-title {
     content: none;
 }
 
-.defense-card:hover {
-    transform: none;
-    box-shadow: none;
-    border-color: transparent;
-}
-
 .defense-card h4,
 .character-content .defense-card h4 {
     font-family: var(--font-caps);
@@ -1837,13 +1837,6 @@ h3.character-title {
 .defense-value::before,
 .defense-value::after {
     content: none;
-}
-
-.defense-value:hover,
-.view-mode .defense-value:hover {
-    transform: none;
-    box-shadow: none;
-    border-color: var(--ink);
 }
 
 .defense-breakdown span,
@@ -1892,7 +1885,7 @@ h3.character-title {
     background: rgba(255, 255, 255, 0.3);
     color: var(--ink);
     border: 1.5px solid var(--ink);
-    font-size: 0.95rem;
+    font-size: 1.1rem;
     padding: 4px 12px;
 }
 
@@ -2861,7 +2854,7 @@ a {
 
     .nav-tab,
     .view-mode .nav-tab {
-        font-size: 0.95rem;
+        font-size: 1.1rem;
         padding: 3px 8px;
     }
 

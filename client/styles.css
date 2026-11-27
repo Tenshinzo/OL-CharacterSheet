@@ -1527,12 +1527,6 @@ body {
     transition: all 0.2s ease;
 }
 
-.character-meta span:hover {
-    background: linear-gradient(135deg, var(--gray-200) 0%, var(--gray-100) 100%);
-    transform: translateY(-1px);
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-}
-
 /* Character Card Actions */
 .character-actions {
     display: flex;
@@ -3184,12 +3178,6 @@ input[type="range"]::-moz-range-thumb:hover {
     pointer-events: none;
 }
 
-.defense-card:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-lg);
-    border-color: var(--primary);
-}
-
 .defense-card h4 {
     color: var(--text-primary);
     margin-bottom: var(--spacing-sm);
@@ -3236,13 +3224,6 @@ input[type="range"]::-moz-range-thumb:hover {
     height: 2px;
     background: linear-gradient(90deg, var(--primary) 0%, var(--primary-light) 50%, var(--info) 100%);
     opacity: 0.8;
-}
-
-/* Subtle hover effect to show they're display elements, not buttons */
-.defense-value:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-xl);
-    border-color: var(--primary-dark);
 }
 
 /* Ensure the text is always visible above the pseudo-elements */
@@ -6484,6 +6465,22 @@ input[type="range"]::-moz-range-thumb:hover {
     margin-left: auto;
 }
 
+/* The three fields sit in one row: same top edge, same height */
+.add-favorite-action .form-group + .form-group {
+    margin-top: 0;
+}
+
+.add-favorite-action .form-group input,
+.add-favorite-action .form-group select {
+    height: 40px;
+    box-sizing: border-box;
+}
+
+/* In view mode the buff sits on its own line below the reset buttons */
+.view-mode .custom-health-buff {
+    margin-top: var(--spacing-lg);
+}
+
 .custom-health-buff label {
     font-size: var(--font-size-sm);
     font-weight: 600;
@@ -7831,11 +7828,8 @@ input[type="range"]::-moz-range-thumb:hover {
 .bane-details,
 .perk-details,
 .flaw-details {
-    background: #f8f9fa;
-    padding: 10px;
-    margin: 5px 0;
-    border-radius: 4px;
-    border-left: 3px solid #28a745;
+    /* no card of their own: they already sit inside the item's card */
+    margin: 5px 0 0;
 }
 
 .boon-description,
@@ -8343,7 +8337,7 @@ input[type="range"]::-moz-range-thumb:hover {
     .view-mode .character-content {
         /* minmax(0, 1fr): a bare fr track never shrinks below its content's
            min-content width and would push the column out of the page */
-        grid-template-columns: 380px minmax(0, 1fr) !important;
+        grid-template-columns: 420px minmax(0, 1fr) !important;
         grid-template-rows: auto !important;
         grid-template-areas: none !important;
         grid-auto-rows: auto;
@@ -8814,12 +8808,6 @@ input[type="range"]::-moz-range-thumb:hover {
     transition: all 0.3s ease;
 }
 
-.view-mode .defense-value:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 12px rgba(0,0,0,0.3);
-    background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
-}
-
 .view-mode .defense-breakdown {
     font-size: var(--font-size-base);
     line-height: 1.3;
@@ -8888,10 +8876,16 @@ input[type="range"]::-moz-range-thumb:hover {
     letter-spacing: 0.5px;
 }
 
+.view-mode .initiative-dice {
+    padding: 0 10px;
+}
+
 .view-mode .initiative-display {
     display: flex;
     justify-content: center;
     align-items: center;
+    gap: 2px;
+    margin-bottom: 0;
     padding: 2px;
     font-size: var(--font-size-md);
     font-weight: 600;
@@ -9146,7 +9140,13 @@ input[type="range"]::-moz-range-thumb:hover {
     }
 }
 
-/* Attribute range styling */
+/* Attribute range styling: the badge follows the attribute name, shown only
+   in view mode and only when the attribute has a range */
+.attribute-range[hidden],
+.character-sheet-page:not(.view-mode) .attribute-range {
+    display: none !important;
+}
+
 .attribute-range {
     font-size: var(--font-size-xs);
     color: var(--primary);
