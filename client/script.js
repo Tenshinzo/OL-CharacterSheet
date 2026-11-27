@@ -95,20 +95,7 @@ class CharacterSheetApp {
     // Show error notification
     showErrorNotification(message) {
         const notification = document.createElement('div');
-        notification.style.cssText = `
-            position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #ff6b6b;
-            color: white;
-            padding: 15px 20px;
-            border-radius: 8px;
-            z-index: 10000;
-            font-weight: bold;
-            max-width: 80%;
-            text-align: center;
-        `;
+        notification.className = 'app-error-banner';
         notification.textContent = message;
         document.body.appendChild(notification);
         
@@ -808,6 +795,7 @@ class CharacterSheetApp {
             }
             
             this.hideCloudPages();
+            document.body.classList.remove('sheet-edit-mode');
             mainPage.style.display = 'block';
             characterSheetPage.style.display = 'none';
             document.getElementById('optionsListPage').style.display = 'none';
@@ -864,6 +852,7 @@ class CharacterSheetApp {
     showOptionsListPage() {
         // showOptionsListPage called
         this.hideCloudPages();
+        document.body.classList.remove('sheet-edit-mode');
         document.getElementById('mainPage').style.display = 'none';
         document.getElementById('characterSheetPage').style.display = 'none';
         document.getElementById('optionsListPage').style.display = 'block';
@@ -1026,6 +1015,13 @@ class CharacterSheetApp {
         const id = esc(character.id);
         const isGm = this.getCharacterAccess(character.id) === 'gm';
         const meta = this.characterMeta[character.id];
+        // Thin HP line like a paper tracker: green while healthy, wax red once hurt.
+        const maxHP = Number(character.maxHP) || 0;
+        const curHP = Math.max(0, Math.min(maxHP, Number(character.currentHP) || 0));
+        const hpPct = maxHP > 0 ? Math.round((curHP / maxHP) * 100) : 100;
+        const hpLine = maxHP > 0
+            ? `<div class="character-hp-line${hpPct < 100 ? ' hurt' : ''}" title="${curHP} / ${maxHP} HP"><i style="width:${hpPct}%"></i></div>`
+            : '';
         card.innerHTML = `
             <h3>${esc(character.name)}${character.isAlternateForm ? ' <i class="fas fa-magic" title="Alternate Form"></i>' : ''}${character.isCompanion ? ' <i class="fas fa-paw" title="Companion"></i>' : ''}</h3>
             ${character.archetype ? `<div class="character-overview-archetype">${esc(character.archetype)}</div>` : ''}
@@ -1034,8 +1030,9 @@ class CharacterSheetApp {
             ${isGm && meta ? `<div class="character-overview-owner"><i class="fas fa-user"></i> ${esc(meta.ownerName || 'Player')}</div>` : ''}
             <div class="character-meta">
                 <span>Level ${esc(character.level)}</span>
-                <span>XP: ${esc(character.experiencePoints)}</span>
+                <span>XP ${esc(character.experiencePoints)}</span>
             </div>
+            ${hpLine}
             <div class="character-actions">
                 <button class="btn btn-primary btn-small" onclick="event.stopPropagation(); window.app.editCharacter('${id}')">
                     <i class="fas fa-edit"></i> Edit
@@ -8820,6 +8817,7 @@ class CharacterSheetApp {
     enableViewMode() {
         const characterSheetPage = document.getElementById('characterSheetPage');
         characterSheetPage.classList.add('view-mode');
+        document.body.classList.remove('sheet-edit-mode');
         
         // Update button text and icon
         const saveBtn = document.getElementById('saveCharBtn');
@@ -8851,6 +8849,8 @@ class CharacterSheetApp {
     disableViewMode() {
         const characterSheetPage = document.getElementById('characterSheetPage');
         characterSheetPage.classList.remove('view-mode');
+        // Keeps the page narrower on wide screens while editing (see styles.css, wide screens)
+        document.body.classList.add('sheet-edit-mode');
         
         // Update button text and icon
         const saveBtn = document.getElementById('saveCharBtn');
@@ -10431,44 +10431,15 @@ class CharacterSheetApp {
         const notification = document.createElement('div');
         notification.className = `notification notification-${type}`;
         notification.textContent = message;
-        
-        Object.assign(notification.style, {
-            position: 'fixed',
-            top: '20px',
-            right: '20px',
-            padding: '15px 20px',
-            borderRadius: '12px',
-            color: 'white',
-            fontWeight: '600',
-            zIndex: '10000',
-            maxWidth: '300px',
-            boxShadow: '0 8px 25px rgba(0, 0, 0, 0.15)',
-            transform: 'translateX(100%)',
-            transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
-        });
-        
-        switch(type) {
-            case 'success':
-                notification.style.background = 'linear-gradient(135deg, #51cf66, #40c057)';
-                break;
-            case 'error':
-                notification.style.background = 'linear-gradient(135deg, #ff6b6b, #ee5a24)';
-                break;
-            case 'warning':
-                notification.style.background = 'linear-gradient(135deg, #ffd43b, #fcc419)';
-                break;
-            default:
-                notification.style.background = 'linear-gradient(135deg, #667eea, #764ba2)';
-        }
-        
+        // Appearance lives in vellum.css (.notification, .notification-<type>).
         document.body.appendChild(notification);
-        
+
         setTimeout(() => {
-            notification.style.transform = 'translateX(0)';
+            notification.classList.add('is-visible');
         }, 100);
-        
+
         setTimeout(() => {
-            notification.style.transform = 'translateX(100%)';
+            notification.classList.remove('is-visible');
             setTimeout(() => {
                 if (notification.parentNode) {
                     notification.parentNode.removeChild(notification);
@@ -11187,6 +11158,7 @@ class CharacterSheetApp {
         const target = document.getElementById(pageId);
         if (target) target.style.display = 'block';
         document.body.classList.toggle('showing-main-page', pageId === 'mainPage');
+        if (pageId !== 'characterSheetPage') document.body.classList.remove('sheet-edit-mode');
         const header = document.getElementById('appHeader');
         if (header) header.style.display = 'block';
         if (pageId !== 'characterSheetPage') this.currentCharacter = null;

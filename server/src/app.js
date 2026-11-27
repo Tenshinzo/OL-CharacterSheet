@@ -6,6 +6,7 @@ import websocket from '@fastify/websocket';
 import { existsSync } from 'node:fs';
 import { config } from './config.js';
 import { HttpError } from './lib/errors.js';
+import { buildIndexHtml } from './lib/assets.js';
 import authPlugin from './plugins/auth.js';
 import authRoutes from './routes/auth.js';
 import characterRoutes from './routes/characters.js';
@@ -80,17 +81,27 @@ export async function buildApp(opts = {}) {
   }, { prefix: '/api' });
 
   if (existsSync(config.clientDir)) {
+    // index.html is rendered once with content-hashed asset URLs (see lib/assets.js)
+    // and never cached; the assets themselves may be cached for a long time.
+    const index = buildIndexHtml(config.clientDir);
+    app.log.info({ version: index.version, files: index.files.length }, 'client assets versioned');
+    const sendIndex = (reply) => reply
+      .header('cache-control', 'no-cache')
+      .type('text/html; charset=utf-8')
+      .send(index.html);
+    app.get('/', (request, reply) => sendIndex(reply));
+    app.get('/index.html', (request, reply) => sendIndex(reply));
     await app.register(fastifyStatic, {
       root: config.clientDir,
       prefix: '/',
-      index: ['index.html'],
+      index: false,
       cacheControl: true,
-      maxAge: config.isProd ? '1h' : 0,
+      maxAge: config.isProd ? '7d' : 0,
       etag: true,
     });
     app.setNotFoundHandler((request, reply) => {
       if (request.url.startsWith('/api/')) return reply.code(404).send({ error: 'Not found', code: 'NOT_FOUND' });
-      return reply.sendFile('index.html');
+      return sendIndex(reply);
     });
   }
 
